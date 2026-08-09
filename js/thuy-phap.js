@@ -116,10 +116,15 @@
             // hình dạng đó — giống hệt cơ chế ở tab Cửu Cung Lưới, nhưng vẽ trong
             // svg#compassSvgDaGiac (viewBox cố định 0 0 1000 1000, KHÔNG đổi theo
             // zoom/pan của ảnh nền — người dùng tự zoom/pan ảnh bằng tay để khớp).
-            // Chỉ hỗ trợ kéo-chỉnh các đỉnh có sẵn của hình mẫu (rect/L/7 cạnh) —
+            // Chỉ hỗ trợ kéo-chỉnh các đỉnh có sẵn của 1 trong 3 đa giác đều chuẩn (4/8/24 cạnh) —
             // CHƯA hỗ trợ thêm/xóa đỉnh tùy ý (để đơn giản hoá bước đầu).
             // ====================================================================
-            let dgPoints = CM.SHAPES.rect.map(p => ({ x: p.x * 2.5, y: p.y * 2.5 })); // quy đổi viewBox 400->1000
+            // Khởi tạo mặc định: hình vuông 4 cạnh, đỉnh tại 45°/135°/225°/315° (mỗi cạnh nằm đúng
+            // giữa 1 hướng chính) — cùng công thức với chonHinhDangNhaThuyPhap(4) phía dưới.
+            let dgPoints = [45, 135, 225, 315].map(function(gocDo) {
+                let gocRad = gocDo * Math.PI / 180;
+                return { x: 500 + 350 * Math.sin(gocRad), y: 500 - 350 * Math.cos(gocRad) };
+            });
             let dgDragIdx = -1;
 
             function damBaoSvgDaGiacTonTai() {
@@ -196,25 +201,25 @@
             }
             window.veLaiDaGiacNha = veLaiDaGiacNha;
 
-            // Đổi hình dạng nhà mẫu (rect/L/7 cạnh) — reset lại dgPoints theo CM.SHAPES tương ứng.
-            window.chonHinhDangNhaThuyPhap = function(kieu) {
-                let mau = CM.SHAPES[kieu] || CM.SHAPES.rect;
-                dgPoints = mau.map(p => ({ x: p.x * 2.5, y: p.y * 2.5 }));
-                veLaiDaGiacNha();
-            };
-
-            // Tạo đa giác ĐỀU với N cạnh tùy ý (N nhập tay, 3-20 cạnh) làm điểm khởi đầu — dùng cho
-            // nhà có hình dạng không khớp 3 mẫu sẵn (rect/L/7 cạnh). Sau khi tạo, người dùng kéo từng
-            // đỉnh để chỉnh cho khớp dáng nhà thật trên ảnh (giống hệt cách chỉnh 3 hình mẫu kia).
-            window.datSoCanhDaGiacNhaThuyPhap = function(n) {
-                n = parseInt(n, 10);
-                if (!n || n < 3) { alert("Số cạnh phải từ 3 trở lên."); return; }
-                if (n > 20) { alert("Số cạnh tối đa 20 để dễ thao tác kéo-chỉnh."); n = 20; }
-                let cx = 500, cy = 500, r = 300;
+            // Tạo đa giác ĐỀU khớp đúng phong thủy: N cạnh với ĐỈNH đặt tại ranh giới giữa 2
+            // hướng/sơn (không phải tại chính giữa hướng) — để mỗi CẠNH của đa giác nằm vuông góc
+            // và đúng chính giữa 1 hướng/sơn, giúp kéo-chỉnh trực quan theo đúng cấu trúc Bát Quái/24 Sơn:
+            //   - 4 cạnh: đỉnh tại 45°, 135°, 225°, 315° (giữa 2 hướng chính, như hình chữ nhật ở Cửu Cung Lưới)
+            //   - 8 cạnh: đỉnh tại 22.5°, 67.5°, ... (ranh giới giữa 2 trong 8 hướng Bát Quái)
+            //   - 24 cạnh: đỉnh tại 7.5°, 22.5°, ... (ranh giới giữa 2 trong 24 sơn)
+            var GOC_LECH_DINH_THEO_SO_CANH = { 4: 45, 8: 22.5, 24: 7.5 };
+            window.chonHinhDangNhaThuyPhap = function(soCanh) {
+                soCanh = parseInt(soCanh, 10);
+                if (![4, 8, 24].includes(soCanh)) soCanh = 4;
+                let gocLechDo = GOC_LECH_DINH_THEO_SO_CANH[soCanh];
+                let cx = 500, cy = 500, r = 350;
                 dgPoints = [];
-                for (let i = 0; i < n; i++) {
-                    let goc = (i / n) * 2 * Math.PI - Math.PI / 2; // đỉnh đầu tiên ở trên cùng
-                    dgPoints.push({ x: cx + r * Math.cos(goc), y: cy + r * Math.sin(goc) });
+                for (let i = 0; i < soCanh; i++) {
+                    let gocDo = gocLechDo + i * (360 / soCanh);
+                    let gocRad = gocDo * Math.PI / 180;
+                    // Quy ước góc giống bearing la bàn (0°=trên/Bắc, tăng theo chiều kim đồng hồ) để khớp
+                    // đúng hệ góc của renderCompassOverlay/houseFacing trong compass-module.js.
+                    dgPoints.push({ x: cx + r * Math.sin(gocRad), y: cy - r * Math.cos(gocRad) });
                 }
                 veLaiDaGiacNha();
             };
@@ -252,13 +257,10 @@
                 panel.innerHTML = `
                     <span style="font-size:12px;font-weight:600;color:#444;">📐 Hình nhà:</span>
                     <select onchange="chonHinhDangNhaThuyPhap(this.value)" style="padding:4px 8px;border-radius:6px;border:1px solid #ccc;font-size:12px;">
-                        <option value="rect">Chữ nhật</option>
-                        <option value="L">Hình L</option>
-                        <option value="sevenSides">7 cạnh</option>
+                        <option value="4">4 cạnh (vuông vắn)</option>
+                        <option value="8">8 cạnh (theo 8 hướng)</option>
+                        <option value="24">24 cạnh (theo 24 sơn)</option>
                     </select>
-                    <span style="font-size:12px;color:#444;">hoặc</span>
-                    <input type="number" id="tpSoCanhDaGiac" min="3" max="20" value="4" style="width:48px;padding:4px 6px;border-radius:6px;border:1px solid #ccc;font-size:12px;">
-                    <button onclick="datSoCanhDaGiacNhaThuyPhap(document.getElementById('tpSoCanhDaGiac').value)" style="padding:4px 10px;border-radius:6px;border:none;background:#00838f;color:#fff;font-size:12px;cursor:pointer;">cạnh đều</button>
                     <button onclick="luuDaGiacNhaThuyPhap()" style="padding:4px 10px;border-radius:6px;border:none;background:#1565c0;color:#fff;font-size:12px;cursor:pointer;">💾 Lưu</button>
                     <button onclick="moDaGiacNhaThuyPhap()" style="padding:4px 10px;border-radius:6px;border:none;background:#6a1b9a;color:#fff;font-size:12px;cursor:pointer;">📂 Mở</button>
                 `;
