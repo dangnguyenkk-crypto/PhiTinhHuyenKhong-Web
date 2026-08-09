@@ -38,6 +38,139 @@
   var CM = window.CompassModule;
   if (!CM) { console.error("cuu-cung-luoi.js cần js/compass-module.js load TRƯỚC nó trong index.html"); }
 
+  // ====================================================================
+  // ẢNH NỀN (mặt bằng thật) — độc lập hoàn toàn với SVG polygon/la bàn.
+  // Zoom/pan/xoay chỉ áp dụng cho ảnh, không đụng tới currentPoints/toạ độ SVG.
+  // ====================================================================
+  var ccBgOffset = { x: 0, y: 0 }; // px, lệch so với tâm #ccSvgWrapper
+  var ccBgScale = 1;
+  var ccBgGocXoay = 0; // độ
+  var ccBgDaKhoa = false;
+  var ccBgDangHien = true;
+  var ccBgDragging = false;
+  var ccBgLastPointer = null;
+  var ccBgPinchStartDist = null;
+  var ccBgPinchStartScale = 1;
+
+  function ccBgCapNhatViTri() {
+    var img = document.getElementById("ccBgImage");
+    if (!img) return;
+    img.style.transform = "translate(" + ccBgOffset.x + "px," + ccBgOffset.y + "px) rotate(" + ccBgGocXoay + "deg) scale(" + ccBgScale + ")";
+  }
+
+  function ccBgKhoangCachDiem(p1, p2) {
+    var dx = p2.x - p1.x, dy = p2.y - p1.y;
+    return Math.sqrt(dx * dx + dy * dy);
+  }
+
+  function khoiTaoAnhNenCC() {
+    var wrapper = document.getElementById("ccSvgWrapper");
+    var img = document.getElementById("ccBgImage");
+    var chonAnhBtn = document.getElementById("ccBgChonAnhBtn");
+    var fileInput = document.getElementById("ccBgImageInput");
+    var toggleBtn = document.getElementById("ccBgToggleBtn");
+    var khoaBtn = document.getElementById("ccBgKhoaBtn");
+    var resetBtn = document.getElementById("ccBgResetBtn");
+    var gocXoayRow = document.getElementById("ccBgGocXoayRow");
+    var gocXoayInput = document.getElementById("ccBgGocXoayInput");
+    if (!wrapper || !img || !chonAnhBtn || !fileInput) return; // HTML chưa có (bản cũ chưa cập nhật) — bỏ qua, không lỗi
+
+    // ---- Chọn ảnh từ thiết bị ----
+    chonAnhBtn.addEventListener("click", function () { fileInput.click(); });
+    fileInput.addEventListener("change", function (evt) {
+      var file = evt.target.files[0];
+      if (!file) return;
+      var reader = new FileReader();
+      reader.onload = function (ev) {
+        img.src = ev.target.result;
+        img.style.display = "block";
+        ccBgOffset = { x: 0, y: 0 }; ccBgScale = 1; ccBgGocXoay = 0;
+        if (gocXoayInput) gocXoayInput.value = 0;
+        ccBgCapNhatViTri();
+        ccBgDangHien = true;
+        [toggleBtn, khoaBtn, resetBtn].forEach(function (b) { if (b) b.style.display = "inline-block"; });
+        if (gocXoayRow) gocXoayRow.style.display = "flex";
+      };
+      reader.readAsDataURL(file);
+      fileInput.value = ""; // cho phép chọn lại đúng file cũ lần sau vẫn bắn change
+    });
+
+    // ---- Ẩn/hiện ----
+    if (toggleBtn) toggleBtn.addEventListener("click", function () {
+      ccBgDangHien = !ccBgDangHien;
+      img.style.display = ccBgDangHien ? "block" : "none";
+      toggleBtn.style.background = ccBgDangHien ? "#666" : "rgba(76,175,80,0.85)";
+    });
+
+    // ---- Khoá (tránh chạm nhầm khi kéo/xoay hình nhà) ----
+    if (khoaBtn) khoaBtn.addEventListener("click", function () {
+      ccBgDaKhoa = !ccBgDaKhoa;
+      khoaBtn.textContent = ccBgDaKhoa ? "🔒" : "🔓";
+      khoaBtn.style.background = ccBgDaKhoa ? "rgba(255,152,0,0.85)" : "#666";
+    });
+
+    // ---- Reset về vị trí/góc/zoom ban đầu ----
+    if (resetBtn) resetBtn.addEventListener("click", function () {
+      ccBgOffset = { x: 0, y: 0 }; ccBgScale = 1; ccBgGocXoay = 0;
+      if (gocXoayInput) gocXoayInput.value = 0;
+      ccBgCapNhatViTri();
+    });
+
+    // ---- Nhập số góc xoay trực tiếp ----
+    if (gocXoayInput) gocXoayInput.addEventListener("input", function () {
+      if (ccBgDaKhoa) return;
+      ccBgGocXoay = parseFloat(gocXoayInput.value) || 0;
+      ccBgCapNhatViTri();
+    });
+
+    // ---- Kéo để di chuyển (pan) — chỉ kích hoạt khi pointerdown xảy ra trên chính nền SVG
+    // (không phải trên 1 tay cầm/circle đỉnh đa giác — circle đã setPointerCapture riêng nên
+    // pointermove/up của nó không lọt tới đây, không cần stopPropagation thủ công). ----
+    svgEl.addEventListener("pointerdown", function (evt) {
+      if (ccBgDaKhoa || !ccBgDangHien || img.style.display === "none") return;
+      if (evt.target !== svgEl) return; // đang bấm vào tay cầm/đường tia khác — không phải pan ảnh
+      ccBgDragging = true;
+      ccBgLastPointer = { x: evt.clientX, y: evt.clientY };
+    });
+    window.addEventListener("pointermove", function (evt) {
+      if (!ccBgDragging || ccBgDaKhoa) return;
+      var dx = evt.clientX - ccBgLastPointer.x, dy = evt.clientY - ccBgLastPointer.y;
+      ccBgOffset.x += dx; ccBgOffset.y += dy;
+      ccBgLastPointer = { x: evt.clientX, y: evt.clientY };
+      ccBgCapNhatViTri();
+    });
+    window.addEventListener("pointerup", function () { ccBgDragging = false; ccBgLastPointer = null; });
+
+    // ---- Cuộn chuột để zoom ----
+    wrapper.addEventListener("wheel", function (evt) {
+      if (ccBgDaKhoa || !ccBgDangHien || img.style.display === "none") return;
+      evt.preventDefault();
+      var factor = evt.deltaY < 0 ? 1.08 : 0.93;
+      ccBgScale = Math.max(0.2, Math.min(6, ccBgScale * factor));
+      ccBgCapNhatViTri();
+    }, { passive: false });
+
+    // ---- Chụm 2 ngón để zoom (pinch, cảm ứng) ----
+    wrapper.addEventListener("touchmove", function (evt) {
+      if (ccBgDaKhoa || !ccBgDangHien || img.style.display === "none") return;
+      if (evt.touches.length !== 2) return;
+      evt.preventDefault();
+      var p1 = { x: evt.touches[0].clientX, y: evt.touches[0].clientY };
+      var p2 = { x: evt.touches[1].clientX, y: evt.touches[1].clientY };
+      var dist = ccBgKhoangCachDiem(p1, p2);
+      if (ccBgPinchStartDist === null) {
+        ccBgPinchStartDist = dist;
+        ccBgPinchStartScale = ccBgScale;
+      } else {
+        ccBgScale = Math.max(0.2, Math.min(6, ccBgPinchStartScale * (dist / ccBgPinchStartDist)));
+        ccBgCapNhatViTri();
+      }
+    }, { passive: false });
+    wrapper.addEventListener("touchend", function (evt) {
+      if (evt.touches.length < 2) ccBgPinchStartDist = null;
+    });
+  }
+
   // ---- Hình học cơ bản ----
   function shoelaceArea(pts) {
     if (pts.length < 3) return 0;
@@ -1073,6 +1206,8 @@
     svgEl.addEventListener("pointermove", onPointerMove);
     svgEl.addEventListener("pointerup", onPointerUp);
     svgEl.addEventListener("pointerleave", onPointerUp);
+
+    khoiTaoAnhNenCC();
 
     redraw(false);
     document.getElementById("shapeSelect").addEventListener("change", function (evt) {
