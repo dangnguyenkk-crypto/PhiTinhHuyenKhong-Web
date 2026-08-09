@@ -227,7 +227,7 @@
   #lockScreenBtn.active { background:#5a3a1c; border-color:#e0a03a; color:#ffd28a; }
   #edgeList.screen-locked { pointer-events:none; opacity:0.45; }
   .son-ray { stroke:#555; stroke-width:0.6; }
-  .huong-ray { stroke:#e0b83a; stroke-width:1.4; }
+  .huong-ray { stroke:#e0b83a; stroke-width:1; }
   .son-label { fill:#ffcc66; font-size:10px; text-anchor:middle; dominant-baseline:middle; }
   .huong-label { fill:#7fd0ff; font-size:11px; font-weight:bold; text-anchor:middle; dominant-baseline:middle; }
   .huong-pct { fill:#7fd0ff; font-size:8px; text-anchor:middle; dominant-baseline:middle; }

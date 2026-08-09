@@ -261,7 +261,10 @@
       var g = el("g", {});
 
       var houseStr = housePoints.map(function (p) { return p.x + "," + p.y; }).join(" ");
-      g.appendChild(el("polygon", { class: "house", points: houseStr }));
+      // style="fill:none" (không phải attribute fill=) để THẮNG được CSS ".house { fill:#2a3a2a; }"
+      // trong style.css — inline style luôn có độ ưu tiên cao hơn external stylesheet, còn
+      // attribute fill= thì thua CSS class cùng cấp. Viền (stroke) vẫn giữ nguyên theo CSS .house.
+      g.appendChild(el("polygon", { class: "house", points: houseStr, style: "fill:none;" }));
 
       var results = [];
       for (var row = 0; row < 3; row++) {
