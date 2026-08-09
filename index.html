@@ -1,0 +1,571 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>Phi Tinh Huyền Không</title>
+    <link rel="stylesheet" href="lib/leaflet.css">
+    <script src="lib/leaflet.js"></script>
+    <script src="lib/html2canvas.min.js"></script>
+    <link rel="stylesheet" href="css/style.css">
+</head>
+<body>
+<div class="tab-bar">
+        <button class="tab-btn" id="tabBtnHoso" onclick="chuyenTab('hoso')">📁 Hồ Sơ</button>
+        <button class="tab-btn" id="tabBtnThongtin" onclick="chuyenTab('thongtin')">📝 Thông Tin</button>
+        <button class="tab-btn active" id="tabBtnNoikhi" onclick="chuyenTab('noikhi')">🏠 Nội Khí</button>
+        <button class="tab-btn" id="tabBtnThuyphap" onclick="chuyenTab('thuyphap')">💧 Thủy Pháp</button>
+        <button class="tab-btn" id="tabBtnTamnha" onclick="chuyenTab('tamnha')">📐 Tâm Nhà</button>
+        <button class="tab-btn" id="tabBtnTimnha" onclick="chuyenTab('timnha')">🔍 Tìm Nhà</button>
+        <button class="tab-btn" id="tabBtnCuucungluoi" onclick="chuyenTab('cuucungluoi')">🔲 C.Cung Lưới</button>
+        <button class="tab-btn" id="tabBtnLichvannien" onclick="chuyenTab('lichvannien')">📜 Lịch VN</button>
+    </div>
+
+    <!-- TAB HỒ SƠ NHÀ -->
+    <div id="tab-hoso" class="tab-content"></div>
+
+    <!-- TAB THÔNG TIN NHÀ -->
+    <div id="tab-thongtin" class="tab-content"></div>
+
+    <!-- TAB NỘI KHÍ -->
+    <div id="tab-noikhi" class="tab-content active">
+        <h2>Phi Tinh Huyền Không android claude v3</h2>
+        <div class="form-container">
+            <div class="form-grid">
+                <div class="section-label span-2">Trạch &amp; hướng nhà</div>
+                <div class="form-group span-2">
+                    <label>Năm nhập trạch/Vận / Hướng (24 sơn)/ Độ /✅Kiêm(Thế tinh):</label>
+                    <div style="display:flex;gap:2px;align-items:center;flex-wrap:wrap;">
+                        <input type="number" id="namNhapTrach" value="2026" onchange="dongBoVanTuNam()" style="flex:1;min-width:50px;padding:6px;">
+                        <select id="vanNhapTrach" onchange="dongBoNamTuVan()" style="flex:1;min-width:50px;padding:6px;" title="Vận (Tam Nguyên Cửu Vận)">
+                            <option value="1">Vận 1</option><option value="2">Vận 2</option><option value="3">Vận 3</option>
+                            <option value="4">Vận 4</option><option value="5">Vận 5</option><option value="6">Vận 6</option>
+                            <option value="7">Vận 7</option><option value="8" selected>Vận 8</option><option value="9">Vận 9</option>
+                        </select>
+                        <select id="huong24Son" onchange="chonHuong24Son()" style="flex:2;min-width:80px;padding:6px;">
+                            <option value="345">Nhâm — Bắc</option><option value="0">Tý — Bắc</option><option value="15">Quý — Bắc</option>
+                            <option value="30">Sửu — Đông Bắc</option><option value="45">Cấn — Đông Bắc</option><option value="60">Dần — Đông Bắc</option>
+                            <option value="75">Giáp — Đông</option><option value="90">Mão — Đông</option><option value="105">Ất — Đông</option>
+                            <option value="120">Thìn — Đông Nam</option><option value="135">Tốn — Đông Nam</option><option value="150">Tị — Đông Nam</option>
+                            <option value="165">Bính — Nam</option><option value="180" selected>Ngọ — Nam</option><option value="195">Đinh — Nam</option>
+                            <option value="210">Mùi — Tây Nam</option><option value="225">Khôn — Tây Nam</option><option value="240">Thân — Tây Nam</option>
+                            <option value="255">Canh — Tây</option><option value="270">Dậu — Tây</option><option value="285">Tân — Tây</option>
+                            <option value="300">Tuất — Tây Bắc</option><option value="315">Càn — Tây Bắc</option><option value="330">Hợi — Tây Bắc</option>
+                        </select>
+                        <input type="number" id="doSoTay" value="180" min="0" max="360" oninput="capNhatHuongTuDoSo()" style="flex:1;min-width:40px;padding:6px;" title="Hoặc nhập độ">
+                        <input type="checkbox" id="congTacKiemHuong" checked onchange="tinhToanPhiTinh()" style="flex:2;min-width:46px;height:16px;">
+
+                    </div>
+                    <div style="display:flex;gap:6px;align-items:center;flex-wrap:wrap;margin-top:6px;">
+                        <label style="min-width:100%;font-size:12px;color:#666;margin-bottom:2px;">Ga chủ: Năm sinh DL  &amp; Giới tính (dùng cho Hà-Lạc Luận — Test):</label>
+                        <input type="number" id="namSinhChu" value="1993" onchange="capNhatCanChiNamSinh('namSinhChu','canChiNamSinhChu'); if(typeof thuyPhapDongBoTuNguon==='function')thuyPhapDongBoTuNguon(); if(typeof thongTinDongBoTruongGoc==='function')thongTinDongBoTruongGoc();" style="flex:1;min-width:80px;padding:6px;" placeholder="Năm sinh">
+                        <span id="canChiNamSinhChu" style="flex:1;min-width:80px;padding:6px;font-size:13px;font-weight:600;color:#5c4a3a;background:#f5f0e6;border-radius:5px;display:flex;align-items:center;justify-content:center;">—</span>
+                        <select id="gioiTinhChu" onchange="if(typeof thuyPhapDongBoTuNguon==='function')thuyPhapDongBoTuNguon(); if(typeof thongTinDongBoTruongGoc==='function')thongTinDongBoTruongGoc();" style="flex:1;min-width:90px;padding:6px;">
+                            <option value="nam" selected>Nam</option>
+                            <option value="nu">Nữ</option>
+                        </select>
+                    </div>
+                </div>
+                <div class="section-label span-2">Thời điểm xem — nhập Dương HOẶC Âm</div>
+                <div class="form-group span-2">
+                    <label>Ngày / Tháng / Năm DL:</label>
+                    <div style="display:flex;gap:6px;align-items:center;flex-wrap:wrap;">
+                        <input type="number" id="ngayDuongXem" value="1" min="1" max="31" onchange="dongBoTuDuong()" style="width:56px;padding:6px;text-align:center;">
+                        <span style="color:#888;font-size:12px;">/</span>
+                        <input type="number" id="thangDuongXem" value="6" min="1" max="12" onchange="dongBoTuDuong()" style="width:56px;padding:6px;text-align:center;">
+                        <span style="color:#888;font-size:12px;">/</span>
+                        <input type="number" id="namXem" value="2026" min="1900" max="2200" onchange="dongBoTuDuong()" style="width:76px;padding:6px;text-align:center;">
+                    </div>
+                </div>
+                <div class="form-group span-2">
+                    <label>Ngày / Tháng / Năm Âm lịch:</label>
+                    <div style="display:flex;gap:6px;align-items:center;flex-wrap:wrap;">
+                        <input type="number" id="ngayAmLichXem" value="1" min="1" max="30" onchange="dongBoTuAm()" style="width:56px;padding:6px;text-align:center;">
+                        <span style="color:#888;font-size:12px;">/</span>
+                        <input type="number" id="thangXemAm" value="5" min="1" max="12" onchange="dongBoTuAm()" style="width:56px;padding:6px;text-align:center;">
+                        <span style="color:#888;font-size:12px;">/</span>
+                        <input type="number" id="namAmXem" value="2026" min="1900" max="2200" onchange="dongBoTuAm()" style="width:76px;padding:6px;text-align:center;">
+                        <label style="display:flex;align-items:center;gap:3px;font-size:12px;color:#666;font-weight:normal;"><input type="checkbox" id="ngayAmNhuan" onchange="dongBoTuAm()" style="width:auto;">nhuận</label>
+                    </div>
+                </div>
+                <div class="form-group span-2">
+                    <label>Can Chi Năm / Tháng / Ngày (tự động — Ngày có thể sửa tay):</label>
+                    <div style="display:flex;gap:8px;align-items:center;flex-wrap:wrap;">
+                        <span id="canChiNamDisplay" style="font-size:13px;font-weight:600;color:#5c4a3a;background:#f5f0e6;padding:5px 8px;border-radius:5px;">— —</span>
+                        <span id="canChiThangDisplay" style="font-size:13px;font-weight:600;color:#5c4a3a;background:#f5f0e6;padding:5px 8px;border-radius:5px;">— —</span>
+                        <select id="canNgay" style="flex:1;min-width:45px;padding:5px;">
+                            <option value="Giáp">Giáp</option><option value="Ất">Ất</option><option value="Bính">Bính</option><option value="Đinh">Đinh</option>
+                            <option value="Mậu">Mậu</option><option value="Kỷ">Kỷ</option><option value="Canh">Canh</option><option value="Tân">Tân</option>
+                            <option value="Nhâm">Nhâm</option><option value="Quý">Quý</option>
+                        </select>
+                        <select id="chiNgay" style="flex:1;min-width:45px;padding:5px;">
+                            <option value="Tý">Tý</option><option value="Sửu">Sửu</option><option value="Dần">Dần</option><option value="Mão">Mão</option>
+                            <option value="Thìn">Thìn</option><option value="Tị">Tị</option><option value="Ngọ">Ngọ</option><option value="Mùi">Mùi</option>
+                            <option value="Thân">Thân</option><option value="Dậu">Dậu</option><option value="Tuất">Tuất</option><option value="Hợi">Hợi</option>
+                        </select>
+                    </div>
+                </div>
+                <div class="form-group span-2"><label>Trung Khí gần nhất (tự động, có thể sửa tay):</label>
+                    <select id="trungKhi">
+                        <option value="DongChi">Đông Chí ~22/12 (Dương—Thuận, khởi 1)</option>
+                        <option value="VuThuy">Vũ Thủy ~19/02 (Dương—Thuận, khởi 7)</option>
+                        <option value="CocVu" selected>Cốc Vũ ~20/04 (Dương—Thuận, khởi 4)</option>
+                        <option value="HaChi">Hạ Chí ~21/06 (Âm—Nghịch, khởi 9)</option>
+                        <option value="XuThu">Xử Thử ~23/08 (Âm—Nghịch, khởi 3)</option>
+                        <option value="SuongGiang">Sương Giáng ~23/10 (Âm—Nghịch, khởi 6)</option>
+                    </select>
+                    <div class="hint-text">Chọn mốc <b>gần nhất đã qua (dương lịch)</b>.</div>
+                </div>
+            </div>
+            <div class="button-row"><button id="btnXem" onclick="tinhToanPhiTinh()">XEM SƠ ĐỒ CỬU CUNG</button></div>
+        </div>
+        <div class="compass-outer-wrapper">
+            <div class="compass-wrapper">
+                <svg id="doSoRing" class="do-so-ring" viewBox="0 0 400 400"></svg>
+                <div id="laBan24Son" class="compass-circle"></div>
+                <div class="cuu-cung-grid">
+                    <div id="cung-4" class="cung-cell"></div><div id="cung-9" class="cung-cell"></div><div id="cung-2" class="cung-cell"></div>
+                    <div id="cung-3" class="cung-cell"></div><div id="cung-5" class="cung-cell"></div><div id="cung-7" class="cung-cell"></div>
+                    <div id="cung-8" class="cung-cell"></div><div id="cung-1" class="cung-cell"></div><div id="cung-6" class="cung-cell"></div>
+                </div>
+                <svg id="kimChiNam" class="kim-chi-nam" viewBox="0 0 400 400"></svg>
+            </div>
+            <div class="chu-giai">
+                <!-- Mục 1: Hà đồ -->
+                <div class="muc-ha-do">
+                    <b>Cặp Hà đồ:</b>
+                    <span style="color:#0571ff;">1&6=Thủy</span>·<span style="color:#c62828;">2&7=Hỏa</span>·
+                    <span style="color:#538f06;">3&8=Mộc </span>·<span style="color:#687d75;">4&9=Kim</span>
+                    <span style="color:#c49104;">·5&10=Thổ</span>
+                </div>
+                <!-- Mục 2: Chú giải ký hiệu -->
+                <div class="muc-ky-hieu">
+                    <b>Chú giải ký hiệu:</b>
+                    V = Vận tinh &nbsp;|&nbsp; S = Sơn tinh &nbsp;|&nbsp; H = Hướng tinh &nbsp;|&nbsp;
+                    N = Niên tinh &nbsp;|&nbsp; Ng = Nguyệt tinh &nbsp;|&nbsp; Nh = Nhật tinh &nbsp;|&nbsp;
+                    Thiên/Địa/Nhân: <span style="color:#c62828;">Đỏ là Dương</span>,
+                    <span style="color:#1565c0;">xanh là Âm</span>
+                </div>
+
+            </div>
+        </div>
+        <div class="luan-giai-container">
+            <div class="luan-giai-title">📜 Luận Giải Cát Hung Các Cung (Sơn-Hướng):</div>
+            <div id="vungLuanGiai">Bấm nút xem để hiển thị luận giải chi tiết.</div>
+        </div>
+    </div>
+
+    <!-- TAB THỦY PHÁP -->
+    <div id="tab-thuyphap" class="tab-content">
+        <div class="module-panel" style="padding:6px 8px;">
+            <div class="form-group" style="margin-bottom:2px;">
+                <div class="file-input-wrapper">
+                    <button type="button" class="btn-file" id="btnChooseFile" style="background:#1a5c3a;">📁 Chọn</button>
+                    <button type="button" class="btn-file" id="btnOpenMaps" style="background:#4285F4;">🌍 Maps</button>
+                    <button type="button" class="btn-file" id="btnARMode" style="background:#FF5722;">🥽 AR</button>
+                </div>
+                <input type="file" id="mapImageInput" accept="image/*" style="display:none;">
+                <span id="fileNameDisplay" style="font-size:11px; color:#555; display:block; margin-top:2px;">Chưa có ảnh</span>
+            </div>
+        </div>
+        <div class="map-stage" id="mapStage">
+            <div class="map-placeholder" id="mapPlaceholder">Chưa có ảnh</div>
+            <img id="mapImage" style="display:none;">
+            <div id="map" style="display:none; width:100%; height:100%; position:absolute; top:0; left:0; z-index:2;"></div>
+            <button id="btnGPS" class="btn-gps" onclick="locateMe()">📍</button>
+            <div class="compass-overlay" id="compassOverlay" style="display:none; z-index:10;">
+                <svg id="compassSvg" viewBox="0 0 1000 1000"></svg>
+            </div>
+            <button id="btnKhoaLaBan" class="btn-khoa" onclick="toggleKhoaLaBan()" title="Khóa/mở khóa di chuyển ảnh nền" style="display:none;">🔓</button>
+            <button id="btnResetGoc" class="btn-reset" onclick="resetCompassAngle()" style="display:none;">🔄</button>
+            <button id="btnToggleCompass" class="btn-toggle-compass" onclick="toggleCompassVisibility()" style="display:none;">👁️</button>
+            <button id="btnCaptureMaps" class="btn-capture-maps" onclick="captureMapImage()" style="display:none;">📸 Chụp</button>
+            <div style="position:absolute; bottom:15px; left:15px; display:flex; flex-direction:column; align-items:center; gap:4px; z-index:15; pointer-events:none;">
+                <div style="display:flex; gap:4px; pointer-events:auto;">
+                    <button class="nav-btn" onclick="panAnhNenThuyPhap(-1, 0)" title="Di chuyển ảnh nền sang trái">◀</button>
+                    <button class="nav-btn" onclick="panAnhNenThuyPhap(1, 0)" title="Di chuyển ảnh nền sang phải">▶</button>
+                </div>
+                <div style="display:flex; gap:4px; pointer-events:auto;">
+                    <button class="nav-btn" onclick="panAnhNenThuyPhap(0, -1)" title="Di chuyển ảnh nền lên trên">▲</button>
+                    <button class="nav-btn" onclick="panAnhNenThuyPhap(0, 1)" title="Di chuyển ảnh nền xuống dưới">▼</button>
+                </div>
+                <button class="nav-btn" onclick="resetViTriAnhNen()" title="Căn giữa lại ảnh nền" style="width:auto; padding:2px 8px; font-size:11px; margin-top:2px;">↺ Căn giữa</button>
+            </div>
+            <div style="position:absolute; bottom:15px; left:105px; display:flex; flex-direction:column; gap:4px; z-index:15; pointer-events:none;">
+                <button class="nav-btn" onclick="zoomAnhNenThuyPhap(1.15)" title="Phóng to ảnh nền" style="pointer-events:auto;">🔍+</button>
+                <button class="nav-btn" onclick="zoomAnhNenThuyPhap(1/1.15)" title="Thu nhỏ ảnh nền" style="pointer-events:auto;">🔍−</button>
+            </div>
+        </div>
+        <div class="module-panel" style="padding:6px 8px;">
+            <div style="display:flex; gap:8px; flex-wrap:wrap;">
+                <div class="form-group" style="margin-bottom:0; flex:1; min-width:110px;"><label>Năm sinh (DL):</label><input type="number" id="namSinhGiaChu" value="1990" min="1900" max="2100" oninput="thuyPhapDoiNamSinhGiaChu(this.value)" style="padding:4px 6px; font-size:12px; width:100%;"></div>
+                <div class="form-group" style="margin-bottom:0; flex:1; min-width:110px;"><label>Can Chi năm sinh:</label><span id="canChiNamSinhGiaChu" style="display:block;padding:4px 6px; font-size:12px; font-weight:600; color:#5c4a3a; background:#f5f0e6; border-radius:5px;">—</span></div>
+                <div class="form-group" style="margin-bottom:0; flex:1; min-width:90px;"><label>Giới tính:</label>
+                    <select id="gioiTinhGiaChu" onchange="thuyPhapDoiGioiTinhGiaChu(this.value)" style="padding:4px 6px; font-size:12px; width:100%;"><option value="Nam">Nam</option><option value="Nữ">Nữ</option></select>
+                </div>
+            </div>
+        </div>
+        <div class="module-panel" style="padding:6px 8px;">
+            <div style="display:flex; gap:6px; flex-wrap:wrap; margin-bottom:6px; align-items:flex-end;">
+                <div style="flex:2; min-width:100px;"><label style="font-size:10px; display:block; margin-bottom:1px;">🔤 Cỡ chữ</label>
+                    <div style="display:flex; align-items:center; gap:4px;">
+                        <input type="range" id="tpFontSize" min="4" max="24" value="10" style="flex:1; padding:0; height:4px; cursor:pointer;" oninput="capNhatFontSizeThuyPhap(this.value)">
+                        <span id="tpFontSizeLabel" style="font-size:11px; color:#444; min-width:24px; text-align:center; font-weight:bold;">10</span>
+                    </div>
+                </div>
+                <div style="flex:1; min-width:70px;"><label style="font-size:10px; display:block; margin-bottom:1px;">🎨 Màu tia</label>
+                    <input type="color" id="colorTiaNetDut" value="#5c4a3a" style="height:26px; padding:2px; cursor:pointer; width:100%; max-width:80px;" oninput="capNhatMauTia()" onchange="capNhatMauTia()">
+                </div>
+                <div style="flex:1; min-width:70px;"><label style="font-size:10px; display:block; margin-bottom:1px;">🎨 Ranh 8</label>
+                    <input type="color" id="colorRanh8Huong" value="#ff0000" style="height:26px; padding:2px; cursor:pointer; width:100%; max-width:80px;" oninput="capNhatMauRanh8()" onchange="capNhatMauRanh8()">
+                </div>
+            </div>
+            <div style="display:flex; gap:6px; flex-wrap:wrap;">
+                <div style="flex:1; min-width:70px;"><label style="font-size:10px; display:block; margin-bottom:1px;">Hướng (°)</label>
+                    <input type="number" id="houseFacing" value="180" min="0" max="360" style="padding:4px 6px; font-size:12px; width:100%; height:24px;" oninput="capNhatHuongTuThuyPhap()">
+                </div>
+                <div style="flex:1.5; min-width:80px;"><label style="font-size:10px; display:block; margin-bottom:1px;">Nước ĐẾN</label>
+                    <select id="selSonDen" style="padding:4px 6px; font-size:11px; width:100%; height:24px;"></select>
+                </div>
+                <div style="flex:1.5; min-width:80px;"><label style="font-size:10px; display:block; margin-bottom:1px;">Nước ĐI</label>
+                    <select id="selSonDi" style="padding:4px 6px; font-size:11px; width:100%; height:24px;"></select>
+                </div>
+            </div>
+            <button onclick="xacNhanThuyKhau()" style="padding:7px; font-size:12px; margin-top:4px;">✅ XÁC NHẬN</button>
+            <div class="ket-qua-box" id="ketQuaThuyKhau" style="display:none;"></div>
+        </div>
+        <div class="module-panel legend" style="padding:4px 8px;">
+            <b>Hướng dẫn:</b> Kéo la bàn đặt tâm cửa chính. Mũi tên đỏ = hướng nhà.<br>
+            🔵 Nước Đến &nbsp; 🟠 Nước Đi &nbsp; 🔴 Hướng Nhà
+        </div>
+    </div>
+
+    <!-- TAB TÂM NHÀ -->
+    <div id="tab-tamnha" class="tab-content tamnha-module">
+        <div class="module-panel" style="padding:10px 12px; border-radius:10px; max-width:420px; margin-bottom:8px;">
+            <div class="scale-row" style="display:flex; align-items:center; gap:8px; flex-wrap:wrap;">
+                <label style="font-size:12px; font-weight:600; color:#444; white-space:nowrap;">Tỉ lệ:</label>
+                <span style="font-size:12px;">1m =</span>
+                <input type="number" id="tnTiLePxPerM" value="10" min="1" max="200" style="width:70px; padding:6px; border:1px solid #ccc; border-radius:6px; font-size:13px;">
+                <span style="font-size:12px;">px</span>
+                <div style="flex:1; display:flex; justify-content:flex-end;">
+                    <button onclick="document.getElementById('tnFileImg').click()" style="background:#1a5c3a; color:#fff; padding:6px 14px; border:none; border-radius:6px; font-weight:bold; cursor:pointer; font-size:12px; white-space:nowrap;">🖼️ Chèn ảnh</button>
+                    <input type="file" id="tnFileImg" accept="image/*" style="display:none;" onchange="loadImageForTamNha(this)">
+                </div>
+            </div>
+            <div class="toolbar" style="display:flex; flex-wrap:wrap; gap:4px;">
+                <button id="tnBtnModeAdd" onclick="setTamNhaMode('add')" style="background:#1a5c3a; color:#fff; flex:1; min-width:60px;">✏️ Vẽ</button>
+                <button id="tnBtnModeRoom" onclick="setTamNhaMode('room')" style="flex:1; min-width:60px;">🔲 Vẽ phòng</button>
+                <button onclick="closeTamNhaPolygon()" style="flex:1; min-width:60px;">🔒 Đóng</button>
+                <button onclick="findTamNhaCentroid()" style="flex:1; min-width:60px;">🎯 Tâm</button>
+                <button id="btnToggleCompassTamNha" onclick="toggleTamNhaCompass()" style="flex:1; min-width:60px;">👁️ La bàn</button>
+                <button onclick="undoTamNha()" style="flex:1; min-width:60px;">↩️ Undo</button>
+                <button onclick="dongBoTamNhaSangCuuCung()" title="Sao chép hình nhà (kích thước các cạnh) từ Tâm Nhà sang Cửu Cung Lưới" style="background:#6a1b9a; color:#fff; flex:1; min-width:60px;">🔄 Đồng bộ C.Cung</button>
+                <button onclick="resetTamNha()" style="background:#c62828; color:#fff; flex:1; min-width:60px;">🗑️ Xóa</button>
+                <button onclick="zoomTamNha(1.2)" style="flex:1; min-width:50px;">🔍+</button>
+                <button onclick="zoomTamNha(0.8)" style="flex:1; min-width:50px;">🔍−</button>
+                <button onclick="zoomToFitTamNha()" style="background:#1565c0; color:#fff; flex:1; min-width:60px;">📐 Vừa</button>
+                <button id="tnBtnCalibrate" onclick="calibrateTamNhaScale()" style="background:#1a5c3a; color:#fff; border:none; border-radius:6px; padding:6px 12px; cursor:pointer; font-size:12px;">⚖️ Hiệu chỉnh</button>
+                <button onclick="startDoorWizard()" style="flex:1; min-width:60px; background:#1565c0; color:#fff;">🚪 Tạo cửa</button>
+            </div>
+            <div style="display:flex; gap:6px; flex-wrap:wrap; align-items:flex-end; margin-top:4px;">
+                <div style="flex:1.5; min-width:120px;">
+                    <label style="font-size:10px; display:block; margin-bottom:1px; font-weight:600; color:#444;">Hướng la bàn</label>
+                    <div style="display:flex; align-items:center; gap:4px;">
+                        <input type="number" id="tnHuongLaBan" value="180" min="0" max="360" step="1" style="width:60px; padding:2px 4px; border:1px solid #ccc; border-radius:4px; font-size:13px; height:24px;" oninput="capNhatHuongTuTamNha(); redrawTamNha();">
+                        <span style="font-size:12px;">° <span id="tnTenSon" style="color:#8b0000; font-weight:700;">Tý</span></span>
+                    </div>
+                </div>
+                <div style="flex:1; min-width:70px;">
+                    <label style="font-size:10px; display:block; margin-bottom:1px; font-weight:600; color:#444;">🎨 Màu tia</label>
+                    <input type="color" id="tnColorTia" value="#5c4a3a" style="height:24px; padding:2px; cursor:pointer; width:100%; max-width:70px;" oninput="capNhatMauTiaTamNha()" onchange="capNhatMauTiaTamNha()">
+                </div>
+                <div style="flex:1; min-width:70px;">
+                    <label style="font-size:10px; display:block; margin-bottom:1px; font-weight:600; color:#444;">🎨 Ranh 8</label>
+                    <input type="color" id="tnColorRanh8Huong" value="#2bff00" style="height:24px; padding:2px; cursor:pointer; width:100%; max-width:70px;" oninput="capNhatMauRanh8TamNha()" onchange="capNhatMauRanh8TamNha()">
+                </div>
+            </div>
+            <div class="scale-row" style="margin-top:6px; display:flex; align-items:center; gap:8px; flex-wrap:wrap; border-top:1px dashed #ddd; padding-top:6px;">
+                <label style="font-size:12px; font-weight:600; color:#444; white-space:nowrap;">🔤 Cỡ chữ la bàn:</label>
+                <input type="range" id="tnFontSize" min="4" max="24" value="10" style="width:120px; padding:0; height:6px; cursor:pointer;" oninput="updateTamNhaFontSize(this.value)">
+                <span id="tnFontSizeLabel" style="font-size:12px; color:#444; min-width:30px; text-align:center;">10px</span>
+            </div>
+        </div>
+
+        <!-- ====== MODULE VẼ PHÒNG (layer riêng, dùng chung code với Cửu Cung Lưới) ====== -->
+        <div class="ctrl" style="margin-top:12px; border-top:2px solid #444; padding-top:10px; max-width:420px;">
+            <div style="font-weight:700; color:#1a5c3a; font-size:14px; margin-bottom:6px;">🧱 Vẽ phòng</div>
+            <div style="display:flex; align-items:center; gap:5px; flex-wrap:nowrap; margin-bottom:4px;">
+                <button id="tnVpBtnDraw" onclick="setTamNhaMode('room')" title="Vẽ phòng mới" style="flex-shrink:0; background:#1a5c3a; color:#fff; width:30px; height:30px; border:none; border-radius:6px; font-weight:bold; cursor:pointer; font-size:14px; padding:0;">✏️</button>
+                <button id="tnVpBtnStop" title="Dừng vẽ" style="flex-shrink:0; background:#c62828; color:#fff; width:30px; height:30px; border:none; border-radius:6px; font-weight:bold; cursor:pointer; font-size:14px; padding:0; display:none;">⏹️</button>
+                <button id="tnVpBtnDelete" title="Xóa phòng đang chọn" style="flex-shrink:0; background:#d84315; color:#fff; width:30px; height:30px; border:none; border-radius:6px; font-weight:bold; cursor:pointer; font-size:14px; padding:0;">🗑️</button>
+                <button id="tnVpBtnClear" title="Xóa tất cả phòng" style="flex-shrink:0; background:#666; color:#fff; width:30px; height:30px; border:none; border-radius:6px; font-weight:bold; cursor:pointer; font-size:14px; padding:0;">🧹</button>
+                <input type="color" id="tnVpColorPicker" title="Màu phòng" value="#4fc3f7" style="flex-shrink:0; width:30px; height:30px; padding:1px; cursor:pointer; border:1px solid #ccc; border-radius:6px;">
+                <input type="text" id="tnVpRoomName" title="Tên phòng" placeholder="Tên phòng" value="Phòng" style="flex:1; min-width:0; padding:0 6px; height:30px; font-size:12px; border:1px solid #ccc; border-radius:6px;">
+            </div>
+            <div style="display:flex; align-items:center; gap:8px; flex-wrap:wrap; font-size:11px; color:#555;">
+                <label><input type="checkbox" id="tnVpSnapToggle" checked> Bắt điểm/cạnh</label>
+                <label><input type="radio" name="tnVpSnapMode" value="vertex" checked> Đỉnh</label>
+                <label><input type="radio" name="tnVpSnapMode" value="edge"> Cạnh</label>
+                <label><input type="radio" name="tnVpSnapMode" value="both"> Cả hai</label>
+                <span style="margin-left:6px; color:#888;">(Shift: khóa trục, Ctrl: tạm tắt snap)</span>
+            </div>
+            <div style="font-size:10px; color:#888; margin-top:4px;">
+                💡 Bấm "🔲 Vẽ phòng" ở trên để vào chế độ vẽ/kéo phòng riêng (khác với chế độ vẽ tường ngoài nhà).
+            </div>
+        </div>
+
+        <div class="svg-wrap" id="tnSvgWrap" style="position:relative;">
+            <button id="btnResetView" onclick="resetTamNhaView()" style="position:absolute; top:8px; left:8px; z-index:30; padding:4px 12px; background:rgba(46,125,50,0.85); color:white; border:1px solid rgba(255,255,255,0.4); border-radius:20px; cursor:pointer; font-size:11px; font-weight:700; width:auto; margin:0;">🔄 Reset</button>
+            <svg id="tnSvgMain" style="width:100%;height:100%;overflow:visible;cursor:crosshair;"></svg>
+            <div style="position:absolute; bottom:15px; right:15px; display:flex; flex-direction:column; align-items:center; gap:4px; z-index:10; pointer-events:none;">
+                <div style="display:flex; gap:4px; pointer-events:auto;">
+                    <button class="nav-btn" onclick="panTamNha(-1, 0)" title="Di chuyển sang trái">◀</button>
+                    <button class="nav-btn" onclick="panTamNha(1, 0)" title="Di chuyển sang phải">▶</button>
+                </div>
+                <div style="display:flex; gap:4px; pointer-events:auto;">
+                    <button class="nav-btn" onclick="panTamNha(0, -1)" title="Di chuyển lên trên">▲</button>
+                    <button class="nav-btn" onclick="panTamNha(0, 1)" title="Di chuyển xuống dưới">▼</button>
+                </div>
+            </div>
+        </div>
+
+        <div class="module-panel" style="padding:10px 12px; border-radius:10px; max-width:420px; margin-bottom:8px;">
+            <div style="font-weight:700; color:#8b0000; font-size:13px; margin-bottom:4px;">📏 Danh sách cạnh</div>
+            <div class="edge-list" id="tnEdgeList">
+                <div style="font-size:12px; color:#888; padding:6px;">Chưa có cạnh nào.</div>
+            </div>
+        </div>
+
+        <div class="module-panel" style="padding:10px 12px; border-radius:10px; max-width:420px; margin-bottom:8px;">
+            <div style="font-weight:700; color:#1565c0; font-size:13px; margin-bottom:2px;">🚪 Danh sách cửa (đơn vị :m)</div>
+            <div style="font-size:10.5px; color:#888; margin-bottom:6px;">Số tt|___Loại____ |__Cạnh__|Cách đầu cạnh|Rộng |Vị trí </div>
+            <div id="tnDoorList">
+                <div style="font-size:12px; color:#888; padding:6px;">Chưa có cửa nào.</div>
+            </div>
+        </div>
+
+        <!-- DANH SÁCH PHÒNG + DANH SÁCH CẠNH CỦA PHÒNG ĐANG CHỌN (Tâm Nhà) -->
+        <div class="module-panel" style="padding:10px 12px; border-radius:10px; max-width:420px; margin-bottom:8px;">
+            <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:4px;">
+                <span style="font-weight:700; color:#1a5c3a; font-size:13px;">📋 Danh sách phòng</span>
+                <button id="tnVpToggleList" style="background:transparent; border:1px solid #555; border-radius:4px; padding:2px 8px; font-size:12px; cursor:pointer;">▼</button>
+            </div>
+            <div id="tnVpRoomListContainer" style="resize:vertical; overflow:auto; min-height:60px; max-height:200px; background:#222; padding:6px 8px; border-radius:6px; color:#ddd; transition:max-height 0.3s;">
+                <div id="tnVpRoomList" style="font-size:12px;">
+                    <span style="color:#888;">Chưa có phòng nào.</span>
+                </div>
+            </div>
+
+            <div id="tnVpEdgeListContainer" style="display:none; margin-top:10px; border-top:1px solid #444; padding-top:8px;">
+                <div style="font-weight:700; color:#1565c0; font-size:13px; margin-bottom:4px;">📐 Danh sách cạnh của phòng đã chọn</div>
+                <div id="tnVpEdgeList" style="font-size:12px; background:#1a1a1a; padding:6px; border-radius:4px; max-height:150px; overflow-y:auto;">
+                    <span style="color:#888;">Chọn một phòng để xem cạnh</span>
+                </div>
+            </div>
+
+            <div style="font-size:10px; color:#888; margin-top:4px;">
+                💡 Bấm "🔲 Vẽ phòng", rồi Click trên hình để thêm đỉnh, <b>Double-click</b> để đóng đa giác. Kéo các chấm tròn để điều chỉnh kích thước.
+                <br>📌 Snap: tự động hút vào đỉnh/cạnh nhà hoặc phòng khác gần nhất. Giữ <b>Shift</b> khi kéo để khóa trục.
+            </div>
+        </div>
+
+        <div class="ket-qua-tam" id="tnKetQuaTam"></div>
+    </div>
+
+    <!-- TAB TÌM NHÀ -->
+    <div id="tab-timnha" class="tab-content"></div>
+
+    <!-- TAB CỬU CUNG LƯỚI -->
+    <div id="tab-cuucungluoi" class="tab-content" style="width:100%; max-width:500px; padding:0;">
+<div class="ctrl" style="margin-top:12px;">
+  <div class="row2">
+    <div>
+      <label style="display:block;">Mặt bằng mẫu:</label>
+      <select id="shapeSelect">
+        <option value="rect"selected>Chữ nhật</option>
+        <option value="L" >Khuyết 1 góc (L)</option>
+        <option value="sevenSides">Khuyết 2 chỗ (7 cạnh)</option>
+      </select>
+    </div>
+    <div>
+      <label style="display:block;">Số cạnh nhà:</label>
+      <input type="number" id="sidesInput" min="3" max="20" value="6">
+    </div>
+      <div>
+          <label style="display:block;">Hướng nhà:</label>
+          <input type="number" id="compassRotInput" min="0" max="359" value="0" style="width:50px; padding:4px; text-align:right;"> °
+      </div>
+  </div>
+
+  <label>Tỷ lệ: 1 mét = <span id="scaleVal">20</span> px</label>
+  <input type="range" id="scaleInput" min="5" max="60" value="20">
+
+  <button onclick="dongBoCuuCungSangTamNha()" title="Sao chép hình nhà (kích thước các cạnh) từ Cửu Cung Lưới sang Tâm Nhà" style="background:#6a1b9a; color:#fff; width:100%; padding:8px; margin-top:6px; border:none; border-radius:6px; font-size:13px; font-weight:600; cursor:pointer;">🔄 Đồng bộ sang T.Nhà</button>
+
+  <div id="ccTrachNhaInfo" style="font-size:11px;color:#888;margin-top:4px;padding:6px 8px;background:#f5f0e6;border-radius:6px;">
+    🏠 Trạch nhà: <span id="ccTrachNhaText">—</span> <span style="color:#aaa;">(theo tab 📝 Thông Tin)</span>
+  </div>
+
+  <div class="row2">
+    <div>
+      <label style="display:block;">Vận cần xem <span style="font-weight:normal;color:#888;font-size:11px;"></span>:</label>
+      <input type="number" id="vanInput" min="1" max="9" value="9" readonly style="background:#eee;color:#555;cursor:not-allowed;">
+    </div>
+    <div>
+      <label style="display:block;">Năm xem (Niên Tinh):</label>
+      <input type="number" id="namXemInput" min="1900" max="2200">
+    </div>
+  </div>
+</div>
+
+        <!-- ====== MODULE VẼ PHÒNG (layer riêng) ====== -->
+        <div class="ctrl" style="margin-top:12px; border-top:2px solid #444; padding-top:10px;">
+            <div style="font-weight:700; color:#1a5c3a; font-size:14px; margin-bottom:6px;">🧱 Vẽ phòng</div>
+            <div style="display:flex; align-items:center; gap:5px; flex-wrap:nowrap; margin-bottom:4px;">
+                <button id="vpBtnDraw" title="Vẽ phòng mới" style="flex-shrink:0; background:#1a5c3a; color:#fff; width:30px; height:30px; border:none; border-radius:6px; font-weight:bold; cursor:pointer; font-size:14px; padding:0;">✏️</button>
+                <button id="vpBtnStop" title="Dừng vẽ" style="flex-shrink:0; background:#c62828; color:#fff; width:30px; height:30px; border:none; border-radius:6px; font-weight:bold; cursor:pointer; font-size:14px; padding:0; display:none;">⏹️</button>
+                <button id="vpBtnDelete" title="Xóa phòng đang chọn" style="flex-shrink:0; background:#d84315; color:#fff; width:30px; height:30px; border:none; border-radius:6px; font-weight:bold; cursor:pointer; font-size:14px; padding:0;">🗑️</button>
+                <button id="vpBtnClear" title="Xóa tất cả phòng" style="flex-shrink:0; background:#666; color:#fff; width:30px; height:30px; border:none; border-radius:6px; font-weight:bold; cursor:pointer; font-size:14px; padding:0;">🧹</button>
+                <input type="color" id="vpColorPicker" title="Màu phòng" value="#4fc3f7" style="flex-shrink:0; width:30px; height:30px; padding:1px; cursor:pointer; border:1px solid #ccc; border-radius:6px;">
+                <input type="text" id="vpRoomName" title="Tên phòng" placeholder="Tên phòng" value="Phòng" style="flex:1; min-width:0; padding:0 6px; height:30px; font-size:12px; border:1px solid #ccc; border-radius:6px;">
+            </div>
+            <div style="display:flex; align-items:center; gap:8px; flex-wrap:wrap; font-size:11px; color:#555;">
+                <label><input type="checkbox" id="vpSnapToggle" checked> Bắt điểm/cạnh</label>
+                <label><input type="radio" name="vpSnapMode" value="vertex" checked> Đỉnh</label>
+                <label><input type="radio" name="vpSnapMode" value="edge"> Cạnh</label>
+                <label><input type="radio" name="vpSnapMode" value="both"> Cả hai</label>
+                <span style="margin-left:6px; color:#888;">(Shift: khóa trục, Ctrl: tạm tắt snap)</span>
+            </div>
+        </div>
+
+        <!-- SVG của Cửu Cung Lưới -->
+        <svg id="cuuCungSvg2" viewBox="0 0 400 400"></svg>
+
+        <div style="display:flex; gap:6px; margin-top:8px; flex-wrap:wrap;">
+            <button id="fitBtn" style="flex:1; min-width:100px; padding:8px 6px; font-size:12px; background:#333; color:#ddd; border:1px solid #555; border-radius:6px;">📐 Vừa màn hình</button>
+            <button id="resetViewBtn" style="flex:1; min-width:100px; padding:8px 6px; font-size:12px; background:#333; color:#ddd; border:1px solid #555; border-radius:6px;">↩️ Về ban đầu</button>
+            <button id="lockScreenBtn" title="Khoá góc nhà (tránh chạm nhầm khi xoay/kéo hình)" style="flex:1; min-width:100px; padding:8px 6px; font-size:12px; background:#333; color:#ddd; border:1px solid #555; border-radius:6px;">🔓 Khoá góc nhà</button>
+        </div>
+
+        <label style="display:block; margin-top:8px;">Cỡ chữ trên hình: <span id="textScaleVal">100</span>%</label>
+        <input type="range" id="textScaleInput" min="50" max="200" value="100" style="width:100%;">
+
+        <div class="ctrl">
+            <label style="margin-top:8px;"><input type="checkbox" id="compassToggle" checked style="width:auto; margin-right:6px;">Hiện la bàn 24 sơn / 8 hướng (tâm trung cung)</label>
+
+            <div id="edgeList" style="margin-top:10px; font-size:13px;"></div>
+        </div>
+
+        <div class="ctrl" style="margin-top:14px;">
+            <p class="sub" style="text-align:left; margin-bottom:4px;">Cửa chính / cửa phụ / cửa sổ trên cạnh nhà:</p>
+            <button id="addDoorBtn" style="width:100%; padding:8px; font-size:13px; background:#333; color:#ddd; border:1px solid #555; border-radius:6px; margin-bottom:6px;">➕ Thêm cửa</button>
+            <div id="ccDoorList"></div>
+        </div>
+
+        <!-- DANH SÁCH PHÒNG + DANH SÁCH CẠNH CỦA PHÒNG ĐANG CHỌN -->
+        <div class="ctrl" style="margin-top:14px; border-top:2px solid #444; padding-top:10px;">
+            <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:4px;">
+                <span style="font-weight:700; color:#1a5c3a; font-size:13px;">📋 Danh sách phòng</span>
+                <button id="vpToggleList" style="background:transparent; border:1px solid #555; border-radius:4px; padding:2px 8px; font-size:12px; cursor:pointer;">▼</button>
+            </div>
+            <div id="vpRoomListContainer" style="resize:vertical; overflow:auto; min-height:60px; max-height:200px; background:#222; padding:6px 8px; border-radius:6px; color:#ddd; transition:max-height 0.3s;">
+                <div id="vpRoomList" style="font-size:12px;">
+                    <span style="color:#888;">Chưa có phòng nào.</span>
+                </div>
+            </div>
+
+            <!-- Bảng danh sách cạnh của phòng đang chọn -->
+            <div id="vpEdgeListContainer" style="display:none; margin-top:10px; border-top:1px solid #444; padding-top:8px;">
+                <div style="font-weight:700; color:#1565c0; font-size:13px; margin-bottom:4px;">📐 Danh sách cạnh của phòng đã chọn</div>
+                <div id="vpEdgeList" style="font-size:12px; background:#1a1a1a; padding:6px; border-radius:4px; max-height:150px; overflow-y:auto;">
+                    <span style="color:#888;">Chọn một phòng để xem cạnh</span>
+                </div>
+            </div>
+
+            <div style="font-size:10px; color:#888; margin-top:4px;">
+                💡 Click để thêm đỉnh, <b>Double-click</b> để đóng đa giác. Kéo các chấm tròn để điều chỉnh kích thước.
+                <br>📌 Snap: tự động hút vào đỉnh/cạnh gần nhất. Giữ <b>Shift</b> khi kéo để khóa trục.
+            </div>
+        </div>
+        <!-- END DANH SÁCH PHÒNG -->
+
+        <!-- Các phần còn lại giữ nguyên (huongRefWrap, threshInput, ...) -->
+
+<div id="huongRefWrap" class="ctrl" style="margin-top:14px;">
+  <p class="sub" style="text-align:left; margin-bottom:4px;">Bảng tra cứu 8 hướng — bấm tên hướng trên hình để xem chi tiết đầy đủ. Đổi số Vận ở trên để tính lại vượng/suy.</p>
+  <table id="huongRefTable"></table>
+</div>
+
+<div class="ctrl" style="margin-top:14px;">
+  <div class="row2">
+    <div>
+      <label style="display:block;">Ngưỡng "khuyết cung" (%):</label>
+      <input type="number" id="threshInput" min="1" max="99" value="70">
+    </div>
+    <div style="display:flex; align-items:flex-end; padding-bottom:6px;">
+      <label style="display:flex; align-items:center;"><input type="checkbox" id="khuyetLabelToggle" style="width:auto; margin-right:6px;">Hiện nhãn "KHUYẾT %"</label>
+    </div>
+  </div>
+</div>
+
+<div id="huongModalOverlay">
+  <div id="huongModalCard">
+    <h3 id="huongModalTitle"></h3>
+    <div class="row"><b>Người nhà:</b> <span id="huongModalNguoi"></span></div>
+    <div class="row"><b>Cơ thể:</b> <span id="huongModalCoThe"></span></div>
+    <div class="row"><b>Ý nghĩa quẻ:</b> <span id="huongModalYNghia"></span></div>
+    <div class="row"><b>Trạng thái khí:</b> <span id="huongModalVan"></span></div>
+    <div class="row"><b>Phong/Thủy:</b> <span id="huongModalPhongThuy"></span></div>
+    <div class="row"><b>Sao (tên khác):</b> <span id="huongModalSaoTen"></span></div>
+    <div class="row"><b>Tính chất sao:</b> <span id="huongModalTinhChat"></span></div>
+    <div class="row"><b>Ảnh hưởng hiện tại:</b> <span id="huongModalAnhHuong"></span></div>
+    <div class="row"><b>Niên Tinh:</b> <span id="huongModalNienTinh"></span></div>
+    <div id="huongModalWarning"></div>
+    <div class="row"><b>Nên:</b> <span id="huongModalNen"></span></div>
+    <div class="row"><b>Kỵ:</b> <span id="huongModalKy"></span></div>
+    <div class="row"><b>Lưu ý:</b> <span id="huongModalLuuY"></span></div>
+    <button id="huongModalClose">Đóng</button>
+  </div>
+</div>
+</div>
+
+    <!-- INFO MODAL (dùng chung: Thành Môn, Địa Vận, và các khung tóm tắt khác) -->
+    <div class="door-modal-overlay" id="infoModal">
+        <div class="door-modal-box info-modal-box" id="infoModalBox">
+            <div class="modal-title" id="infoModalTitle"></div>
+            <div id="infoModalContent"></div>
+            <button class="btn-modal-cancel" style="width:100%;margin-top:14px;" onclick="dongInfoModal()">Đóng</button>
+        </div>
+    </div>
+
+    <!-- DOOR CREATION MODAL (Cửu Cung Lưới) -->
+    <div class="door-modal-overlay" id="ccDoorModal">
+        <div class="door-modal-box" id="ccDoorModalBox"></div>
+    </div>
+
+    <!-- DOOR CREATION MODAL (Tâm Nhà) -->
+    <div class="door-modal-overlay" id="tnDoorModal">
+        <div class="door-modal-box" id="tnDoorModalBox"></div>
+    </div>
+
+    <!-- TAB LỊCH VẠN NIÊN -->
+    <div id="tab-lichvannien" class="tab-content">
+        <div id="lvnContainer" style="width:100%;display:flex;flex-direction:column;align-items:center;padding:12px;"></div>
+    </div>
+
+    <script src="js/shared.js"></script>
+    <script src="js/luan-giai.js"></script>
+    <script src="js/compass-module.js"></script>
+    <script src="js/phi-tinh.js"></script>
+    <script src="js/thuy-phap.js"></script>
+    <script src="js/cua-module.js"></script>
+    <script src="js/ve-phong.js"></script>
+    <script src="js/tam-nha.js"></script>
+    <script src="js/tim-nha.js"></script>
+    <script src="js/cuu-cung-luoi.js"></script>
+    <script src="js/lich-van-nien.js"></script>
+    <script src="js/thong-tin-nha.js"></script>
+    <script src="js/ho-so.js"></script>
+</body>
+</html>
