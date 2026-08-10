@@ -458,11 +458,11 @@
         </div>
 
         <!-- SVG của Cửu Cung Lưới -->
-        <!-- Khung mở rộng hết cỡ tới viền màn hình, tỷ lệ Rộng:Cao = 2:3 (khung dọc, cao hơn rộng)
-             để có nhiều không gian pan/zoom ảnh nền hơn. Ảnh nền phủ TOÀN BỘ khung 2:3 này, còn
-             svg#cuuCungSvg2 (la bàn/đa giác, viewBox vuông 400x400) vẫn giữ nguyên tỷ lệ 1:1, canh
-             giữa theo chiều dọc bên trong khung — không bị kéo dãn méo hình. -->
-        <div id="ccSvgWrapper" style="position:relative; overflow:hidden; touch-action:none; width:100%; max-width:none; aspect-ratio:2/3; display:flex; align-items:center; justify-content:center; background:#1a1a1a; border-radius:8px;">
+        <!-- Khung mở rộng hết cỡ tới viền màn hình, tỷ lệ Rộng:Cao = 4:5 (khung dọc, cao hơn rộng
+             nhưng chênh lệch vừa phải) để có nhiều không gian pan/zoom ảnh nền hơn. Ảnh nền phủ
+             TOÀN BỘ khung 4:5 này, còn svg#cuuCungSvg2 (la bàn/đa giác, viewBox vuông 400x400) vẫn
+             giữ nguyên tỷ lệ 1:1 — KHÔNG méo góc — canh giữa theo chiều dọc bên trong khung. -->
+        <div id="ccSvgWrapper" style="position:relative; overflow:hidden; touch-action:none; width:100%; max-width:none; aspect-ratio:4/5; display:flex; align-items:center; justify-content:center; background:#1a1a1a; border-radius:8px;">
             <img id="ccBgImage" style="display:none; position:absolute; top:0; left:0; width:100%; height:100%; object-fit:contain; transform-origin:center center; pointer-events:none; user-select:none;">
             <svg id="cuuCungSvg2" viewBox="0 0 400 400" style="position:relative; z-index:1; background:transparent; width:100%; max-width:none; height:auto; max-height:100%; display:block;"></svg>
         </div>
