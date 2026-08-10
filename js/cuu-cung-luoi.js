@@ -1274,6 +1274,54 @@
       redraw(true);
     });
 
+    // ===== XOAY ĐA GIÁC (mặt bằng nhà lệch góc so với trục dọc màn hình) =====
+    // Xoay TOẠ ĐỘ các đỉnh currentPoints quanh TÂM của chính polygon (bounding box), theo đúng quy
+    // ước "bearing" (0°=trên, dương=chiều kim đồng hồ) giống hệt bearingToUnit() trong
+    // compass-module.js — để đảm bảo khớp chính xác, không lệch pha với cách la bàn tính tia.
+    // Đồng thời TRỪ góc xoay X vào #doSoTay (hướng nhà): đã kiểm chứng bằng công thức lượng giác —
+    // khi polygon xoay +X (kim đồng hồ), houseFacing cần giảm X để la bàn tiếp tục "dính" đúng theo
+    // hình dạng nhà đã xoay (giữ nguyên mối quan hệ tương đối giữa la bàn và các cạnh nhà).
+    var ccXoayDaGiacInput = document.getElementById("ccXoayDaGiacInput");
+    var ccXoayDaGiacBtn = document.getElementById("ccXoayDaGiacBtn");
+    function ccBearingCuaDiem(p, center) {
+      var dx = p.x - center.x, dy = p.y - center.y;
+      return Math.atan2(dx, -dy) * 180 / Math.PI;
+    }
+    function ccDiemTheoBearing(center, bearingDeg, r) {
+      var rad = bearingDeg * Math.PI / 180;
+      return { x: center.x + r * Math.sin(rad), y: center.y - r * Math.cos(rad) };
+    }
+    function ccXoayDaGiac(goc) {
+      if (!goc) return;
+      var xs = currentPoints.map(function (p) { return p.x; });
+      var ys = currentPoints.map(function (p) { return p.y; });
+      var center = {
+        x: (Math.min.apply(null, xs) + Math.max.apply(null, xs)) / 2,
+        y: (Math.min.apply(null, ys) + Math.max.apply(null, ys)) / 2
+      };
+      currentPoints = currentPoints.map(function (p) {
+        var dx = p.x - center.x, dy = p.y - center.y;
+        var r = Math.sqrt(dx * dx + dy * dy);
+        if (r < 1e-9) return { x: p.x, y: p.y }; // điểm trùng tâm — không có bearing xác định, giữ nguyên
+        var bearingMoi = ccBearingCuaDiem(p, center) + goc;
+        return ccDiemTheoBearing(center, bearingMoi, r);
+      });
+
+      // Trừ góc xoay vào hướng nhà hiện tại (#doSoTay), đồng bộ sang mọi nơi đang lắng nghe.
+      if (doSoTayEl) {
+        var huongMoi = ((parseFloat(doSoTayEl.value) || 0) - goc) % 360;
+        if (huongMoi < 0) huongMoi += 360;
+        doSoTayEl.value = Math.round(huongMoi);
+        doSoTayEl.dispatchEvent(new Event("input", { bubbles: true }));
+      }
+      redraw(true);
+    }
+    if (ccXoayDaGiacBtn) ccXoayDaGiacBtn.addEventListener("click", function () {
+      var goc = parseFloat(ccXoayDaGiacInput ? ccXoayDaGiacInput.value : 0) || 0;
+      ccXoayDaGiac(goc);
+      if (ccXoayDaGiacInput) ccXoayDaGiacInput.value = 0; // reset ô nhập về 0 sau khi áp dụng — góc đã "ngấm" vào polygon
+    });
+
     // ===== Đồng bộ "Vận xem" + "Năm xem" với Vận trạch bên tab Nội Khí (phi-tinh.js) =====
     // Nguồn chân lý duy nhất là ô #namXem (năm đang xem) dùng chung toàn app. #vanInput ở đây
     // chỉ HIỂN THỊ (readonly) Vận hiện tại tự tính từ năm đó — không cho gõ tay để tránh lệch

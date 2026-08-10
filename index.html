@@ -396,6 +396,13 @@
           <label style="display:block;">Hướng nhà:</label>
           <input type="number" id="compassRotInput" min="0" max="359" value="0" style="width:50px; padding:4px; text-align:right;"> °
       </div>
+      <div>
+          <label style="display:block;" title="Xoay toàn bộ hình dạng nhà (đa giác) một góc, khi mặt bằng thật bị lệch so với trục dọc màn hình. Hướng nhà ở ô bên cạnh sẽ tự động điều chỉnh theo.">Xoay đa giác:</label>
+          <div style="display:flex; gap:2px; align-items:center;">
+              <input type="number" id="ccXoayDaGiacInput" value="0" style="width:50px; padding:4px; text-align:right;"> °
+              <button id="ccXoayDaGiacBtn" title="Áp dụng xoay" style="width:auto; flex:0 0 auto; padding:4px 8px; font-size:12px; background:#00838f; color:#fff; border:none; border-radius:6px; cursor:pointer;">↻</button>
+          </div>
+      </div>
   </div>
 
   <label>Tỷ lệ: 1 mét = <span id="scaleVal">20</span> px</label>
