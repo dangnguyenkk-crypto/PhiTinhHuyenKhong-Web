@@ -334,6 +334,7 @@
     var scaledOffsetFn = ctx.scaledOffset || function (px) { return px; };
     var currentVan = ctx.currentVan || 9;
     var currentNamXem = ctx.currentNamXem || new Date().getFullYear();
+    var showPct = ctx.showPct !== false; // mặc định true nếu không truyền — giữ tương thích ngược
 
     var svg = document.querySelector(svgSelector);
     if (!svg) return;
@@ -396,7 +397,7 @@
       pctText2.setAttribute("x", hx.toFixed(2)); pctText2.setAttribute("y", (hy - scaledOffsetFn(10)).toFixed(2));
       pctText2.textContent = stats.huong[k].pct.toFixed(1) + "%";
       getScaledFontSizeFn(pctText2, 8);
-      g.appendChild(pctText2);
+      if (showPct) g.appendChild(pctText2);
 
       if (vshHuong) {
         var sonTinhText = document.createElementNS("http://www.w3.org/2000/svg", "text");
@@ -442,18 +443,28 @@
       g.appendChild(kwText);
 
       var nienTinhVal = flyStarValue(nienTrungCurrent, HUONG_DATA[k].sao);
-      var vshNienStr = "N" + nienTinhVal;
-      if (vshHuong) {
-        vshNienStr = "V" + vshHuong.V + " " + vshNienStr;
-      }
+      var nienStr = "N" + nienTinhVal;
       var ntText = document.createElementNS("http://www.w3.org/2000/svg", "text");
       ntText.setAttribute("class", "nien-tinh");
       ntText.setAttribute("x", hx.toFixed(2)); ntText.setAttribute("y", (hy + scaledOffsetFn(19)).toFixed(2));
       ntText.setAttribute("text-anchor", "middle");
       ntText.setAttribute("fill", "#8b0000");
       ntText.setAttribute("font-weight", "bold");
-      ntText.textContent = vshNienStr;
-      getScaledFontSizeFn(ntText, 6.3);
+      if (vshHuong) {
+        // Sao V (Vận tinh) to bằng S/H (8px) — chỉ N giữ nguyên cỡ nhỏ (6.3px).
+        // Dùng tspan riêng vì 2 phần cần font-size khác nhau trong cùng 1 dòng text.
+        var vTspan = document.createElementNS("http://www.w3.org/2000/svg", "tspan");
+        vTspan.textContent = "V" + vshHuong.V + " ";
+        getScaledFontSizeFn(vTspan, 8);
+        ntText.appendChild(vTspan);
+        var nTspan = document.createElementNS("http://www.w3.org/2000/svg", "tspan");
+        nTspan.textContent = nienStr;
+        getScaledFontSizeFn(nTspan, 6.3);
+        ntText.appendChild(nTspan);
+      } else {
+        ntText.textContent = nienStr;
+        getScaledFontSizeFn(ntText, 6.3);
+      }
       g.appendChild(ntText);
     }
 
@@ -469,7 +480,7 @@
     centerPctText.setAttribute("x", center.x); centerPctText.setAttribute("y", (center.y - scaledOffsetFn(8)).toFixed(2));
     centerPctText.textContent = stats.trungCungPct.toFixed(1) + "%";
     getScaledFontSizeFn(centerPctText, 8);
-    g.appendChild(centerPctText);
+    if (showPct) g.appendChild(centerPctText);
 
     var centerVSHT = (window.phiTinhVSH && window.phiTinhVSH["Trung"]) ? window.phiTinhVSH["Trung"] : null;
 
@@ -495,16 +506,27 @@
       g.appendChild(centerHuongTinhText);
     }
 
-    var centerVSHNienStr = "N" + nienTrungCurrent;
-    if (centerVSHT) centerVSHNienStr = "V" + centerVSHT.V + " " + centerVSHNienStr;
+    var centerNienVal = "N" + nienTrungCurrent;
     var centerNienText = document.createElementNS("http://www.w3.org/2000/svg", "text");
     centerNienText.setAttribute("class", "nien-tinh");
     centerNienText.setAttribute("x", center.x); centerNienText.setAttribute("y", (center.y + scaledOffsetFn(14)).toFixed(2));
     centerNienText.setAttribute("text-anchor", "middle");
     centerNienText.setAttribute("fill", "#8b0000");
     centerNienText.setAttribute("font-weight", "bold");
-    centerNienText.textContent = centerVSHNienStr;
-    getScaledFontSizeFn(centerNienText, 6.3);
+    if (centerVSHT) {
+      // Sao V (Vận tinh) to bằng S/H (8px) — chỉ N giữ nguyên cỡ nhỏ (6.3px).
+      var centerVTspan = document.createElementNS("http://www.w3.org/2000/svg", "tspan");
+      centerVTspan.textContent = "V" + centerVSHT.V + " ";
+      getScaledFontSizeFn(centerVTspan, 8);
+      centerNienText.appendChild(centerVTspan);
+      var centerNTspan = document.createElementNS("http://www.w3.org/2000/svg", "tspan");
+      centerNTspan.textContent = centerNienVal;
+      getScaledFontSizeFn(centerNTspan, 6.3);
+      centerNienText.appendChild(centerNTspan);
+    } else {
+      centerNienText.textContent = centerNienVal;
+      getScaledFontSizeFn(centerNienText, 6.3);
+    }
     g.appendChild(centerNienText);
 
     svg.appendChild(g);
