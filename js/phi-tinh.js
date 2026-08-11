@@ -493,41 +493,19 @@ function ghiChuHaDoTuTuong(sSon, sHuong, vanHienTai) {
         + `</div>`;
 }
 
-// ===== PHẢN NGÂM / PHỤC NGÂM (theo nguyên văn) =====
-// "Hai sao sơn hoặc hướng là 5 nhập Trung cung thuận cục gọi là Phục ngâm.
-//  Hai sao sơn hoặc hướng 5 nhập Trung cung nghịch cục gọi là Phản ngâm.
-//  Phục ngâm tức là 5 nhập trung, chữ số nào phi tinh giống như tinh bàn gốc lạc thư.
-//  Phản ngâm tức là ở cung mà phi tinh chiếu tới chữ nào cũng hợp thập với địa bàn (lạc thư gốc)."
-//
-// => Điều kiện kích hoạt: CHỈ bàn nào có số nhập Trung = 5 mới được xét (Sơn và Hướng xét ĐỘC LẬP,
-//    không OR/trộn với nhau — nếu Hướng không phải 5 nhập trung thì không dùng sao Hướng để xét).
-// => Khi đã kích hoạt (đúng bàn đó, số nhập trung = 5): xác định Phục/Phản theo chiều bay của
-//    CHÍNH bàn đó (thuận => Phục Ngâm cả bàn; nghịch => Phản Ngâm cả bàn), rồi so từng cung của
-//    CHÍNH bàn đó với Lạc Thư nguyên đán tại cung ấy (trùng => Phục hit; hợp thập => Phản hit).
-//
-// window.xetPhanPhucNgamMotSao(soTaiCung, soGocTaiCung, loaiBan)
-//   soTaiCung   : số của bàn Sơn hoặc Hướng tại cung đang xét
-//   soGocTaiCung: số Lạc Thư nguyên đán tại chính cung đang xét (CUNG_TO_SO của cung đó)
-//   loaiBan     : "Son" | "Huong" — bàn nào đang được xét (để tra đúng laThuan.. và soNhapTrung.. )
-window.xetPhanPhucNgamMotSao = function (soTaiCung, soGocTaiCung, loaiBan) {
+// Phản Ngâm / Phục Ngâm (cung vị) — dùng hàm chung window.xetPhanPhucNgamMotSao (luan-giai.js).
+// Hàm chung nhận tham số trực tiếp (không tự đọc window.phiTinhVSH) để dùng chung được với tab
+// Tìm Nhà — nên ở ĐÂY (ngữ cảnh tab Phi Tinh) ta tự tra window.phiTinhVSH["Trung"]/phiTinhLaThuan..
+// rồi truyền vào. tenCungVi: tên cung đang xét; sao: số của bàn Sơn/Hướng tại cung đó;
+// loaiBan: "Son" | "Huong" (BẮT BUỘC).
+function xetPhanPhucNgam(sao, tenCungVi, loaiBan) {
+    let soGoc = tenCungVi === "Trung" ? 5 : CUNG_TO_SO[tenCungVi];
+    if (typeof window.xetPhanPhucNgamMotSao !== 'function') return null;
     let vsh = window.phiTinhVSH;
     if (!vsh || !vsh["Trung"]) return null;
     let soNhapTrung = loaiBan === "Huong" ? vsh["Trung"].H : vsh["Trung"].S;
-    if (soNhapTrung !== 5) return null; // chỉ kích hoạt khi CHÍNH bàn này có 5 nhập trung
     let laThuan = loaiBan === "Huong" ? window.phiTinhLaThuanHuong : window.phiTinhLaThuanSon;
-    if (laThuan === true) {
-        return soTaiCung === soGocTaiCung ? { loai: "phuc", nhan: "Phục Ngâm", ky: "伏" } : null;
-    } else if (laThuan === false) {
-        return soTaiCung + soGocTaiCung === 10 ? { loai: "phan", nhan: "Phản Ngâm", ky: "反" } : null;
-    }
-    return null;
-};
-
-// Giữ hàm cũ (dùng ở nơi khác trong file này nếu có) — nay chỉ còn ý nghĩa khi được gọi kèm loaiBan.
-// tenCungVi: tên cung đang xét; sao: số của bàn Sơn/Hướng tại cung đó; loaiBan: "Son" | "Huong".
-function xetPhanPhucNgam(sao, tenCungVi, loaiBan) {
-    let soGoc = tenCungVi === "Trung" ? 5 : CUNG_TO_SO[tenCungVi];
-    let ket = window.xetPhanPhucNgamMotSao(sao, soGoc, loaiBan);
+    let ket = window.xetPhanPhucNgamMotSao(sao, soGoc, soNhapTrung, laThuan);
     if (!ket) return null;
     let tip = ket.loai === "phuc"
         ? `5 nhập Trung cung thuận cục (Phục Ngâm) — cung ${tenCungVi} trùng đúng số Lạc Thư nguyên đán (${soGoc}) — dữ khi thất vận`
@@ -949,6 +927,16 @@ async function tinhToanPhiTinh() {
 
     let bNien = lapTinhBan(saoNien, true), bNguyet = lapTinhBan(saoNguyet, true), bNhat = lapTinhBan(saoNhat, TRUNG_KHI[trungKhi].thuan);
     const TEN_CUNG = ["","Khảm","Khôn","Chấn","Tốn","Trung","Càn","Đoài","Cấn","Ly"];
+    // Xuất V/S/H theo TÊN CUNG + chiều bay Sơn/Hướng — NGAY SAU KHI TEN_CUNG được khai báo (const,
+    // nên phải đặt SAU dòng khai báo — đặt trước sẽ vỡ do Temporal Dead Zone: "Cannot access
+    // 'TEN_CUNG' before initialization"). Đồng thời phải đặt TRƯỚC mọi chỗ dùng xetPhanPhucNgam/
+    // xetHopThap/tongKetToanNha/luanGiaiCung bên dưới, vì các hàm dùng chung trong luan-giai.js
+    // (xetPhanPhucNgamMotSao...) đọc lại window.phiTinhVSH/window.phiTinhLaThuan.. — export muộn
+    // (như bản cũ, ở cuối hàm) khiến các lời gọi bên dưới đọc dữ liệu của LẦN TÍNH TRƯỚC.
+    window.phiTinhVSH = {};
+    for (let c = 1; c <= 9; c++) window.phiTinhVSH[TEN_CUNG[c]] = {V: bVan[c], S: bSon[c], H: bHuong[c]};
+    window.phiTinhLaThuanSon = laThuanSon;
+    window.phiTinhLaThuanHuong = laThuanHuong;
     let ketQua9Cung = [];
     let duBao = document.getElementById("duBaoThoiGian");
     if (!duBao) {
@@ -1088,14 +1076,6 @@ async function tinhToanPhiTinh() {
         divKiemHuong.innerHTML = "";
     }
 
-    // Xuất V/S/H + chiều bay ra window TRƯỚC khi dùng xetPhanPhucNgam bên dưới — hàm này đọc lại
-    // window.phiTinhVSH["Trung"] (số nhập trung) và window.phiTinhLaThuan.. (chiều bay) để xét
-    // Phản/Phục Ngâm, nên phải export xong trước, không để tới cuối hàm mới export như bản cũ.
-    window.phiTinhVSH = {};
-    for (let c = 1; c <= 9; c++) window.phiTinhVSH[TEN_CUNG[c]] = {V: bVan[c], S: bSon[c], H: bHuong[c]};
-    window.phiTinhLaThuanSon = laThuanSon;
-    window.phiTinhLaThuanHuong = laThuanHuong;
-
     document.getElementById("vungLuanGiai").innerHTML = "";
     loiGiaiTheoCung = {};
     // Vòng 1: vẽ lưới + tính điểm 9 cung (cần đủ trước khi ghép tổng kết vào Trung cung)
@@ -1133,8 +1113,7 @@ async function tinhToanPhiTinh() {
     }
     btn.disabled = false; btn.innerText = "XEM SƠ ĐỒ CỬU CUNG";
 
-    // (window.phiTinhVSH / phiTinhLaThuanSon / phiTinhLaThuanHuong đã được xuất SỚM hơn,
-    //  ngay trước Vòng 1, để xetPhanPhucNgam trong vòng lặp trên có dữ liệu đọc lại — xem ở trên)
+    // (window.phiTinhVSH đã được xuất SỚM hơn, ngay sau khi khai báo TEN_CUNG — xem ở trên)
     try { if (typeof cuuCungLuoiRedraw === "function") cuuCungLuoiRedraw(); } catch (e) {}
 }
 // Xác định 1 thời điểm (Niên tinh của 1 năm, hoặc Nguyệt tinh của 1 tháng) có "xấu" cho toàn nhà hay không,

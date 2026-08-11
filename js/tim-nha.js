@@ -161,18 +161,24 @@ function tnXetTamBanQuaiToanCuc(bVan, bSon, bHuong) {
   return true;
 }
 
-function tnXetHopThapNgam(v, s, h, cung) {
+function tnXetHopThapNgam(v, s, h, cung, soNhapTrungSon, laThuanSon, soNhapTrungHuong, laThuanHuong) {
   let soGoc = cung === "Trung" ? 5 : TN_CUNG_TO_SO[cung];
-  let ngS = typeof window.xetPhanPhucNgamMotSao === 'function' ? window.xetPhanPhucNgamMotSao(s, soGoc) : null;
-  let ngH = typeof window.xetPhanPhucNgamMotSao === 'function' ? window.xetPhanPhucNgamMotSao(h, soGoc) : null;
+  // Dùng hàm chung window.xetPhanPhucNgamMotSao (luan-giai.js) — hàm nhận tham số TRỰC TIẾP
+  // (soNhapTrung, laThuan của CHÍNH bàn Sơn/Hướng đang xét cho hướng nhà ứng viên này), KHÔNG
+  // đọc window.phiTinhVSH — biến đó chỉ đúng ngữ cảnh tab Phi Tinh, còn ở đây (tab Tìm Nhà) mỗi
+  // hướng ứng viên có bàn Sơn/Hướng RIÊNG, tính độc lập trong tnTinhDiem (24 lần, 1 lần/sơn).
+  // Kết quả null nghĩa là "không có Phản/Phục Ngâm" (không đủ điều kiện 5 nhập trung) — KHÔNG
+  // tự tính lại kiểu khác.
+  let ngS = (typeof window.xetPhanPhucNgamMotSao === 'function') ? window.xetPhanPhucNgamMotSao(s, soGoc, soNhapTrungSon, laThuanSon) : null;
+  let ngH = (typeof window.xetPhanPhucNgamMotSao === 'function') ? window.xetPhanPhucNgamMotSao(h, soGoc, soNhapTrungHuong, laThuanHuong) : null;
   let ht = typeof window.xetHopThap === 'function' ? window.xetHopThap(v, s, h) : { hopThapVS: v+s===10, hopThapVH: v+h===10 };
   return {
     hopThapVS: ht.hopThapVS,
     hopThapVH: ht.hopThapVH,
-    phucNgamS: ngS ? ngS.loai === "phuc" : s === soGoc,
-    phanNgamS: ngS ? ngS.loai === "phan" : s + soGoc === 10,
-    phucNgamH: ngH ? ngH.loai === "phuc" : h === soGoc,
-    phanNgamH: ngH ? ngH.loai === "phan" : h + soGoc === 10
+    phucNgamS: !!(ngS && ngS.loai === "phuc"),
+    phanNgamS: !!(ngS && ngS.loai === "phan"),
+    phucNgamH: !!(ngH && ngH.loai === "phuc"),
+    phanNgamH: !!(ngH && ngH.loai === "phan")
   };
 }
 
@@ -240,7 +246,9 @@ function tnTinhDiem(sonInfo, van, nam) {
         get cachCuoc() { return tnCachCuoc(this.vuongSon, this.vuongHuong, this.thuongSon, this.haThuy); }
       };
   let vuongSon = vsCC.vuongSon, thuongSon = vsCC.thuongSon, vuongHuong = vsCC.vuongHuong, haThuy = vsCC.haThuy;
-  let tangB = (vuongSon ? 2 : (thuongSon ? -2 : 0)) + (vuongHuong ? 1 : (haThuy ? -1 : 0));
+  // Tầng B: 4 yếu tố cân xứng, mỗi yếu tố ±1 điểm (Vượng Sơn +1, Vượng Hướng +1, Thượng Sơn -1, Hạ Thủy -1).
+  // VSVH tối đa +2 (cả 2 yếu tố cùng đạt), TSHT tối thiểu -2 (cả 2 yếu tố cùng phạm) — không còn lệch trọng số 2:1 như trước.
+  let tangB = (vuongSon ? 1 : 0) + (vuongHuong ? 1 : 0) - (thuongSon ? 1 : 0) - (haThuy ? 1 : 0);
 
   // ===== ĐỊNH CHÂN KHÍ TIÊN THIÊN (Hà Đồ) — dùng hàm chung window.xetChanKhiHaDo (luan-giai.js),
   // giống hệt cách tab Nội Khí đã làm. Thông tin THAM KHẢO (không cộng/trừ điểm vào Tổng, đồng bộ
@@ -266,9 +274,9 @@ function tnTinhDiem(sonInfo, van, nam) {
   let toaSat = !!loaiTamSat; // Tọa sơn rơi vào phương Tam Sát — đại kỵ động thổ/tu sửa
   // (Tam Sát chỉ kỵ Tọa, không xét Hướng — đã bỏ huongSat)
 
-  let ngamFront  = tnXetHopThapNgam(vf, sf, hf, sonInfo.cung);
-  let ngamCenter = tnXetHopThapNgam(vc, sc, hc, "Trung");
-  let ngamBack   = tnXetHopThapNgam(vb, sb, hb, toaSon.cung);
+  let ngamFront  = tnXetHopThapNgam(vf, sf, hf, sonInfo.cung, soNhapTrungSon, laThuanSon, soNhapTrungHuong, laThuanHuong);
+  let ngamCenter = tnXetHopThapNgam(vc, sc, hc, "Trung", soNhapTrungSon, laThuanSon, soNhapTrungHuong, laThuanHuong);
+  let ngamBack   = tnXetHopThapNgam(vb, sb, hb, toaSon.cung, soNhapTrungSon, laThuanSon, soNhapTrungHuong, laThuanHuong);
   function demLoiNgam(ng) { return (ng.phucNgamS?1:0)+(ng.phucNgamH?1:0)+(ng.phanNgamS?1:0)+(ng.phanNgamH?1:0); }
   let soLoiNgam = demLoiNgam(ngamFront) + demLoiNgam(ngamCenter) + demLoiNgam(ngamBack); // mỗi lỗi -1, tính cả 3 cung
 
@@ -460,11 +468,15 @@ function tnTaoLuanNgan(kq, van) {
   if (kq.xungThaiTue) luan.push(`<span style="color:#c62828;font-weight:bold;font-size:9px;">⚠ Hướng phạm Thái Tuế (${kq.chiNam}) — đối đầu trực diện, −1</span>`);
   if (kq.toaThaiTue) luan.push(`<span style="color:#2e7d32;font-weight:bold;font-size:9px;">🛡️ Tọa Thái Tuế (${kq.chiNam}) — tựa núi, có thế vững (không trừ điểm)</span>`);
 
-  // 1. Cách cục Tầng B (Vượng Sơn Vượng Hướng / Thượng Sơn Hạ Thủy)
-  if (kq.cachCuoc) {
-    let mauCC = (kq.vuongSon || kq.vuongHuong) && !(kq.thuongSon || kq.haThuy) ? "#2e7d32" : (kq.thuongSon || kq.haThuy) && !(kq.vuongSon||kq.vuongHuong) ? "#c62828" : "#8b0000";
-    luan.push(`<span style="color:${mauCC};font-weight:bold;">${kq.cachCuoc}</span>`);
-  }
+  // 1. Cách cục Tầng B (Vượng Sơn Vượng Hướng / Thượng Sơn Hạ Thủy) — mỗi nhãn tự tô màu riêng
+  // theo đúng dấu điểm của chính nó (xanh = +1, đỏ = -1), KHÔNG gộp chung 1 màu cho cả cụm — tránh
+  // hiểu nhầm khi 1 hướng vừa có yếu tố tốt (VD Vượng Sơn) vừa có yếu tố xấu (VD Hạ Thủy) cùng lúc.
+  let nhanCachCuoc = [];
+  if (kq.vuongSon) nhanCachCuoc.push(`<span style="color:#2e7d32;font-weight:bold;">Vượng Sơn</span>`);
+  if (kq.thuongSon) nhanCachCuoc.push(`<span style="color:#c62828;font-weight:bold;">Thượng Sơn</span>`);
+  if (kq.vuongHuong) nhanCachCuoc.push(`<span style="color:#2e7d32;font-weight:bold;">Vượng Hướng</span>`);
+  if (kq.haThuy) nhanCachCuoc.push(`<span style="color:#c62828;font-weight:bold;">Hạ Thủy</span>`);
+  if (nhanCachCuoc.length) luan.push(nhanCachCuoc.join(' <span style="color:#888;font-weight:normal;">+</span> '));
   if (kq.thuongSon) luan.push(`<span style="color:#c62828;font-size:9px;">⚠ Sơn lạc Hướng: hại nhân đinh</span>`);
   if (kq.haThuy) luan.push(`<span style="color:#c62828;font-size:9px;">⚠ Hướng lạc Tọa: hại tài lộc</span>`);
 
@@ -908,7 +920,7 @@ function tnKhoiTao() {
           <b>Công thức (Tổng = Tầng CK + Tầng A + Tầng B + Tầng C + Tầng D):</b><br>
           <b>Tầng CK</b> (Chân Khí Tiên Thiên — Hà Đồ, xét TRƯỚC cả Phi Tinh Hậu Thiên): so Ngũ hành Hà Đồ (1&6=Thủy, 2&7=Hỏa, 3&8=Mộc, 4&9=Kim, 5&10=Thổ — khác bảng Lạc Thư dùng cho Phi Tinh) của Vận với Hướng (theo số Lạc Thư cố định của cung Hướng). Vận sinh Hướng/đồng hành → Đắc Chân Khí +1 · Hướng sinh Vận → Bị Tiết Khí 0 (không cộng trừ) · Vận khắc Hướng hoặc Hướng khắc Vận → Thất Chân Khí −1<br>
           <b>Tầng A</b> (ngũ hành sao-cung, gốc): 2×(S tại Tọa: sinh nhập +1 / khắc nhập −1 / còn lại 0) + 1×(H tại Hướng: tương tự)<br>
-          <b>Tầng B</b> (Vượng Sơn Vượng Hướng / Thượng Sơn Hạ Thủy): +2 Vượng Sơn · +1 Vượng Hướng · −2 Thượng Sơn (S lạc Hướng) · −1 Hạ Thủy (H lạc Tọa)<br>
+          <b>Tầng B</b> (Vượng Sơn Vượng Hướng / Thượng Sơn Hạ Thủy — 4 yếu tố cân xứng, mỗi yếu tố ±1): +1 Vượng Sơn · +1 Vượng Hướng · −1 Thượng Sơn (S lạc Hướng) · −1 Hạ Thủy (H lạc Tọa)<br>
           <b>Tầng D</b> (Hung sát — TRỪ ĐIỂM THẬT, <u>mỗi loại tối đa −1, tổng tối đa −4</u> nếu dính đủ 4 loại — mỗi loại dù nặng hay lặp nhiều lần cũng chỉ trừ tối đa −1, không lấn át cách cục): ☠☠ Loại <b>Ngũ Hoàng Trạch Tinh</b> (cố định vĩnh viễn theo cách cục, KHÁC lưu niên — Sơn tinh hoặc Hướng tinh = 5 tại Trung/Tọa/Hướng — "gốc rễ bệnh của nhà", ưu tiên xử lý trước tiên bằng vật phẩm hành Kim đặt lâu dài) · ☠ Loại <b>Tam Sát</b> (lưu niên theo Năm xem): <u>chỉ kỵ Tọa</u> (đại kỵ động thổ/tu sửa đúng chỗ lưng nhà tựa vào phương Tam Sát của Chi năm; Tam Sát tại Hướng không kỵ) · ⚠ Loại <b>Thái Tuế</b> (lưu niên theo Năm xem): <u>chỉ kỵ Hướng</u> (nhà quay mặt đối đầu trực diện phương Thái Tuế của Chi năm là hung; Thái Tuế tại Tọa ngược lại là tựa núi, có thế vững, không trừ điểm — nhưng dù Tọa hay Hướng, phương Thái Tuế tuyệt đối không đào đắp/sửa chữa/đục phá) · ⚠ Loại <b>Phản/Phục Ngâm</b>: mỗi lỗi (S/H trùng hoặc hợp thập với số Lạc Thư nguyên đán tại chính cung đó, tính cả 3 cung) — mỗi loại dù có nhiều lỗi cũng chỉ trừ tối đa −1<br>
           <span style="font-size:10px;">Ngũ Hoàng <i>lưu niên</i> (bay theo từng năm) chưa cài đặt trong bảng — chỉ thực sự đáng ngại khi bay đúng vào vị trí Ngũ Hoàng Trạch Tinh hoặc đúng cửa/bếp, năm đó treo chuông gió tạm là đủ.</span><br>
           <b>Tầng C</b> (Hợp Thập — CỘNG ĐIỂM THẬT): xét 3 cung Trung/Tọa/Hướng, mỗi cung có V+S=10 hoặc V+H=10 thì +1 (tối đa +3) — thông khí, quý nhất ở Vận 1, 9<br>

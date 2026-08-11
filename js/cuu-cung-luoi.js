@@ -701,6 +701,81 @@
     svgEl.setAttribute("viewBox", vx.toFixed(1) + " " + vy.toFixed(1) + " " + vw.toFixed(1) + " " + vh.toFixed(1));
   }
 
+  // ==== CHẾ ĐỘ "VỪA MÀN HÌNH" THẬT (full-screen overlay) ====
+  // Nút "Vừa màn hình" trước đây chỉ fit viewBox bên trong khung 4:5 cố định
+  // (#ccSvgWrapper), không hề to bằng màn hình điện thoại thật. Giờ tách
+  // làm 2 bước: (1) phóng #ccSvgWrapper ra full viewport bằng CSS
+  // position:fixed, (2) sau đó mới gọi fitToScreen() để fit viewBox theo
+  // đúng khung mới. Bấm lại nút (hoặc nút ✕ / phím Esc) để thoát.
+  var ccFullscreenActive = false;
+  var ccFullscreenStyleEl = null;
+  var ccFullscreenCloseBtn = null;
+
+  function ensureFullscreenStyle() {
+    if (ccFullscreenStyleEl) return;
+    ccFullscreenStyleEl = document.createElement("style");
+    ccFullscreenStyleEl.id = "ccFullscreenStyle";
+    ccFullscreenStyleEl.textContent =
+      "#ccSvgWrapper.cc-fullscreen{" +
+      "position:fixed!important;top:0!important;left:0!important;right:0!important;bottom:0!important;" +
+      "width:100vw!important;height:100vh!important;max-width:none!important;" +
+      "aspect-ratio:auto!important;z-index:9999!important;border-radius:0!important;}";
+    document.head.appendChild(ccFullscreenStyleEl);
+  }
+
+  function ensureFullscreenCloseBtn() {
+    if (ccFullscreenCloseBtn) return;
+    var wrapper = document.getElementById("ccSvgWrapper");
+    if (!wrapper) return;
+    ccFullscreenCloseBtn = document.createElement("button");
+    ccFullscreenCloseBtn.id = "ccFullscreenCloseBtn";
+    ccFullscreenCloseBtn.type = "button";
+    ccFullscreenCloseBtn.title = "Thoát vừa màn hình";
+    ccFullscreenCloseBtn.textContent = "✕";
+    ccFullscreenCloseBtn.style.cssText =
+      "display:none;position:absolute;top:10px;right:10px;z-index:10000;" +
+      "width:36px;height:36px;border:1px solid #555;border-radius:50%;" +
+      "background:rgba(0,0,0,0.6);color:#eee;font-size:16px;line-height:1;" +
+      "cursor:pointer;";
+    ccFullscreenCloseBtn.addEventListener("click", function (evt) {
+      evt.stopPropagation();
+      setCcFullscreen(false);
+    });
+    wrapper.appendChild(ccFullscreenCloseBtn);
+  }
+
+  function setCcFullscreen(on) {
+    var wrapper = document.getElementById("ccSvgWrapper");
+    if (!wrapper) return;
+    ensureFullscreenStyle();
+    ensureFullscreenCloseBtn();
+    ccFullscreenActive = on;
+    wrapper.classList.toggle("cc-fullscreen", on);
+    if (ccFullscreenCloseBtn) {
+      ccFullscreenCloseBtn.style.display = on ? "block" : "none";
+    }
+    var _fitBtn = document.getElementById("fitBtn");
+    if (_fitBtn) {
+      _fitBtn.textContent = on ? "📐 Thoát vừa màn hình" : "📐 Vừa màn hình";
+    }
+    // Đợi 1 khung hình để trình duyệt áp layout mới (viewport thật) trước
+    // khi tính lại viewBox — nếu fit ngay có thể lấy nhầm kích thước cũ.
+    requestAnimationFrame(function () {
+      fitToScreen();
+      redraw(true);
+    });
+  }
+
+  function toggleCcFullscreen() {
+    setCcFullscreen(!ccFullscreenActive);
+  }
+
+  document.addEventListener("keydown", function (evt) {
+    if (evt.key === "Escape" && ccFullscreenActive) setCcFullscreen(false);
+  });
+
+  window.ccToggleFullscreen = toggleCcFullscreen; // để debug/gọi ngoài nếu cần
+
   // ==== LƯU / MỞ BẢN VẼ (xuất-nhập file JSON) ====
   // Thu thập toàn bộ trạng thái hiện tại (hình dạng nhà, cửa, tỉ lệ, các input) thành 1 object để xuất ra file.
   function layStateCuuCung() {
@@ -1367,8 +1442,7 @@
     var _fitBtn = document.getElementById("fitBtn");
     if (!_fitBtn) return;
     _fitBtn.addEventListener("click", function () {
-      fitToScreen();
-      redraw(true);
+      toggleCcFullscreen();
     });
     document.getElementById("resetViewBtn").addEventListener("click", function () {
       svgEl.setAttribute("viewBox", "0 0 400 400");

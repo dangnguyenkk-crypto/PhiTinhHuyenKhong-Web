@@ -236,15 +236,15 @@
   .huong-son-tinh, .huong-huong-tinh, .so-nen-goc {
     paint-order: stroke fill;
     stroke: #000;
-    stroke-width: 0.2px;
+    stroke-width: 0.3px;
     stroke-linejoin: round;
   }
 
-  .son-label { fill:#ffcc66; font-size:10px; text-anchor:middle; dominant-baseline:middle; }
-  .huong-label { fill:#7fd0ff; font-size:11px; font-weight:bold; text-anchor:middle; dominant-baseline:middle; }
+  .son-label { fill:#e86602; font-size:10px; text-anchor:middle; dominant-baseline:middle; }
+  .huong-label { fill:#59bdf7; font-size:11px; font-weight:bold; text-anchor:middle; dominant-baseline:middle; }
   .huong-pct { fill:#7fd0ff; font-size:8px; text-anchor:middle; dominant-baseline:middle; }
-  .huong-keyword { fill:#9fcf9f; font-size:7px; text-anchor:middle; dominant-baseline:middle; }
-  .nien-tinh { fill:#d78ce0; font-size:7px; font-weight:bold; text-anchor:middle; dominant-baseline:middle; }
+  .huong-keyword { fill:#d46f04; font-size:7px; text-anchor:middle; dominant-baseline:middle; }
+  .nien-tinh { fill:#0a82f2; font-size:8px; font-weight:bold; text-anchor:middle; dominant-baseline:middle; }
   .huong-label { cursor:pointer; }
 
   #huongModalOverlay { display:none; position:fixed; inset:0; background:rgba(0,0,0,0.6); z-index:50; align-items:center; justify-content:center; padding:16px; box-sizing:border-box; }

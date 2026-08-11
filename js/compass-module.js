@@ -288,12 +288,15 @@
     var soGoc = CUNG_SO_GOC[cungName];
     if (!soGoc) return;
     var vsh = window.phiTinhVSH && window.phiTinhVSH[cungName];
+    var vshTrung = window.phiTinhVSH && window.phiTinhVSH["Trung"];
     var ngamHit = false;
-    if (vsh && typeof window.xetPhanPhucNgamMotSao === 'function') {
+    if (vsh && vshTrung && typeof window.xetPhanPhucNgamMotSao === 'function') {
       // Xét ĐỘC LẬP cho bàn Sơn và bàn Hướng — mỗi bàn chỉ kích hoạt Phản/Phục Ngâm khi
       // CHÍNH bàn đó có 5 nhập Trung cung (không dùng chéo, không OR đơn thuần theo số tại cung).
-      var hitSon = window.xetPhanPhucNgamMotSao(vsh.S, soGoc, "Son");
-      var hitHuong = window.xetPhanPhucNgamMotSao(vsh.H, soGoc, "Huong");
+      // Tra soNhapTrung/laThuan ở ĐÂY (ngữ cảnh tab Phi Tinh qua window.phiTinhVSH) rồi truyền
+      // trực tiếp — hàm chung không tự đọc window nữa để dùng lại được ở ngữ cảnh khác (Tìm Nhà).
+      var hitSon = window.xetPhanPhucNgamMotSao(vsh.S, soGoc, vshTrung.S, window.phiTinhLaThuanSon);
+      var hitHuong = window.xetPhanPhucNgamMotSao(vsh.H, soGoc, vshTrung.H, window.phiTinhLaThuanHuong);
       ngamHit = !!(hitSon || hitHuong);
     }
     var t = document.createElementNS("http://www.w3.org/2000/svg", "text");
@@ -400,7 +403,7 @@
         sonTinhText.setAttribute("class", "huong-son-tinh");
         sonTinhText.setAttribute("x", (hx - scaledOffsetFn(16)).toFixed(2)); sonTinhText.setAttribute("y", (hy - scaledOffsetFn(10)).toFixed(2));
         sonTinhText.setAttribute("text-anchor", "middle");
-        sonTinhText.setAttribute("fill", "#ad021e");
+        sonTinhText.setAttribute("fill", "#e86602");
         sonTinhText.setAttribute("font-weight", "bold");
         sonTinhText.textContent = "S" + vshHuong.S;
         getScaledFontSizeFn(sonTinhText, 8);
