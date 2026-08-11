@@ -230,9 +230,8 @@
   }
 
   var CuuCungGrid = {
-    render: function (svgSelector, housePoints, thresholdPercent, showKhuyetLabel, gocXoayLuoi) {
+    render: function (svgSelector, housePoints, thresholdPercent, showKhuyetLabel) {
       if (showKhuyetLabel === undefined) showKhuyetLabel = true;
-      gocXoayLuoi = gocXoayLuoi || 0; // độ — góc xoay tích luỹ của polygon (ccGocXoayTichLuy)
       var svg = document.querySelector(svgSelector);
       if (!svg) return;
       // Xoá nội dung SVG nhưng giữ lại các phần tử của module vẽ phòng (vp-*)
@@ -252,34 +251,8 @@
       }
       toRemove.forEach(function (el) { el.remove(); });
 
-      // Tâm polygon (trung bình cộng, KHÔNG phải bounding-box của housePoints thô — vì housePoints
-      // đã bị xoay chéo, bounding-box của nó không còn là "tâm hình học" đúng nghĩa nữa). Dùng cùng
-      // công thức tâm mà ccXoayDaGiac() dùng để xoay, để lưới luôn khớp đúng polygon.
-      var rawXs = housePoints.map(function (p) { return p.x; });
-      var rawYs = housePoints.map(function (p) { return p.y; });
-      var center = {
-        x: (Math.min.apply(null, rawXs) + Math.max.apply(null, rawXs)) / 2,
-        y: (Math.min.apply(null, rawYs) + Math.max.apply(null, rawYs)) / 2
-      };
-
-      // Xoay NGƯỢC housePoints về hệ trục "thẳng" (trừ gocXoayLuoi) quanh tâm — để tính bounding-box
-      // + chia lưới 3x3 giống hệt thuật toán cũ (vốn chỉ đúng khi nhà thẳng trục). Sau đó mọi toạ độ
-      // của lưới sẽ được xoay TRỞ LẠI (+gocXoayLuoi) trước khi vẽ, để khớp đúng vị trí polygon thật.
-      function xoayQuanhTam(p, goc) {
-        if (!goc) return { x: p.x, y: p.y };
-        var dx = p.x - center.x, dy = p.y - center.y;
-        var r = Math.sqrt(dx * dx + dy * dy);
-        if (r < 1e-9) return { x: p.x, y: p.y };
-        var bearingHienTai = Math.atan2(dx, -dy) * 180 / Math.PI;
-        var bearingMoi = bearingHienTai + goc;
-        var rad = bearingMoi * Math.PI / 180;
-        return { x: center.x + r * Math.sin(rad), y: center.y - r * Math.cos(rad) };
-      }
-
-      var housePointsThang = housePoints.map(function (p) { return xoayQuanhTam(p, -gocXoayLuoi); });
-
-      var xs = housePointsThang.map(function (p) { return p.x; });
-      var ys = housePointsThang.map(function (p) { return p.y; });
+      var xs = housePoints.map(function (p) { return p.x; });
+      var ys = housePoints.map(function (p) { return p.y; });
       var minX = Math.min.apply(null, xs), maxX = Math.max.apply(null, xs);
       var minY = Math.min.apply(null, ys), maxY = Math.max.apply(null, ys);
       var W = maxX - minX, H = maxY - minY;
@@ -297,53 +270,45 @@
       for (var row = 0; row < 3; row++) {
         for (var col = 0; col < 3; col++) {
           var cx0 = minX + col * cellW, cy0 = minY + row * cellH;
-          // Ô hình chữ nhật trong hệ trục "thẳng" (chưa xoay) — dùng để tính % diện tích khuyết,
-          // giao với housePointsThang (housePoints cũng đã xoay ngược về cùng hệ trục này).
-          var cellPolyThang = [
+          var cellPoly = [
             { x: cx0, y: cy0 },
             { x: cx0, y: cy0 + cellH },
             { x: cx0 + cellW, y: cy0 + cellH },
             { x: cx0 + cellW, y: cy0 }
           ];
-          var clipped = clipPolygon(housePointsThang, cellPolyThang);
+          var clipped = clipPolygon(housePoints, cellPoly);
           var overlapArea = shoelaceArea(clipped);
           var cellArea = cellW * cellH;
           var pct = cellArea > 0 ? (overlapArea / cellArea) * 100 : 0;
           var isCenter = (row === 1 && col === 1);
-          // Xoay 4 đỉnh của ô TRỞ LẠI hệ trục thật (+gocXoayLuoi) để vẽ đúng hình bình hành nghiêng
-          // theo polygon thật trên màn hình.
-          var cellPolyThat = cellPolyThang.map(function (p) { return xoayQuanhTam(p, gocXoayLuoi); });
-          var midXThang = cx0 + cellW / 2, midYThang = cy0 + cellH / 2;
-          var midThat = xoayQuanhTam({ x: midXThang, y: midYThang }, gocXoayLuoi);
-          results.push({ row: row, col: col, polyThat: cellPolyThat, midX: midThat.x, midY: midThat.y, pct: pct, isCenter: isCenter });
+          results.push({ row: row, col: col, cx0: cx0, cy0: cy0, pct: pct, isCenter: isCenter });
         }
       }
 
       results.forEach(function (r) {
-        var polyStr = r.polyThat.map(function (p) { return p.x.toFixed(2) + "," + p.y.toFixed(2); }).join(" ");
-        // Dùng <polygon> thay vì <rect> (rect không xoay được theo hình bình hành nghiêng khi
-        // gocXoayLuoi khác 0) — khi gocXoayLuoi=0, polygon 4 đỉnh vuông góc trông giống hệt rect cũ.
-        var poly = el("polygon", {
+        var rect = el("rect", {
           class: "grid" + (r.isCenter ? " center-cell" : ""),
-          points: polyStr
+          x: r.cx0, y: r.cy0, width: cellW, height: cellH
         });
-        g.appendChild(poly);
+        g.appendChild(rect);
 
         var khuyet = r.pct < thresholdPercent;
         if (khuyet) {
-          g.appendChild(el("polygon", {
+          g.appendChild(el("rect", {
             class: "khuyet-fill",
-            points: polyStr
+            x: r.cx0, y: r.cy0, width: cellW, height: cellH
           }));
         }
 
+        var midX = r.cx0 + cellW / 2, midY = r.cy0 + cellH / 2;
+
         if (khuyet && showKhuyetLabel) {
-          var tag = el("text", { class: "khuyet-tag", x: r.midX, y: r.midY - 6 });
+          var tag = el("text", { class: "khuyet-tag", x: midX, y: midY - 6 });
           tag.textContent = "KHUYẾT";
           setScaledFontSize(tag, 9);
           g.appendChild(tag);
 
-          var pctText = el("text", { class: "cell-pct", x: r.midX, y: r.midY + 8 });
+          var pctText = el("text", { class: "cell-pct", x: midX, y: midY + 8 });
           pctText.textContent = (100 - r.pct).toFixed(0) + "%";
           setScaledFontSize(pctText, 9);
           g.appendChild(pctText);
@@ -397,9 +362,6 @@
   var draggingIndex = -1;
   var scalePxPerMeter = 20; // 1 mét = 20px, Ka chỉnh qua thanh trượt
   var lockedPoints = [];    // true = đỉnh bị khoá, không cho kéo/chỉnh
-  // Góc xoay TÍCH LUỸ của polygon (độ), dùng để chia lưới 9 ô theo đúng hệ trục cục bộ đã xoay
-  // (xem ccXoayDaGiac() và CuuCungGrid.render()). Reset về 0 khi chọn lại hình dạng mới.
-  var ccGocXoayTichLuy = 0;
 
   // currentPoints đã là toạ độ SVG (viewBox) sẵn — không có hệ world/zoom riêng như tam-nha,
   // nên hàm quy đổi world->screen của CuaModule chỉ cần trả về nguyên giá trị.
@@ -884,14 +846,13 @@
       window.currentPoints = currentPoints;
       document.getElementById("sidesInput").value = currentPoints.length;
       lockedPoints = currentPoints.map(function () { return false; });
-      ccGocXoayTichLuy = 0; // hình dạng mới -> reset góc xoay tích luỹ
       // Mặc định luôn có sẵn 1 Cửa chính — thay cho chấm xanh "CỬA" cũ. Đây là cửa THẬT, nằm
       // trong danh sách cửa (cuuCungDoors), chỉnh sửa/xoá được như mọi cửa khác qua CuaModule.
       datCuaChinhMacDinh();
       svgEl.setAttribute("viewBox", "0 0 400 400");
     }
     var showKhuyetLabel = document.getElementById("khuyetLabelToggle").checked;
-    CuuCungGrid.render("#cuuCungSvg2", currentPoints, threshold, showKhuyetLabel, ccGocXoayTichLuy);
+    CuuCungGrid.render("#cuuCungSvg2", currentPoints, threshold, showKhuyetLabel);
 
     // Vẽ ký hiệu cửa (dùng chung CuaModule — thay cho drawDoors() cũ)
     if (cuuCungDoors.length > 0 && typeof CuaModule !== 'undefined') {
@@ -1345,7 +1306,6 @@
         var bearingMoi = ccBearingCuaDiem(p, center) + goc;
         return ccDiemTheoBearing(center, bearingMoi, r);
       });
-      ccGocXoayTichLuy = (ccGocXoayTichLuy + goc) % 360; // cộng dồn — dùng để chia lưới 9 ô theo đúng hệ trục đã xoay
 
       // Trừ góc xoay vào hướng nhà hiện tại (#doSoTay), đồng bộ sang mọi nơi đang lắng nghe.
       if (doSoTayEl) {

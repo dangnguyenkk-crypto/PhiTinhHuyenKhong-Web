@@ -289,12 +289,12 @@
     if (!soGoc) return;
     var vsh = window.phiTinhVSH && window.phiTinhVSH[cungName];
     var ngamHit = false;
-    if (vsh) {
-      if (typeof window.xetPhanPhucNgamMotSao === 'function') {
-        ngamHit = !!(window.xetPhanPhucNgamMotSao(vsh.S, soGoc) || window.xetPhanPhucNgamMotSao(vsh.H, soGoc));
-      } else {
-        ngamHit = (vsh.S === soGoc) || (vsh.H === soGoc) || (vsh.S + soGoc === 10) || (vsh.H + soGoc === 10);
-      }
+    if (vsh && typeof window.xetPhanPhucNgamMotSao === 'function') {
+      // Xét ĐỘC LẬP cho bàn Sơn và bàn Hướng — mỗi bàn chỉ kích hoạt Phản/Phục Ngâm khi
+      // CHÍNH bàn đó có 5 nhập Trung cung (không dùng chéo, không OR đơn thuần theo số tại cung).
+      var hitSon = window.xetPhanPhucNgamMotSao(vsh.S, soGoc, "Son");
+      var hitHuong = window.xetPhanPhucNgamMotSao(vsh.H, soGoc, "Huong");
+      ngamHit = !!(hitSon || hitHuong);
     }
     var t = document.createElementNS("http://www.w3.org/2000/svg", "text");
     t.setAttribute("class", "so-nen-goc" + (ngamHit ? " so-nen-goc-ngam" : ""));

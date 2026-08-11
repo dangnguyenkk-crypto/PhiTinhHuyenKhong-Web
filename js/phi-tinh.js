@@ -493,17 +493,45 @@ function ghiChuHaDoTuTuong(sSon, sHuong, vanHienTai) {
         + `</div>`;
 }
 
-// Phản Ngâm / Phục Ngâm (cung vị) — so sao Sơn/Hướng với số Lạc Thư nguyên đán (CUNG_TO_SO) của chính cung đó.
-// Phục Ngâm: sao trùng đúng số gốc. Phản Ngâm: sao hợp thập (+10) với số gốc. Cả 2 đều dữ khi thất vận (Huyền Không Bí Chỉ).
-function xetPhanPhucNgam(sao, tenCungVi) {
+// ===== PHẢN NGÂM / PHỤC NGÂM (theo nguyên văn) =====
+// "Hai sao sơn hoặc hướng là 5 nhập Trung cung thuận cục gọi là Phục ngâm.
+//  Hai sao sơn hoặc hướng 5 nhập Trung cung nghịch cục gọi là Phản ngâm.
+//  Phục ngâm tức là 5 nhập trung, chữ số nào phi tinh giống như tinh bàn gốc lạc thư.
+//  Phản ngâm tức là ở cung mà phi tinh chiếu tới chữ nào cũng hợp thập với địa bàn (lạc thư gốc)."
+//
+// => Điều kiện kích hoạt: CHỈ bàn nào có số nhập Trung = 5 mới được xét (Sơn và Hướng xét ĐỘC LẬP,
+//    không OR/trộn với nhau — nếu Hướng không phải 5 nhập trung thì không dùng sao Hướng để xét).
+// => Khi đã kích hoạt (đúng bàn đó, số nhập trung = 5): xác định Phục/Phản theo chiều bay của
+//    CHÍNH bàn đó (thuận => Phục Ngâm cả bàn; nghịch => Phản Ngâm cả bàn), rồi so từng cung của
+//    CHÍNH bàn đó với Lạc Thư nguyên đán tại cung ấy (trùng => Phục hit; hợp thập => Phản hit).
+//
+// window.xetPhanPhucNgamMotSao(soTaiCung, soGocTaiCung, loaiBan)
+//   soTaiCung   : số của bàn Sơn hoặc Hướng tại cung đang xét
+//   soGocTaiCung: số Lạc Thư nguyên đán tại chính cung đang xét (CUNG_TO_SO của cung đó)
+//   loaiBan     : "Son" | "Huong" — bàn nào đang được xét (để tra đúng laThuan.. và soNhapTrung.. )
+window.xetPhanPhucNgamMotSao = function (soTaiCung, soGocTaiCung, loaiBan) {
+    let vsh = window.phiTinhVSH;
+    if (!vsh || !vsh["Trung"]) return null;
+    let soNhapTrung = loaiBan === "Huong" ? vsh["Trung"].H : vsh["Trung"].S;
+    if (soNhapTrung !== 5) return null; // chỉ kích hoạt khi CHÍNH bàn này có 5 nhập trung
+    let laThuan = loaiBan === "Huong" ? window.phiTinhLaThuanHuong : window.phiTinhLaThuanSon;
+    if (laThuan === true) {
+        return soTaiCung === soGocTaiCung ? { loai: "phuc", nhan: "Phục Ngâm", ky: "伏" } : null;
+    } else if (laThuan === false) {
+        return soTaiCung + soGocTaiCung === 10 ? { loai: "phan", nhan: "Phản Ngâm", ky: "反" } : null;
+    }
+    return null;
+};
+
+// Giữ hàm cũ (dùng ở nơi khác trong file này nếu có) — nay chỉ còn ý nghĩa khi được gọi kèm loaiBan.
+// tenCungVi: tên cung đang xét; sao: số của bàn Sơn/Hướng tại cung đó; loaiBan: "Son" | "Huong".
+function xetPhanPhucNgam(sao, tenCungVi, loaiBan) {
     let soGoc = tenCungVi === "Trung" ? 5 : CUNG_TO_SO[tenCungVi];
-    let ket = typeof window.xetPhanPhucNgamMotSao === 'function'
-        ? window.xetPhanPhucNgamMotSao(sao, soGoc)
-        : (sao === soGoc ? {loai:"phuc", nhan:"Phục Ngâm", ky:"伏"} : sao + soGoc === 10 ? {loai:"phan", nhan:"Phản Ngâm", ky:"反"} : null);
+    let ket = window.xetPhanPhucNgamMotSao(sao, soGoc, loaiBan);
     if (!ket) return null;
     let tip = ket.loai === "phuc"
-        ? `Trùng đúng số Lạc Thư nguyên đán (${soGoc}) của cung ${tenCungVi} — dữ khi thất vận`
-        : `Hợp thập với số Lạc Thư nguyên đán (${soGoc}) của cung ${tenCungVi} — dữ khi thất vận`;
+        ? `5 nhập Trung cung thuận cục (Phục Ngâm) — cung ${tenCungVi} trùng đúng số Lạc Thư nguyên đán (${soGoc}) — dữ khi thất vận`
+        : `5 nhập Trung cung nghịch cục (Phản Ngâm) — cung ${tenCungVi} hợp thập với số Lạc Thư nguyên đán (${soGoc}) — dữ khi thất vận`;
     return { ...ket, tip };
 }
 function luanGiaiCung(tenCungVi, vanNha, sVan, sSon, sHuong, sNien, sNguyet, sNhat, thangXem, vanHienTai) {
@@ -609,8 +637,8 @@ function luanGiaiCung(tenCungVi, vanNha, sVan, sSon, sHuong, sNien, sNguyet, sNh
     }
     let rows = "";
     rows += rowHTML("V", VAI_TRO_SAO.Van, sVan, `<b>${ttVan.moTa}</b>. ${moTaQuanHeCoNhan("Vận", HANH_CUA_SAO[sVan], hanhCung, qVan.loai)}.<div style="margin-top:4px;font-size:0.95em;">${veVongTuongSinhVan(hanhCung, HANH_CUA_SAO[sVan], HANH_CUA_SAO[sSon], HANH_CUA_SAO[sHuong], HANH_CUA_SAO[sNien], HANH_CUA_SAO[sNguyet], HANH_CUA_SAO[sNhat])}</div>`);
-    rows += rowHTML("S", VAI_TRO_SAO.Son, sSon, luanTrongTam("Sơn tinh","S",sSon,qSon,ttSon,"sức khỏe, nhân đinh (người trong nhà)","son"), xetPhanPhucNgam(sSon, tenCungVi));
-    rows += rowHTML("H", VAI_TRO_SAO.Huong, sHuong, luanTrongTam("Hướng tinh","H",sHuong,qHuong,ttHuong,"tài lộc, sự nghiệp (việc bên ngoài)","huong"), xetPhanPhucNgam(sHuong, tenCungVi));
+    rows += rowHTML("S", VAI_TRO_SAO.Son, sSon, luanTrongTam("Sơn tinh","S",sSon,qSon,ttSon,"sức khỏe, nhân đinh (người trong nhà)","son"), xetPhanPhucNgam(sSon, tenCungVi, "Son"));
+    rows += rowHTML("H", VAI_TRO_SAO.Huong, sHuong, luanTrongTam("Hướng tinh","H",sHuong,qHuong,ttHuong,"tài lộc, sự nghiệp (việc bên ngoài)","huong"), xetPhanPhucNgam(sHuong, tenCungVi, "Huong"));
 
     const TEN_DAY_KHACH_TINH = {"N": "Niên", "Ng": "Nguyệt", "Nh": "Nhật"};
     function rowKhachTinh(nhan, ky, vaiTro, saoKhach) {
@@ -657,7 +685,7 @@ function luanGiaiCung(tenCungVi, vanNha, sVan, sSon, sHuong, sNien, sNguyet, sNh
     else if (diem===-1) ketLuan = "Cung có một mặt bị khắc nhập cần lưu ý, nên hạn chế chức năng quan trọng liên quan đến mặt đó, ưu tiên xem có cứu tinh trong bảng trên hay không để cân nhắc mức độ.";
     else ketLuan = "Cung bị khắc nhập cả 2 mặt (Sơn lẫn Hướng), nên tránh đặt bếp, giường ngủ, bàn thờ; xem kỹ trong bảng trên có cứu tinh chế được hay không, nếu không thì cần hóa giải bằng vật phẩm Ngũ hành phù hợp.";
     let duoiBang = `<br><br><b>Kết luận:</b> ${ketLuan}`;
-    let ngamSon = xetPhanPhucNgam(sSon, tenCungVi), ngamHuong = xetPhanPhucNgam(sHuong, tenCungVi);
+    let ngamSon = xetPhanPhucNgam(sSon, tenCungVi, "Son"), ngamHuong = xetPhanPhucNgam(sHuong, tenCungVi, "Huong");
     if (ngamSon || ngamHuong) {
         let ghi = [];
         if (ngamSon) ghi.push(`Sơn tinh ${ngamSon.nhan} (${ngamSon.ky})`);
@@ -1060,12 +1088,20 @@ async function tinhToanPhiTinh() {
         divKiemHuong.innerHTML = "";
     }
 
+    // Xuất V/S/H + chiều bay ra window TRƯỚC khi dùng xetPhanPhucNgam bên dưới — hàm này đọc lại
+    // window.phiTinhVSH["Trung"] (số nhập trung) và window.phiTinhLaThuan.. (chiều bay) để xét
+    // Phản/Phục Ngâm, nên phải export xong trước, không để tới cuối hàm mới export như bản cũ.
+    window.phiTinhVSH = {};
+    for (let c = 1; c <= 9; c++) window.phiTinhVSH[TEN_CUNG[c]] = {V: bVan[c], S: bSon[c], H: bHuong[c]};
+    window.phiTinhLaThuanSon = laThuanSon;
+    window.phiTinhLaThuanHuong = laThuanHuong;
+
     document.getElementById("vungLuanGiai").innerHTML = "";
     loiGiaiTheoCung = {};
     // Vòng 1: vẽ lưới + tính điểm 9 cung (cần đủ trước khi ghép tổng kết vào Trung cung)
     for (let c = 1; c <= 9; c++) {
         let cell = document.getElementById("cung-" + c);
-        let ngamSonNen = xetPhanPhucNgam(bSon[c], TEN_CUNG[c]), ngamHuongNen = xetPhanPhucNgam(bHuong[c], TEN_CUNG[c]);
+        let ngamSonNen = xetPhanPhucNgam(bSon[c], TEN_CUNG[c], "Son"), ngamHuongNen = xetPhanPhucNgam(bHuong[c], TEN_CUNG[c], "Huong");
         let ngamHitNen = !!(ngamSonNen || ngamHuongNen);
         let soNenGoc = CUNG_TO_SO[TEN_CUNG[c]];
         let nenHTML = `<div class="so-nen-goc-vs" style="position:absolute;inset:0;display:flex;align-items:center;justify-content:center;font-size:1.4em;font-weight:700;pointer-events:none;z-index:0;color:${ngamHitNen?'#b71c1c':'#999'};opacity:${ngamHitNen?'0.30':'0.26'};"${ngamHitNen?` title="${[ngamSonNen&&('Sơn tinh '+ngamSonNen.nhan),ngamHuongNen&&('Hướng tinh '+ngamHuongNen.nhan)].filter(Boolean).join(', ')} — số Lạc Thư nguyên đán ${soNenGoc}"`:''}>${soNenGoc}</div>`;
@@ -1097,9 +1133,8 @@ async function tinhToanPhiTinh() {
     }
     btn.disabled = false; btn.innerText = "XEM SƠ ĐỒ CỬU CUNG";
 
-    // Xuất V/S/H ra biến dùng chung để tab Cửu Cung Lưới đọc và hiển thị đè lên bản vẽ mặt bằng
-    window.phiTinhVSH = {};
-    for (let c = 1; c <= 9; c++) window.phiTinhVSH[TEN_CUNG[c]] = {V: bVan[c], S: bSon[c], H: bHuong[c]};
+    // (window.phiTinhVSH / phiTinhLaThuanSon / phiTinhLaThuanHuong đã được xuất SỚM hơn,
+    //  ngay trước Vòng 1, để xetPhanPhucNgam trong vòng lặp trên có dữ liệu đọc lại — xem ở trên)
     try { if (typeof cuuCungLuoiRedraw === "function") cuuCungLuoiRedraw(); } catch (e) {}
 }
 // Xác định 1 thời điểm (Niên tinh của 1 năm, hoặc Nguyệt tinh của 1 tháng) có "xấu" cho toàn nhà hay không,

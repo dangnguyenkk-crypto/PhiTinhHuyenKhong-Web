@@ -10,7 +10,7 @@
         var tamNhaData = {
             vertices: [], closed: false, lockedEdges: [], mode: 'add',
             zoomLevel: 1, panX: 0, panY: 0, pxPerMeter: 10,
-            centroidWorld: null, bgImage: null, bgImgWorld: null,
+            centroidWorld: null, bgImage: null, bgImgWorld: null, bgImgRotation: 0,
             isResetView: false, huongResetCu: 0, fontSizeCompass: 10,
             dragging: false, lastTouch: null,
             doors: [], showCompass: true
@@ -94,7 +94,10 @@
             if (tamNhaData.bgImage && tamNhaData.bgImgWorld) {
                 const pTL = worldToScreenTamNha(tamNhaData.bgImgWorld.wx, tamNhaData.bgImgWorld.wy);
                 const pBR = worldToScreenTamNha(tamNhaData.bgImgWorld.wx+tamNhaData.bgImgWorld.ww, tamNhaData.bgImgWorld.wy-tamNhaData.bgImgWorld.wh);
-                html += `<image href="${tamNhaData.bgImage.src}" x="${pTL.x}" y="${pTL.y}" width="${pBR.x-pTL.x}" height="${pBR.y-pTL.y}" opacity="1"/>`;
+                const imgCx = (pTL.x+pBR.x)/2, imgCy = (pTL.y+pBR.y)/2;
+                const rotDeg = tamNhaData.bgImgRotation || 0;
+                const rotAttr = rotDeg ? ` transform="rotate(${rotDeg} ${imgCx} ${imgCy})"` : '';
+                html += `<image href="${tamNhaData.bgImage.src}" x="${pTL.x}" y="${pTL.y}" width="${pBR.x-pTL.x}" height="${pBR.y-pTL.y}" opacity="1"${rotAttr}/>`;
             }
             if (tamNhaData.vertices.length > 0) {
                 let points = '';
@@ -337,6 +340,15 @@
         window.panTamNha = panTamNha;
         function updateTamNhaFontSize(val) { tamNhaData.fontSizeCompass=parseInt(val); document.getElementById('tnFontSizeLabel').textContent=tamNhaData.fontSizeCompass+'px'; redrawTamNha(); }
         window.updateTamNhaFontSize = updateTamNhaFontSize;
+        // Xoay ảnh nền (độ) — chỉ xoay ảnh, không xoay đa giác/la bàn/phòng đã vẽ.
+        function capNhatXoayAnhTamNha(val) {
+            let deg = parseFloat(val);
+            if (isNaN(deg)) deg = 0;
+            deg = ((deg % 360) + 360) % 360; // chuẩn hoá về 0-359
+            tamNhaData.bgImgRotation = deg;
+            redrawTamNha();
+        }
+        window.capNhatXoayAnhTamNha = capNhatXoayAnhTamNha;
         function resetTamNhaFontSize() { tamNhaData.fontSizeCompass=8; document.getElementById('tnFontSize').value=8; document.getElementById('tnFontSizeLabel').textContent='8px'; redrawTamNha(); }
         window.resetTamNhaFontSize = resetTamNhaFontSize;
         function updateTamNhaCompassHeading() {
@@ -364,6 +376,8 @@
                     let displayW,displayH;
                     if (ratio>maxW/maxH){displayW=maxW;displayH=maxW/ratio;}else{displayH=maxH;displayW=maxH*ratio;}
                     tamNhaData.bgImgWorld={wx:-displayW/2,wy:displayH/2,ww:displayW,wh:displayH};
+                    tamNhaData.bgImgRotation=0;
+                    var rotInput=document.getElementById('tnBgRotation'); if (rotInput) rotInput.value=0;
                     tamNhaData.zoomLevel=1;tamNhaData.panX=0;tamNhaData.panY=0;
                     tamNhaData.vertices=[];tamNhaData.lockedEdges=[];tamNhaData.closed=false;tamNhaData.centroidWorld=null;
                     document.getElementById('tnKetQuaTam').style.display='none';
@@ -430,6 +444,7 @@
                 showCompass: tamNhaData.showCompass,
                 bgImageSrc: tamNhaData.bgImage ? tamNhaData.bgImage.src : null,
                 bgImgWorld: tamNhaData.bgImgWorld,
+                bgImgRotation: tamNhaData.bgImgRotation || 0,
                 inputs: {
                     tnTiLePxPerM: val("tnTiLePxPerM"),
                     tnHuongLaBan: val("tnHuongLaBan"),
@@ -450,6 +465,7 @@
             setVal("tnColorTia", inp.tnColorTia);
             setVal("tnColorRanh8Huong", inp.tnColorRanh8Huong);
             setVal("tnFontSize", inp.tnFontSize);
+            setVal("tnBgRotation", obj.bgImgRotation || 0);
             var fsLabel = document.getElementById("tnFontSizeLabel");
             if (fsLabel && inp.tnFontSize) fsLabel.textContent = inp.tnFontSize + "px";
 
@@ -460,6 +476,7 @@
             tamNhaData.doors = JSON.parse(JSON.stringify(obj.doors || []));
             tamNhaData.pxPerMeter = obj.pxPerMeter || tamNhaData.pxPerMeter;
             tamNhaData.bgImgWorld = obj.bgImgWorld || null;
+            tamNhaData.bgImgRotation = obj.bgImgRotation || 0;
             tamNhaData.fontSizeCompass = parseInt(inp.tnFontSize) || 8;
             tamNhaData.centroidWorld = null;
             tamNhaData.showCompass = obj.showCompass !== false;

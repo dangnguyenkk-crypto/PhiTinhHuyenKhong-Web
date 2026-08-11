@@ -228,6 +228,18 @@
   #edgeList.screen-locked { pointer-events:none; opacity:0.45; }
   .son-ray { stroke:#555; stroke-width:0.6; }
   .huong-ray { stroke:#e0b83a; stroke-width:1; }
+
+  /* Viền tương phản mỏng cho text la bàn — giúp đọc được khi in/chụp ảnh đen trắng.
+     paint-order:stroke vẽ viền TRƯỚC fill nên không đè mất nét chữ.
+     stroke-width ~0.2px là rất mỏng, chỉ tạo viền vừa đủ tương phản. */
+  .son-label, .huong-label, .huong-pct, .huong-keyword, .nien-tinh,
+  .huong-son-tinh, .huong-huong-tinh, .so-nen-goc {
+    paint-order: stroke fill;
+    stroke: #000;
+    stroke-width: 0.2px;
+    stroke-linejoin: round;
+  }
+
   .son-label { fill:#ffcc66; font-size:10px; text-anchor:middle; dominant-baseline:middle; }
   .huong-label { fill:#7fd0ff; font-size:11px; font-weight:bold; text-anchor:middle; dominant-baseline:middle; }
   .huong-pct { fill:#7fd0ff; font-size:8px; text-anchor:middle; dominant-baseline:middle; }
