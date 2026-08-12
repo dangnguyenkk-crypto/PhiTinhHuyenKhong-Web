@@ -71,6 +71,7 @@
     var toggleBtn = document.getElementById("ccBgToggleBtn");
     var khoaBtn = document.getElementById("ccBgKhoaBtn");
     var resetBtn = document.getElementById("ccBgResetBtn");
+    var xoaBtn = document.getElementById("ccBgXoaBtn");
     var gocXoayRow = document.getElementById("ccBgGocXoayRow");
     var gocXoayInput = document.getElementById("ccBgGocXoayInput");
     if (!wrapper || !img || !chonAnhBtn || !fileInput) return; // HTML chưa có (bản cũ chưa cập nhật) — bỏ qua, không lỗi
@@ -88,7 +89,7 @@
         if (gocXoayInput) gocXoayInput.value = 0;
         ccBgCapNhatViTri();
         ccBgDangHien = true;
-        [toggleBtn, khoaBtn, resetBtn].forEach(function (b) { if (b) b.style.display = "inline-block"; });
+        [toggleBtn, khoaBtn, resetBtn, xoaBtn].forEach(function (b) { if (b) b.style.display = "inline-block"; });
         if (gocXoayRow) gocXoayRow.style.display = "flex";
       };
       reader.readAsDataURL(file);
@@ -116,6 +117,19 @@
       ccBgCapNhatViTri();
     });
 
+    // ---- Xoá hẳn ảnh nền (quay về trạng thái ban đầu chưa chọn ảnh) ----
+    if (xoaBtn) xoaBtn.addEventListener("click", function () {
+      if (!confirm("Xoá ảnh nền hiện tại?")) return;
+      img.removeAttribute("src");
+      img.style.display = "none";
+      ccBgOffset = { x: 0, y: 0 }; ccBgScale = 1; ccBgGocXoay = 0; ccBgDaKhoa = false; ccBgDangHien = true;
+      if (gocXoayInput) gocXoayInput.value = 0;
+      if (khoaBtn) { khoaBtn.textContent = "🔓"; khoaBtn.style.background = "#666"; }
+      if (toggleBtn) toggleBtn.style.background = "#666";
+      [toggleBtn, khoaBtn, resetBtn, xoaBtn].forEach(function (b) { if (b) b.style.display = "none"; });
+      if (gocXoayRow) gocXoayRow.style.display = "none";
+    });
+
     // ---- Nhập số góc xoay trực tiếp ----
     if (gocXoayInput) gocXoayInput.addEventListener("input", function () {
       if (ccBgDaKhoa) return;
@@ -141,8 +155,10 @@
     });
     window.addEventListener("pointerup", function () { ccBgDragging = false; ccBgLastPointer = null; });
 
-    // ---- Cuộn chuột để zoom ----
-    wrapper.addEventListener("wheel", function (evt) {
+    // ---- Cuộn chuột để zoom ---- (gắn trên touchZone, không phải wrapper, để dải "vuốt" bên
+    // phải wrapper không vô tình bị preventDefault khi lăn chuột/chạm vào)
+    var touchZone = document.getElementById("ccSvgTouchZone") || wrapper;
+    touchZone.addEventListener("wheel", function (evt) {
       if (ccBgDaKhoa || !ccBgDangHien || img.style.display === "none") return;
       evt.preventDefault();
       var factor = evt.deltaY < 0 ? 1.08 : 0.93;
@@ -151,7 +167,7 @@
     }, { passive: false });
 
     // ---- Chụm 2 ngón để zoom (pinch, cảm ứng) ----
-    wrapper.addEventListener("touchmove", function (evt) {
+    touchZone.addEventListener("touchmove", function (evt) {
       if (ccBgDaKhoa || !ccBgDangHien || img.style.display === "none") return;
       if (evt.touches.length !== 2) return;
       evt.preventDefault();
@@ -166,7 +182,7 @@
         ccBgCapNhatViTri();
       }
     }, { passive: false });
-    wrapper.addEventListener("touchend", function (evt) {
+    touchZone.addEventListener("touchend", function (evt) {
       if (evt.touches.length < 2) ccBgPinchStartDist = null;
     });
   }
