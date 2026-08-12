@@ -172,15 +172,25 @@
             <div class="map-placeholder" id="mapPlaceholder">Chưa có ảnh</div>
             <img id="mapImage" style="display:none;">
             <div id="map" style="display:none; width:100%; height:100%; position:absolute; top:0; left:0; z-index:2;"></div>
-            <button id="btnGPS" class="btn-gps" onclick="locateMe()">📍</button>
             <div class="compass-overlay" id="compassOverlay" style="display:none; z-index:10;">
                 <svg id="compassSvg" viewBox="0 0 1000 1000"></svg>
             </div>
             <button id="btnKhoaLaBan" class="btn-khoa" onclick="toggleKhoaLaBan()" title="Khóa/mở khóa di chuyển ảnh nền" style="display:none;">🔓</button>
             <button id="btnResetGoc" class="btn-reset" onclick="resetCompassAngle()" style="display:none;">🔄</button>
             <button id="btnToggleCompass" class="btn-toggle-compass" onclick="toggleCompassVisibility()" style="display:none;">👁️</button>
-            <button id="btnCaptureMaps" class="btn-capture-maps" onclick="captureMapImage()" style="display:none;">📸 Chụp</button>
-            <div style="position:absolute; bottom:15px; left:15px; display:flex; flex-direction:column; align-items:center; gap:4px; z-index:15; pointer-events:none;">
+            <!-- Nút zoom: sát lề trái -->
+            <div style="position:absolute; bottom:15px; left:15px; display:flex; flex-direction:column; gap:4px; z-index:15; pointer-events:none;">
+                <button class="nav-btn" onclick="zoomAnhNenThuyPhap(1.15)" title="Phóng to ảnh nền" style="pointer-events:auto;">🔍+</button>
+                <button class="nav-btn" onclick="zoomAnhNenThuyPhap(1/1.15)" title="Thu nhỏ ảnh nền" style="pointer-events:auto;">🔍−</button>
+            </div>
+            <!-- Nút Định vị / Căn giữa / Chụp: cùng hàng, ở giữa -->
+            <div style="position:absolute; bottom:15px; left:50%; transform:translateX(-50%); display:flex; align-items:center; gap:6px; z-index:20; pointer-events:none;">
+                <button id="btnGPS" class="btn-gps" onclick="locateMe()" style="position:static; width:32px; height:32px; margin:0; pointer-events:auto;">📍</button>
+                <button class="nav-btn" onclick="resetViTriAnhNen()" title="Căn giữa lại ảnh nền" style="width:auto; padding:8px 12px; font-size:12px; pointer-events:auto;">↺ Căn giữa</button>
+                <button id="btnCaptureMaps" class="btn-capture-maps" onclick="captureMapImage()" style="display:none; position:static; margin:0; transform:none; pointer-events:auto;">📸 Chụp</button>
+            </div>
+            <!-- 4 nút di chuyển ảnh nền: sát lề phải -->
+            <div style="position:absolute; bottom:15px; right:15px; display:flex; flex-direction:column; align-items:center; gap:4px; z-index:15; pointer-events:none;">
                 <div style="display:flex; gap:4px; pointer-events:auto;">
                     <button class="nav-btn" onclick="panAnhNenThuyPhap(-1, 0)" title="Di chuyển ảnh nền sang trái">◀</button>
                     <button class="nav-btn" onclick="panAnhNenThuyPhap(1, 0)" title="Di chuyển ảnh nền sang phải">▶</button>
@@ -189,22 +199,42 @@
                     <button class="nav-btn" onclick="panAnhNenThuyPhap(0, -1)" title="Di chuyển ảnh nền lên trên">▲</button>
                     <button class="nav-btn" onclick="panAnhNenThuyPhap(0, 1)" title="Di chuyển ảnh nền xuống dưới">▼</button>
                 </div>
-                <button class="nav-btn" onclick="resetViTriAnhNen()" title="Căn giữa lại ảnh nền" style="width:auto; padding:2px 8px; font-size:11px; margin-top:2px;">↺ Căn giữa</button>
-            </div>
-            <div style="position:absolute; bottom:15px; left:105px; display:flex; flex-direction:column; gap:4px; z-index:15; pointer-events:none;">
-                <button class="nav-btn" onclick="zoomAnhNenThuyPhap(1.15)" title="Phóng to ảnh nền" style="pointer-events:auto;">🔍+</button>
-                <button class="nav-btn" onclick="zoomAnhNenThuyPhap(1/1.15)" title="Thu nhỏ ảnh nền" style="pointer-events:auto;">🔍−</button>
             </div>
         </div>
         <div class="module-panel" style="padding:6px 8px;">
-            <div style="display:flex; gap:8px; flex-wrap:wrap;">
-                <div class="form-group" style="margin-bottom:0; flex:1; min-width:110px;"><label>Năm sinh (DL):</label><input type="number" id="namSinhGiaChu" value="1990" min="1900" max="2100" oninput="thuyPhapDoiNamSinhGiaChu(this.value)" style="padding:4px 6px; font-size:12px; width:100%;"></div>
-                <div class="form-group" style="margin-bottom:0; flex:1; min-width:110px;"><label>Can Chi năm sinh:</label><span id="canChiNamSinhGiaChu" style="display:block;padding:4px 6px; font-size:12px; font-weight:600; color:#5c4a3a; background:#f5f0e6; border-radius:5px;">—</span></div>
-                <div class="form-group" style="margin-bottom:0; flex:1; min-width:90px;"><label>Giới tính:</label>
-                    <select id="gioiTinhGiaChu" onchange="thuyPhapDoiGioiTinhGiaChu(this.value)" style="padding:4px 6px; font-size:12px; width:100%;"><option value="Nam">Nam</option><option value="Nữ">Nữ</option></select>
+            <!-- Đổi wrap thành nowrap để khóa dòng, dùng gap:3px để tiết kiệm diện tích -->
+            <div style="display:flex; gap:3px; flex-wrap:nowrap; align-items: flex-end; width:100%;">
+
+                <!-- Năm sinh DL (Thu nhỏ min-width xuống 85px) -->
+                <div class="form-group" style="margin-bottom:0; flex:1 1 85px; min-width:85px;">
+                    <label style="display:block; white-space:nowrap; font-size:11px;">Năm sinh (DL):</label>
+                    <input type="number" id="namSinhGiaChu" value="1990" min="1900" max="2100" oninput="thuyPhapDoiNamSinhGiaChu(this.value)" style="padding:4px 4px; font-size:12px; width:100%; box-sizing:border-box;">
                 </div>
+
+                <!-- Năm sinh ÂL (Thu nhỏ min-width xuống 70px) -->
+                <div class="form-group" style="margin-bottom:0; flex:1 1 70px; min-width:70px;">
+                    <label style="display:block; white-space:nowrap; font-size:11px;">Năm sinh ÂL:</label>
+                    <span id="canChiNamSinhGiaChu" style="display:block; padding:4px 4px; font-size:12px; font-weight:600; color:#5c4a3a; background:#f5f0e6; border-radius:5px; text-align:center; border:1px solid #e6dfd3; box-sizing:border-box;">—</span>
+                </div>
+
+                <!-- Giới tính (Giữ nguyên 60px) -->
+                <div class="form-group" style="margin-bottom:0; flex:0 0 60px; min-width:60px;">
+                    <label style="display:block; white-space:nowrap; font-size:11px;">Giới tính:</label>
+                    <select id="gioiTinhGiaChu" onchange="thuyPhapDoiGioiTinhGiaChu(this.value)" style="padding:4px 14px 4px 4px; font-size:12px; width:100%; box-sizing:border-box;">
+                        <option value="Nam">Nam</option>
+                        <option value="Nữ">Nữ</option>
+                    </select>
+                </div>
+
+                <!-- Xoay ảnh (Thu nhỏ chữ tiêu đề và min-width xuống 85px để không bị đẩy) -->
+                <div class="form-group" style="margin-bottom:0; flex:1 1 85px; min-width:85px;">
+                    <label style="display:block; white-space:nowrap; font-size:11px;">🔄 Xoay (°):</label>
+                    <input type="number" id="tpBgRotation" value="0" step="1" style="padding:4px 4px; font-size:12px; width:100%; box-sizing:border-box;" oninput="capNhatXoayAnhThuyPhap(this.value)" onchange="capNhatXoayAnhThuyPhap(this.value)">
+                </div>
+
             </div>
         </div>
+
         <div class="module-panel" style="padding:6px 8px;">
             <div style="display:flex; gap:6px; flex-wrap:wrap; margin-bottom:6px; align-items:flex-end;">
                 <div style="flex:2; min-width:100px;"><label style="font-size:10px; display:block; margin-bottom:1px;">🔤 Cỡ chữ</label>
@@ -224,14 +254,16 @@
                 <div style="flex:1; min-width:70px;"><label style="font-size:10px; display:block; margin-bottom:1px;">Hướng (°)</label>
                     <input type="number" id="houseFacing" value="180" min="0" max="360" style="padding:4px 6px; font-size:12px; width:100%; height:24px;" oninput="capNhatHuongTuThuyPhap()">
                 </div>
-                <div style="flex:1.5; min-width:80px;"><label style="font-size:10px; display:block; margin-bottom:1px;">Nước ĐẾN</label>
-                    <select id="selSonDen" style="padding:4px 6px; font-size:11px; width:100%; height:24px;"></select>
+                <div style="flex:1.1; min-width:65px;"><label style="font-size:10px; display:block; margin-bottom:1px;">Nước ĐẾN</label>
+                    <select id="selSonDen" style="padding:4px 4px; font-size:11px; width:100%; height:24px;"></select>
                 </div>
-                <div style="flex:1.5; min-width:80px;"><label style="font-size:10px; display:block; margin-bottom:1px;">Nước ĐI</label>
-                    <select id="selSonDi" style="padding:4px 6px; font-size:11px; width:100%; height:24px;"></select>
+                <div style="flex:1.1; min-width:65px;"><label style="font-size:10px; display:block; margin-bottom:1px;">Nước ĐI</label>
+                    <select id="selSonDi" style="padding:4px 4px; font-size:11px; width:100%; height:24px;"></select>
+                </div>
+                <div style="flex:1.1; min-width:90px;">
+                    <button onclick="xacNhanThuyKhau()" style="padding:4px 6px; font-size:12px; width:100%; height:34px; white-space:nowrap;">✅ Xác nhận</button>
                 </div>
             </div>
-            <button onclick="xacNhanThuyKhau()" style="padding:7px; font-size:12px; margin-top:4px;">✅ XÁC NHẬN</button>
             <div class="ket-qua-box" id="ketQuaThuyKhau" style="display:none;"></div>
         </div>
         <div class="module-panel legend" style="padding:4px 8px;">

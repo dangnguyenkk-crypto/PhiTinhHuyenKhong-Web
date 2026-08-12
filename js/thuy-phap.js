@@ -20,6 +20,7 @@
             let isResetMode = false, laBanDaKhoa = false, doMoNenLaBan = 0, compassVisible = true;
             let imgOffset = {x:0, y:0}; // độ lệch ảnh nền (px) so với vị trí gốc — la bàn luôn đứng yên ở giữa khung
             let imgScale = 1; // tỉ lệ phóng to/thu nhỏ ảnh nền
+            let imgRotation = 0; // góc xoay ảnh nền (độ)
             let map = null, marker = null, currentLocation = {lat:10.8231,lng:106.6297}, isSatellite = true, satelliteLayer = null, streetLayer = null;
 
             // ==== CỠ CHỮ LA BÀN — thanh trượt #tpFontSize (đã có sẵn trong index.html nhưng thiếu
@@ -42,9 +43,14 @@
 
             function capNhatViTriAnhNen() {
                 let img = document.getElementById('mapImage');
-                if (img) img.style.transform = 'translate(' + imgOffset.x + 'px,' + imgOffset.y + 'px) scale(' + imgScale + ')';
+                if (img) img.style.transform = 'translate(' + imgOffset.x + 'px,' + imgOffset.y + 'px) scale(' + imgScale + ') rotate(' + imgRotation + 'deg)';
             }
             window.capNhatViTriAnhNen = capNhatViTriAnhNen;
+
+            window.capNhatXoayAnhThuyPhap = function(val) {
+                imgRotation = parseFloat(val) || 0;
+                capNhatViTriAnhNen();
+            };
 
             window.zoomAnhNenThuyPhap = function(factor) {
                 if (laBanDaKhoa) return;
@@ -69,7 +75,7 @@
                 if (svgTron) svgTron.style.display = (kieuMoi === "tron24son") ? "block" : "none";
                 if (svgDaGiac) svgDaGiac.style.display = (kieuMoi === "daGiacNha") ? "block" : "none";
                 let panelDaGiac = document.getElementById("thuyPhapDaGiacPanel");
-                if (panelDaGiac) panelDaGiac.style.display = (kieuMoi === "daGiacNha") ? "block" : "none";
+                if (panelDaGiac) panelDaGiac.style.display = (kieuMoi === "daGiacNha") ? "flex" : "none";
 
                 if (kieuMoi === "tron24son") veCompassOverlay(parseFloat(document.getElementById('houseFacing').value) || 0);
                 else if (kieuMoi === "daGiacNha") veLaiDaGiacNha();
@@ -253,16 +259,16 @@
                 if (!stage || !stage.parentElement) return null;
                 panel = document.createElement("div");
                 panel.id = "thuyPhapDaGiacPanel";
-                panel.style.cssText = "display:none;padding:6px 8px;display:flex;gap:6px;flex-wrap:wrap;align-items:center;background:#f5f5f5;border-radius:8px;margin:4px 0;";
+                panel.style.cssText = "display:none;padding:6px 8px;flex-wrap:nowrap;align-items:center;gap:6px;background:#f5f5f5;border-radius:8px;margin:4px 0;justify-content:flex-start;";
                 panel.innerHTML = `
-                    <span style="font-size:12px;font-weight:600;color:#444;">📐 Hình nhà:</span>
-                    <select onchange="chonHinhDangNhaThuyPhap(this.value)" style="padding:4px 8px;border-radius:6px;border:1px solid #ccc;font-size:12px;">
-                        <option value="4">4 cạnh (vuông vắn)</option>
-                        <option value="8">8 cạnh (theo 8 hướng)</option>
-                        <option value="24">24 cạnh (theo 24 sơn)</option>
+                    <span style="font-size:12px;font-weight:600;color:#444;white-space:nowrap;flex:0 0 auto;">📐 Hình La bàn:</span>
+                    <select onchange="chonHinhDangNhaThuyPhap(this.value)" style="padding:2px 24px;border-radius:6px;border:1px solid #ccc;font-size:12px;flex:0 0 auto;width:auto;">
+                        <option value="4">4 cạnh</option>
+                        <option value="8">8 cạnh</option>
+                        <option value="24">24 cạnh</option>
                     </select>
-                    <button onclick="luuDaGiacNhaThuyPhap()" style="padding:4px 10px;border-radius:6px;border:none;background:#1565c0;color:#fff;font-size:12px;cursor:pointer;">💾 Lưu</button>
-                    <button onclick="moDaGiacNhaThuyPhap()" style="padding:4px 10px;border-radius:6px;border:none;background:#6a1b9a;color:#fff;font-size:12px;cursor:pointer;">📂 Mở</button>
+                    <button onclick="luuDaGiacNhaThuyPhap()" style="padding:2px 10px;border-radius:6px;border:none;background:#1565c0;color:#fff;font-size:12px;cursor:pointer;flex:0 0 auto;white-space:nowrap;max-width:70px;width:100%;">💾 Lưu</button>
+                    <button onclick="moDaGiacNhaThuyPhap()" style="padding:2px 10px;border-radius:6px;border:none;background:#6a1b9a;color:#fff;font-size:12px;cursor:pointer;flex:0 0 auto;white-space:nowrap;max-width:70px;width:100%;">📂 Mở</button>
                 `;
                 stage.parentElement.insertBefore(panel, stage);
                 return panel;
@@ -325,7 +331,9 @@
                     if (map) map.setView([currentLocation.lat, currentLocation.lng], 18);
                     return;
                 }
-                imgOffset.x = 0; imgOffset.y = 0; imgScale = 1;
+                imgOffset.x = 0; imgOffset.y = 0; imgScale = 1; imgRotation = 0;
+                let rotInput = document.getElementById('tpBgRotation');
+                if (rotInput) rotInput.value = 0;
                 capNhatViTriAnhNen();
             };
             window.locateMe = function() {
@@ -391,7 +399,9 @@
                         document.getElementById('btnToggleCompass').style.display = 'none';
                         document.getElementById('btnGPS').style.display = 'none';
                         document.getElementById('map').style.display = 'none';
-                        imgOffset.x = 0; imgOffset.y = 0; imgScale = 1; capNhatViTriAnhNen();
+                        imgOffset.x = 0; imgOffset.y = 0; imgScale = 1; imgRotation = 0;
+                        let rotInput1 = document.getElementById('tpBgRotation'); if (rotInput1) rotInput1.value = 0;
+                        capNhatViTriAnhNen();
                         veCompassOverlay(parseFloat(document.getElementById('houseFacing').value) || 0);
                         document.getElementById('fileNameDisplay').textContent = '📸 Ảnh từ Google Maps';
                         compassVisible = true;
@@ -428,7 +438,9 @@
                         document.getElementById('btnKhoaLaBan').style.display = 'block';
                         document.getElementById('btnResetGoc').style.display = 'block';
                         document.getElementById('btnToggleCompass').style.display = 'block';
-                        imgOffset.x = 0; imgOffset.y = 0; imgScale = 1; capNhatViTriAnhNen();
+                        imgOffset.x = 0; imgOffset.y = 0; imgScale = 1; imgRotation = 0;
+                        let rotInput2 = document.getElementById('tpBgRotation'); if (rotInput2) rotInput2.value = 0;
+                        capNhatViTriAnhNen();
                         veCompassOverlay(parseFloat(document.getElementById('houseFacing').value) || 0);
                     };
                     reader.readAsDataURL(file); e.target.value = '';
@@ -593,6 +605,7 @@
                     tpFontSize: val("tpFontSize"),
                     imgOffset: {x: imgOffset.x, y: imgOffset.y},
                     imgScale: imgScale,
+                    imgRotation: imgRotation,
                     isResetMode: isResetMode,
                     laBanDaKhoa: laBanDaKhoa,
                     compassVisible: compassVisible,
@@ -615,6 +628,8 @@
 
                 if (obj.imgOffset) { imgOffset.x = obj.imgOffset.x || 0; imgOffset.y = obj.imgOffset.y || 0; } else { imgOffset.x = 0; imgOffset.y = 0; }
                 imgScale = obj.imgScale || 1;
+                imgRotation = obj.imgRotation || 0;
+                setVal("tpBgRotation", imgRotation);
                 capNhatViTriAnhNen();
                 isResetMode = !!obj.isResetMode;
                 laBanDaKhoa = !!obj.laBanDaKhoa;
