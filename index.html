@@ -69,12 +69,13 @@
                 <div class="section-label span-2">Thời điểm xem — nhập Dương HOẶC Âm</div>
                 <div class="form-group span-2">
                     <label>Ngày / Tháng / Năm DL:</label>
-                    <div style="display:flex;gap:6px;align-items:center;flex-wrap:wrap;">
-                        <input type="number" id="ngayDuongXem" value="1" min="1" max="31" onchange="dongBoTuDuong()" style="width:56px;padding:6px;text-align:center;">
-                        <span style="color:#888;font-size:12px;">/</span>
-                        <input type="number" id="thangDuongXem" value="6" min="1" max="12" onchange="dongBoTuDuong()" style="width:56px;padding:6px;text-align:center;">
-                        <span style="color:#888;font-size:12px;">/</span>
-                        <input type="number" id="namXem" value="2026" min="1900" max="2200" onchange="dongBoTuDuong()" style="width:76px;padding:6px;text-align:center;">
+                    <div style="display:flex;gap:4px;align-items:center;flex-wrap:nowrap;overflow-x:auto;">
+                        <input type="number" id="ngayDuongXem" value="1" min="1" max="31" onchange="dongBoTuDuong()" style="width:48px;flex:0 0 auto;padding:6px 2px;text-align:center;">
+                        <span style="color:#888;font-size:12px;flex:0 0 auto;">/</span>
+                        <input type="number" id="thangDuongXem" value="6" min="1" max="12" onchange="dongBoTuDuong()" style="width:48px;flex:0 0 auto;padding:6px 2px;text-align:center;">
+                        <span style="color:#888;font-size:12px;flex:0 0 auto;">/</span>
+                        <input type="number" id="namXem" value="2026" min="1900" max="2200" onchange="dongBoTuDuong()" style="width:66px;flex:0 0 auto;padding:6px 2px;text-align:center;">
+                        <button type="button" onclick="datNgayHomNayXem()" style="flex:0 0 auto;width: max-content; padding:6px 8px;background:linear-gradient(135deg,#4CAF50,#388E3C);color:#fff;border:none;border-radius:6px;font-size:12px;cursor:pointer;font-weight:600;white-space:nowrap;">📅 Lấy ngày hôm nay</button>
                     </div>
                 </div>
                 <div class="form-group span-2">

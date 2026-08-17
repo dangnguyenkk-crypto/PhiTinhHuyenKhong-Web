@@ -142,6 +142,62 @@ function tinhSaoNien(nam) {
     return ((saoGoc-1-(nam-giapTyGoc))%9+9)%9+1;
 }
 function layDiaChiNam(nam) { return ["Tý","Sửu","Dần","Mão","Thìn","Tị","Ngọ","Mùi","Thân","Dậu","Tuất","Hợi"][((nam+8)%12+12)%12]; }
+
+// ==================================================================
+// TAM SÁT (lưu niên theo Chi năm) — chuyển từ tim-nha.js (TN_CHI_TO_TAMSAT/
+// TN_TAM_SAT_LOAI) để dùng chung cho "Tổng kết toàn nhà" bên tab Nội Khí.
+// Tam Sát: 3 sơn bị sát nằm ở phương ĐỐI XUNG với cục Tam Hợp của Chi năm đó.
+// Chỉ kỵ TỌA (đại kỵ động thổ/tu sửa đúng chỗ lưng nhà tựa vào phương Tam Sát).
+// ==================================================================
+const CHI_TO_TAM_SAT = {
+    "Thân":["Tị","Ngọ","Mùi"], "Tý":["Tị","Ngọ","Mùi"], "Thìn":["Tị","Ngọ","Mùi"],
+    "Dần":["Hợi","Tý","Sửu"], "Ngọ":["Hợi","Tý","Sửu"], "Tuất":["Hợi","Tý","Sửu"],
+    "Tị":["Dần","Mão","Thìn"], "Dậu":["Dần","Mão","Thìn"], "Sửu":["Dần","Mão","Thìn"],
+    "Hợi":["Thân","Dậu","Tuất"], "Mão":["Thân","Dậu","Tuất"], "Mùi":["Thân","Dậu","Tuất"]
+};
+const TAM_SAT_LOAI = [
+    { ten: "Kiếp Sát", giaiDoan: "Tuyệt", moTa: "Cực kỳ hung bạo, chủ về tai nạn bất ngờ, cướp đoạt, mất mát tài sản." },
+    { ten: "Tai Sát",  giaiDoan: "Thai",  moTa: "Tấn công từ từ, chủ về bệnh tật, hao tổn thể chất, áp lực kéo dài." },
+    { ten: "Tuế Sát",  giaiDoan: "Dưỡng", moTa: "Đánh vào nền tảng, chủ về hao tán vì tiểu nhân, kiện tụng rườm rà." }
+];
+function xacDinhLoaiTamSat(chiNam, tenSon) {
+    let nhom = CHI_TO_TAM_SAT[chiNam];
+    if (!nhom) return null;
+    let idx = nhom.indexOf(tenSon);
+    if (idx === -1) return null;
+    return TAM_SAT_LOAI[idx];
+}
+
+// ==================================================================
+// TAM BAN QUÁI (三般卦) — cách cục TOÀN CỤC: cả 9 cung của bàn đều có Vận-
+// Sơn-Hướng cùng nhóm 1-4-7 / 2-5-8 / 3-6-9. Chuyển từ tim-nha.js.
+// ==================================================================
+const NHOM_TAM_BAN_QUAI = {1:"1-4-7",4:"1-4-7",7:"1-4-7", 2:"2-5-8",5:"2-5-8",8:"2-5-8", 3:"3-6-9",6:"3-6-9",9:"3-6-9"};
+function xetTamBanQuaiMotCung(v, s, h) {
+    if (NHOM_TAM_BAN_QUAI[v] === NHOM_TAM_BAN_QUAI[s] && NHOM_TAM_BAN_QUAI[s] === NHOM_TAM_BAN_QUAI[h]) return NHOM_TAM_BAN_QUAI[v];
+    return null;
+}
+function xetTamBanQuaiToanCuc(bVan, bSon, bHuong) {
+    for (let i = 1; i <= 9; i++) {
+        if (!xetTamBanQuaiMotCung(bVan[i], bSon[i], bHuong[i])) return false;
+    }
+    return true;
+}
+
+// ==================================================================
+// TỔ HỢP KHÔI TINH (1-6, cặp V-S hoặc V-H tại cung Hướng) — chuyển từ
+// tim-nha.js (TN_TO_HOP_VSH_HUONG). Cặp S-H tại Hướng đã được xét riêng ở
+// TO_HOP_SON_HUONG_DAC_BIET (luan-giai.js)/toHopDacBiet — không lặp lại.
+// ==================================================================
+function xetKhoiTinhVH(v, s, h) {
+    let cap = [["V","S",v,s], ["V","H",v,h]];
+    let ketQua = [];
+    for (let [nhan1, nhan2, x, y] of cap) {
+        let minMax = [Math.min(x,y), Math.max(x,y)].join("-");
+        if (minMax === "1-6") ketQua.push({ cap: nhan1 + "-" + nhan2, saoA: x, saoB: y });
+    }
+    return ketQua;
+}
 function tinhSaoNguyet(nam, thang) {
     let chi = layDiaChiNam(nam);
     let khoi = ["Tý","Ngọ","Mão","Dậu"].includes(chi)?8:["Thìn","Tuất","Sửu","Mùi"].includes(chi)?5:2;
@@ -842,7 +898,7 @@ function luanChanKhiTienThien(van, cungHuong) {
     </div>`;
 }
 
-function tongKetToanNha(van, ketQua9Cung, sb, sf, hf, hb, bVan, cungToa, cungHuong) {
+function tongKetToanNha(van, ketQua9Cung, sb, sf, hf, hb, bVan, cungToa, cungHuong, bSon, bHuong, tenSonToa, tenSonHuong, namXem) {
     let tot = ketQua9Cung.filter(c=>c.diem>=1), xau = ketQua9Cung.filter(c=>c.diem<=-1), tb = ketQua9Cung.filter(c=>c.diem===0);
     const vatPhamTheoHanh = {"Hỏa":"màu đỏ/cam/tím, đèn, vật hình tam giác, nến","Thổ":"màu vàng/nâu, gốm sứ, đá, thạch cao","Kim":"màu trắng/ánh kim, vật bằng kim loại, chuông gió kim loại","Thủy":"màu đen/xanh dương, bể cá, vật phẩm hình tròn/lượn sóng","Mộc":"màu xanh lá, cây cảnh, vật bằng gỗ"};
     let html = `<div class="luan-giai-item"><b>📌 Tổng kết toàn nhà (Vận ${van}):</b></div>`;
@@ -864,6 +920,54 @@ function tongKetToanNha(van, ketQua9Cung, sb, sf, hf, hb, bVan, cungToa, cungHuo
             if (soCoHopThap > 0) html += `<div class="luan-giai-item" style="color:#00695c;"><b>➕10 Hợp Thập</b> tại ${[hopThapToa.hopThapVS||hopThapToa.hopThapVH?'Tọa':null, hopThapHuong.hopThapVS||hopThapHuong.hopThapVH?'Hướng':null].filter(Boolean).join(', ')} — thông khí, cứu cục, quý nhất ở Vận 1 và Vận 9.</div>`;
         }
     }
+
+    // ===== NGŨ HOÀNG TRẠCH TINH (cố định vĩnh viễn theo cách cục, KHÁC Ngũ Hoàng lưu niên) — Sơn
+    // tinh hoặc Hướng tinh = 5 tại Trung/Tọa/Hướng. Chuyển từ tim-nha.js. Xét ĐÚNG 3 cung Trung/Tọa/
+    // Hướng (không phải cả 9 cung). =====
+    let viTriNguHoang = [];
+    if (sb === 5) viTriNguHoang.push({ loai: "Sơn tinh", ten: `Tọa (${cungToa})` });
+    if (sf === 5) viTriNguHoang.push({ loai: "Sơn tinh", ten: `Hướng (${cungHuong})` });
+    if (bSon && bSon[5] === 5) viTriNguHoang.push({ loai: "Sơn tinh", ten: "Trung cung" });
+    if (hb === 5) viTriNguHoang.push({ loai: "Hướng tinh", ten: `Tọa (${cungToa})` });
+    if (hf === 5) viTriNguHoang.push({ loai: "Hướng tinh", ten: `Hướng (${cungHuong})` });
+    if (bHuong && bHuong[5] === 5) viTriNguHoang.push({ loai: "Hướng tinh", ten: "Trung cung" });
+    if (viTriNguHoang.length > 0) {
+        let via = viTriNguHoang.map(v => `<b>${v.loai}</b> tại <b>${v.ten}</b>`).join(", ");
+        html += `<div class="luan-giai-item" style="color:#4a148c;background:#f3e5f5;border-radius:6px;padding:8px;"><b>☠☠ Ngũ Hoàng Trạch Tinh</b> (xét tại Trung/Tọa/Hướng): ${via}. Đây là "gốc rễ bệnh của nhà" — cố định vĩnh viễn theo cách cục, không đổi theo năm. Nên đặt vật phẩm hành <b>Kim</b> (chuông gió kim loại, bát quái đồng, khánh đồng...) tại đúng vị trí này và giữ <b>lâu dài</b> để trấn.</div>`;
+    }
+
+    // ===== THÁI TUẾ + TAM SÁT (lưu niên, theo Năm xem — dùng lại ô "namXem" đã có sẵn trên tab) —
+    // Tam Sát chỉ kỵ TỌA, Thái Tuế chỉ kỵ HƯỚNG. Chuyển từ tim-nha.js. Xét ĐÚNG 3 cung Trung/Tọa/
+    // Hướng (Tam Sát/Thái Tuế thực chất chỉ rơi vào Tọa/Hướng, không có ở Trung cung). =====
+    if (namXem && tenSonToa && tenSonHuong) {
+        let chiNam = layDiaChiNam(namXem);
+        let toaThaiTue = tenSonToa.ten === chiNam;
+        let xungThaiTue = tenSonHuong.ten === chiNam;
+        let loaiTamSat = xacDinhLoaiTamSat(chiNam, tenSonToa.ten);
+        let toaSat = !!loaiTamSat;
+        if (toaSat || xungThaiTue) {
+            let dong = [];
+            if (toaSat) dong.push(`☠ <b>Tọa phạm ${loaiTamSat.ten}</b> (${loaiTamSat.giaiDoan} — Tam Sát của Chi năm ${namXem}, tức năm ${chiNam}) — ${loaiTamSat.moTa} Đại kỵ động thổ, tu sửa tại Tọa (${cungToa}).`);
+            if (xungThaiTue) dong.push(`⚠ <b>Hướng phạm Thái Tuế</b> (Hướng nhà trùng đúng phương Thái Tuế của Chi năm ${namXem}, tức năm ${chiNam}) — đối đầu trực diện với phương Thái Tuế, đại kỵ đào đắp/sửa chữa tại Hướng (${cungHuong}).`);
+            html += `<div class="luan-giai-item" style="color:#8b0000;background:#ffebee;border-radius:6px;padding:8px;">${dong.join("<br>")}</div>`;
+        }
+        if (toaThaiTue) {
+            html += `<div class="luan-giai-item" style="color:#1b5e20;background:#e8f5e9;border-radius:6px;padding:8px;">🛡️ <b>Tọa Thái Tuế</b> (Tọa sơn trùng đúng phương Thái Tuế của Chi năm ${namXem}, tức năm ${chiNam}) — như tựa lưng vào núi, có thế vững, không phải điều xấu. Lưu ý: dù Tọa hay Hướng, phương Thái Tuế tuyệt đối không đào đắp/sửa chữa/đục phá.</div>`;
+        }
+    }
+
+    // ===== TAM BAN QUÁI (三般卦, toàn cục 9 cung) + KHÔI TINH (1-6, cặp V-S/V-H tại Hướng) —
+    // chỉ ghi chú tham khảo, không cộng/trừ điểm. Chuyển từ tim-nha.js. =====
+    if (bSon && bHuong && bVan) {
+        if (xetTamBanQuaiToanCuc(bVan, bSon, bHuong)) {
+            html += `<div class="luan-giai-item" style="color:#6a1b9a;background:#f3e5f5;border-radius:6px;padding:8px;"><b>🔺 Tam Ban Quái</b> (toàn cục — xét cả 9 cung, không riêng Trung/Tọa/Hướng) — cả 9 cung của bàn đều có Vận-Sơn-Hướng cùng nhóm 1-4-7/2-5-8/3-6-9. Quý cách hiếm gặp, đắc quý nhân, thông cả 3 nguyên — nhưng cần Hướng tinh đúng chỗ có thủy thật mới phát huy, nếu không dễ biến cát thành hung.</div>`;
+        }
+        let khoiTinhHuong = xetKhoiTinhVH(bVan[CUNG_TO_SO[cungHuong]], sf, hf);
+        if (khoiTinhHuong.length) {
+            html += `<div class="luan-giai-item" style="color:#795500;background:#fff8e1;border-radius:6px;padding:8px;"><b>🏆 Khôi Tinh (1-6)</b> tại cung Hướng (${cungHuong}) — cặp ${khoiTinhHuong.map(k=>`${k.cap} = ${k.saoA}-${k.saoB}`).join(", ")}: lợi công danh, sự nghiệp, thăng tiến quan chức.</div>`;
+        }
+    }
+
     if (tot.length) html += `<div class="luan-giai-item"><b>✅ Cung nên tận dụng:</b> ${tot.map(c=>c.ten).join(", ")}. Đây là các khu vực thuận lợi cho sức khỏe và/hoặc tài lộc — phù hợp đặt phòng khách, bàn làm việc, phòng thờ, giường ngủ chính.</div>`;
     if (tb.length) html += `<div class="luan-giai-item"><b>➖ Cung trung bình:</b> ${tb.map(c=>c.ten).join(", ")}. Có thể dùng cho chức năng phụ (kho, lối đi, nhà vệ sinh).</div>`;
     if (xau.length) {
@@ -1106,7 +1210,7 @@ async function tinhToanPhiTinh() {
             let soToa = CUNG_TO_SO[lungSon.cung], soHuong = CUNG_TO_SO[huongSon.cung];
             html += luanChanKhiTienThien(van, huongSon.cung);
             html += luanHaLacTest(van, vanHienTai, huongSon.cung, lungSon.cung, namSinhChu, gioiTinhChu);
-            html += tongKetToanNha(van, ketQua9Cung, bSon[soToa], bSon[soHuong], bHuong[soHuong], bHuong[soToa], bVan, lungSon.cung, huongSon.cung);
+            html += tongKetToanNha(van, ketQua9Cung, bSon[soToa], bSon[soHuong], bHuong[soHuong], bHuong[soToa], bVan, lungSon.cung, huongSon.cung, bSon, bHuong, lungSon, huongSon, namXem);
         }
         loiGiaiTheoCung[TEN_CUNG[c]] = html;
         document.getElementById("cung-" + c).onclick = () => hienThiLuanGiaiCung(TEN_CUNG[c]);
@@ -1277,6 +1381,15 @@ function dongBoTuDuong() {
     if (typeof tinhToanPhiTinh === "function") tinhToanPhiTinh();
 }
 window.dongBoTuDuong = dongBoTuDuong;
+// Nút "Hôm nay" — lấy ngày Dương lịch hiện tại của máy, đổ vào 3 ô rồi đồng bộ Âm lịch + tính lại Phi Tinh
+function datNgayHomNayXem() {
+    let now = new Date();
+    document.getElementById("ngayDuongXem").value = now.getDate();
+    document.getElementById("thangDuongXem").value = now.getMonth() + 1;
+    document.getElementById("namXem").value = now.getFullYear();
+    dongBoTuDuong();
+}
+window.datNgayHomNayXem = datNgayHomNayXem;
 // Nhập Âm lịch (ngày/tháng/năm/nhuận) -> tự tìm ra Dương lịch + Can/Chi + Trung Khí
 function dongBoTuAm() {
     let ngayAm = parseInt(document.getElementById("ngayAmLichXem").value) || 1;

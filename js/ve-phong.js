@@ -363,7 +363,7 @@
                     points: ptsStr,
                     fill: "none",
                     stroke: "#ff6f00",
-                    "stroke-width": "2",
+                    "stroke-width": "1.5",
                     "stroke-dasharray": "6,4"
                 });
                 svgEl.appendChild(polyDraw);
