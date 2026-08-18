@@ -101,13 +101,14 @@ const DS24_SON = [
             html += `<circle cx="${cx}" cy="${cy}" r="${rDoSo}" fill="none" stroke="#5c4a3a" stroke-width="0.5" opacity="0.9"/>`;
             for (let deg = 0; deg < 360; deg += 5) {
                 let rad = (deg - 90) * Math.PI / 180;
-                let isMajor = deg % 30 === 0;
+                let isMajor = deg % 30 === 0;      // vạch tick to/đậm — vẫn giữ mỗi 30° như cũ
+                let showDeg = deg % 10 === 0;       // SỐ ĐỘ hiển thị — đổi sang mỗi 10° theo yêu cầu (trước là trùng isMajor, tức 30°)
                 let rIn = isMajor ? rDoTick - 8 : rDoTick;
                 let x1 = cx + rIn * Math.cos(rad), y1 = cy + rIn * Math.sin(rad);
                 let x2 = cx + rDoSo * Math.cos(rad), y2 = cy + rDoSo * Math.sin(rad);
                 html += `<line x1="${x1.toFixed(1)}" y1="${y1.toFixed(1)}" x2="${x2.toFixed(1)}" y2="${y2.toFixed(1)}" stroke="#fff" stroke-width="${isMajor?4:2.5}" opacity="0.8"/>`;
                 html += `<line x1="${x1.toFixed(1)}" y1="${y1.toFixed(1)}" x2="${x2.toFixed(1)}" y2="${y2.toFixed(1)}" stroke="#2a2a2a" stroke-width="${isMajor?2:1}" opacity="0.9"/>`;
-                if (isMajor) {
+                if (showDeg) {
                     let xt = cx + rDoText * Math.cos(rad), yt = cy + rDoText * Math.sin(rad);
                     html += `<text x="${xt.toFixed(1)}" y="${yt.toFixed(1)}" font-size="${fontSize+2}" font-weight="600" fill="#2a2a2a" stroke="#fff" stroke-width="2" paint-order="stroke" text-anchor="middle" dominant-baseline="middle" transform="rotate(${deg} ${xt.toFixed(1)} ${yt.toFixed(1)})">${deg}</text>`;
                 }
@@ -366,6 +367,38 @@ function _dongBoDoiChieuHinh(sourcePts, pxPerMeterSource, destStart, pxPerMeterD
     return dest;
 }
 
+// Quy đổi 1 điểm bất kỳ (không chỉ đỉnh khung nhà) từ hệ nguồn sang hệ đích, neo theo
+// cùng gốc quy chiếu đã dùng khi đồng bộ khung nhà (originSource -> originDest), để phòng
+// (rooms) giữ đúng vị trí tương đối so với khung nhà sau khi đồng bộ.
+function _dongBoDoiChieuDiem(pt, pxPerMeterSource, originSource, pxPerMeterDest, originDest) {
+    var dxM = (pt.x - originSource.x) / pxPerMeterSource;
+    var dyM = (pt.y - originSource.y) / pxPerMeterSource;
+    return { x: originDest.x + dxM * pxPerMeterDest, y: originDest.y - dyM * pxPerMeterDest };
+}
+
+// Quy đổi toàn bộ danh sách phòng (mỗi phòng là 1 mảng điểm) từ hệ nguồn sang hệ đích.
+function _dongBoDoiChieuPhong(roomsSource, pxPerMeterSource, originSource, pxPerMeterDest, originDest) {
+    return (roomsSource || []).map(function (r) {
+        return {
+            id: r.id,
+            points: (r.points || []).map(function (p) {
+                return _dongBoDoiChieuDiem(p, pxPerMeterSource, originSource, pxPerMeterDest, originDest);
+            }),
+            color: r.color,
+            label: r.label,
+            locked: !!r.locked,
+            lockedEdges: Array.isArray(r.lockedEdges) ? r.lockedEdges.map(function (v) { return !!v; }) : []
+        };
+    });
+}
+
+// Cửa (doors) dùng edgeIndex (chỉ số cạnh) + offset/width tính bằng MÉT — không phụ thuộc hệ
+// toạ độ px/world, nên chỉ cần sao chép sâu, không cần quy đổi, miễn số cạnh khớp thứ tự
+// (đúng vì _dongBoDoiChieuHinh luôn giữ nguyên số đỉnh và thứ tự Đ1→Đ2→...).
+function _dongBoSaoChepCua(doorsSource) {
+    return JSON.parse(JSON.stringify(doorsSource || []));
+}
+
 function dongBoTamNhaSangCuuCung() {
     if (typeof tamNhaData === "undefined" || !Array.isArray(tamNhaData.vertices) || tamNhaData.vertices.length < 3 || !tamNhaData.closed) {
         alert("⚠️ Cần vẽ xong và bấm 🔒 Đóng hình nhà ở tab Tâm Nhà (ít nhất 3 đỉnh) trước khi đồng bộ.");
@@ -375,14 +408,32 @@ function dongBoTamNhaSangCuuCung() {
         alert("⚠️ Chưa sẵn sàng: hãy mở qua tab Cửu Cung Lưới ít nhất 1 lần rồi thử lại.");
         return;
     }
+    if (!confirm("⚠️ Thao tác này sẽ GHI ĐÈ hoàn toàn khung nhà + phòng + cửa hiện có ở Cửu Cung Lưới bằng dữ liệu từ Tâm Nhà. Dữ liệu cũ bên Cửu Cung Lưới sẽ mất. Tiếp tục?")) {
+        return;
+    }
     var pxPerMeterTN = tamNhaData.pxPerMeter || 10;
     var scaleEl = document.getElementById("scaleInput");
     var pxPerMeterCC = scaleEl ? (parseFloat(scaleEl.value) || 20) : 20;
     var startCC = (window.currentPoints && window.currentPoints.length > 0) ? { x: window.currentPoints[0].x, y: window.currentPoints[0].y } : { x: 200, y: 150 };
+    var startTN = tamNhaData.vertices[0];
 
     var newPoints = _dongBoDoiChieuHinh(tamNhaData.vertices, pxPerMeterTN, startCC, pxPerMeterCC);
     window.apDungShapeCuuCung(newPoints);
-    alert("✅ Đã đồng bộ hình nhà từ Tâm Nhà sang Cửu Cung Lưới (" + newPoints.length + " đỉnh — Đ1→Đ2 = cạnh AB bên Tâm Nhà). Cửa/phòng/la bàn bên Cửu Cung Lưới được giữ nguyên.");
+
+    // Đồng bộ PHÒNG (quy đổi toạ độ theo cùng gốc Đ1 vừa dùng ở trên)
+    var roomsTN = (window.VePhongModuleTamNha && typeof window.VePhongModuleTamNha.getRooms === 'function')
+        ? window.VePhongModuleTamNha.getRooms() : [];
+    var newRooms = _dongBoDoiChieuPhong(roomsTN, pxPerMeterTN, startTN, pxPerMeterCC, startCC);
+    if (window.VePhongModule && typeof window.VePhongModule.setRooms === 'function') {
+        window.VePhongModule.setRooms(newRooms);
+    }
+
+    // Đồng bộ CỬA (edgeIndex + mét — sao chép trực tiếp, không quy đổi toạ độ)
+    if (typeof window.apDungDoorsCuuCung === "function") {
+        window.apDungDoorsCuuCung(_dongBoSaoChepCua(tamNhaData.doors));
+    }
+
+    alert("✅ Đã đồng bộ khung nhà + " + newRooms.length + " phòng + cửa từ Tâm Nhà sang Cửu Cung Lưới (" + newPoints.length + " đỉnh — Đ1→Đ2 = cạnh AB bên Tâm Nhà). Dữ liệu cũ bên Cửu Cung Lưới đã bị ghi đè.");
 }
 window.dongBoTamNhaSangCuuCung = dongBoTamNhaSangCuuCung;
 
@@ -395,19 +446,40 @@ function dongBoCuuCungSangTamNha() {
         alert("⚠️ Chưa sẵn sàng: hãy mở qua tab Tâm Nhà ít nhất 1 lần rồi thử lại.");
         return;
     }
+    if (!confirm("⚠️ Thao tác này sẽ GHI ĐÈ hoàn toàn khung nhà + phòng + cửa hiện có ở Tâm Nhà bằng dữ liệu từ Cửu Cung Lưới. Dữ liệu cũ bên Tâm Nhà sẽ mất. Tiếp tục?")) {
+        return;
+    }
     var scaleEl = document.getElementById("scaleInput");
     var pxPerMeterCC = scaleEl ? (parseFloat(scaleEl.value) || 20) : 20;
     var pxPerMeterTN = tamNhaData.pxPerMeter || 10;
+    var startCC = window.currentPoints[0];
     var startTN = (tamNhaData.vertices && tamNhaData.vertices.length > 0) ? { x: tamNhaData.vertices[0].x, y: tamNhaData.vertices[0].y } : { x: 0, y: 0 };
 
     var newVertices = _dongBoDoiChieuHinh(window.currentPoints, pxPerMeterCC, startTN, pxPerMeterTN);
     tamNhaData.vertices = newVertices;
     tamNhaData.closed = true;
     tamNhaData.lockedEdges = newVertices.map(function () { return false; });
-    tamNhaData.centroidWorld = null;
-    var kq = document.getElementById('tnKetQuaTam'); if (kq) kq.style.display = 'none';
+
+    // Đồng bộ PHÒNG (quy đổi toạ độ theo cùng gốc Đ1 vừa dùng ở trên)
+    var roomsCC = (window.VePhongModule && typeof window.VePhongModule.getRooms === 'function')
+        ? window.VePhongModule.getRooms() : [];
+    var newRooms = _dongBoDoiChieuPhong(roomsCC, pxPerMeterCC, startCC, pxPerMeterTN, startTN);
+    if (window.VePhongModuleTamNha && typeof window.VePhongModuleTamNha.setRooms === 'function') {
+        window.VePhongModuleTamNha.setRooms(newRooms);
+    }
+
+    // Đồng bộ CỬA (edgeIndex + mét — sao chép trực tiếp, không quy đổi toạ độ)
+    tamNhaData.doors = _dongBoSaoChepCua(window.__cuuCungDoorsGetter ? window.__cuuCungDoorsGetter() : []);
+
+    // Tính lại TÂM NHÀ ngay lập tức (không để null) — CuaModule.svgForDoors cần centroidWorld hợp lệ
+    // để xác định đúng chiều "mở vào/mở ra" của cửa; nếu để null, cửa sẽ vẽ tạm theo chiều đa giác
+    // thô (phụ thuộc thứ tự đỉnh), có thể NGƯỢC với chiều đã đúng bên Cửu Cung Lưới.
+    var coTam = (typeof computeAndSetTamNhaCentroid === "function") ? computeAndSetTamNhaCentroid(true) : false;
+
+    var kq = document.getElementById('tnKetQuaTam'); if (!coTam && kq) kq.style.display = 'none';
     if (typeof renderTamNhaEdgeList === "function") renderTamNhaEdgeList();
+    if (typeof window.renderDoorList === "function") window.renderDoorList();
     redrawTamNha();
-    alert("✅ Đã đồng bộ hình nhà từ Cửu Cung Lưới sang Tâm Nhà (" + newVertices.length + " đỉnh — cạnh AB = Đ1→Đ2 bên Cửu Cung Lưới). Bấm lại 🎯 Tâm để tính lại tâm nhà.");
+    alert("✅ Đã đồng bộ khung nhà + " + newRooms.length + " phòng + cửa từ Cửu Cung Lưới sang Tâm Nhà (" + newVertices.length + " đỉnh — cạnh AB = Đ1→Đ2 bên Cửu Cung Lưới), và tính lại tâm nhà. Dữ liệu cũ bên Tâm Nhà đã bị ghi đè.");
 }
 window.dongBoCuuCungSangTamNha = dongBoCuuCungSangTamNha;

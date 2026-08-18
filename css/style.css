@@ -60,11 +60,19 @@
         @media (max-width: 420px) { .module-panel .grid-3 { grid-template-columns: 1fr 1fr; } }
         .module-panel button { width: 100%; padding: 8px; background: #8b0000; color: #fff; border: none; border-radius: 6px; font-weight: bold; cursor: pointer; font-size: 13px; margin-top: 4px; }
         .module-panel button:hover { background: #a30000; }
-        .map-stage { position: relative; width: 100%; max-width: 100%; aspect-ratio: 1 / 1; background: #ddd repeating-linear-gradient(45deg, #e8e8e8 0 10px, #ddd 10px 20px); border-radius: 0; overflow: hidden; touch-action: none; margin-bottom: 0; }
-        .map-stage img { position: absolute; top: 0; left: 0; width: 100%; height: 100%; object-fit: cover; pointer-events: none; user-select: none; z-index: 1; }
-        .map-stage #map { position: absolute; top: 0; left: 0; width: 100%; height: 100%; display: none; z-index: 2; }
-        .map-placeholder { position: absolute; inset: 0; display: flex; align-items: center; justify-content: center; color: #888; font-size: 13px; text-align: center; padding: 20px; pointer-events: none; z-index: 1; }
-        .compass-overlay { position: absolute; width: 100%; height: 100%; top: 0; left: 0; cursor: grab; pointer-events: auto; z-index: 10; }
+        /* Vùng hiển thị ảnh/la bàn: cao hơn 50px so với 1 hình vuông chuẩn (width x width), để
+           chừa khoảng trống phía dưới cho các nút bấm (GPS/Căn giữa/Chụp/di chuyển), tránh che
+           mất các con số ở rìa la bàn tròn. Phần ảnh + la bàn (img, #map, .compass-overlay) vẫn
+           giữ đúng tỉ lệ VUÔNG (width x width) — chỉ bản thân .map-stage cao thêm 50px, phần dư
+           đó là khoảng đệm trống ở đáy dành cho nút bấm, không kéo giãn/méo la bàn tròn.
+           Dùng kỹ thuật ::before với padding-top:100% để chiều cao vuông luôn bám đúng theo
+           WIDTH thực tế của .map-stage (không phụ thuộc 100vw, đúng cả khi có padding/margin cha). */
+        .map-stage { position: relative; width: 100%; max-width: 100%; overflow: hidden; touch-action: none; margin-bottom: 0; border-radius: 0; background: #ddd repeating-linear-gradient(45deg, #e8e8e8 0 10px, #ddd 10px 20px); }
+        .map-stage::before { content: ""; display: block; padding-top: 100%; margin-bottom: 50px; }
+        .map-stage img { position: absolute; top: 0; left: 0; width: 100%; height: calc(100% - 50px); object-fit: cover; pointer-events: none; user-select: none; z-index: 1; }
+        .map-stage #map { position: absolute; top: 0; left: 0; width: 100%; height: calc(100% - 50px); display: none; z-index: 2; }
+        .map-placeholder { position: absolute; top: 0; left: 0; right: 0; height: calc(100% - 50px); display: flex; align-items: center; justify-content: center; color: #888; font-size: 13px; text-align: center; padding: 20px; pointer-events: none; z-index: 1; }
+        .compass-overlay { position: absolute; width: 100%; height: calc(100% - 50px); top: 0; left: 0; cursor: grab; pointer-events: auto; z-index: 10; }
         .compass-overlay:active { cursor: grabbing; }
         .compass-overlay svg { width: 100%; height: 100%; }
         .compass-overlay.khoa { cursor: not-allowed; }
@@ -287,4 +295,135 @@
 
         #tab-cuucungluoi { background: #111; padding: 0 8px 20px; }
 
-    
+    /* ===== LOAN ĐẦU MODULE ===== */
+    .ld-container { width: 100%; max-width: 480px; padding: 12px; box-sizing: border-box; }
+    .ld-header { text-align: center; margin-bottom: 12px; }
+    .ld-header h2 { color: #8b0000; margin: 4px 0 2px; font-size: clamp(18px, 5vw, 24px); }
+    .ld-subtitle { font-size: 12px; color: #888; margin: 0 0 8px; }
+    .ld-section { background: #fff; border-radius: 10px; box-shadow: 0 2px 8px rgba(0,0,0,0.08); padding: 12px; margin-bottom: 12px; box-sizing: border-box; }
+    .ld-section-title { font-weight: 700; color: #8b0000; font-size: 13px; margin-bottom: 8px; border-bottom: 1px dashed #ddd; padding-bottom: 5px; }
+    .ld-hint { font-size: 11px; color: #888; text-align: center; margin-top: 6px; }
+
+    /* Lưới 9 cung */
+    .ld-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 4px; }
+    .ld-cung { background: #f5f0e6; border: 1px solid #ccc; border-radius: 8px; padding: 8px 4px; text-align: center; cursor: pointer; min-height: 70px; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 2px; transition: all 0.15s ease; touch-action: manipulation; }
+    .ld-cung:active { transform: scale(0.95); }
+    .ld-cung-active { background: #8b0000; border-color: #8b0000; }
+    .ld-cung-active .ld-cung-ten, .ld-cung-active .ld-cung-kyhieu { color: #fff; }
+    .ld-cung-ten { font-size: 12px; font-weight: 700; color: #333; }
+    .ld-cung-kyhieu { font-size: 10px; color: #8b0000; font-weight: 600; }
+    .ld-cung-active .ld-cung-kyhieu { color: #ffd700; }
+    .ld-cung-badges { display: flex; flex-wrap: wrap; gap: 2px; justify-content: center; }
+    .ld-cung-count { font-size: 9px; background: #e8e3d8; border-radius: 8px; padding: 1px 5px; color: #555; font-weight: 600; }
+    .ld-cung-count-empty { color: #aaa; background: transparent; }
+    .ld-cung-active .ld-cung-count { background: rgba(255,255,255,0.2); color: #fff; }
+
+    /* Chi tiết cung */
+    .ld-detail-header { font-weight: 700; color: #8b0000; font-size: 14px; margin-bottom: 8px; }
+    .ld-btn-add { width: 100%; padding: 10px; background: #1a5c3a; color: #fff; border: none; border-radius: 6px; font-weight: bold; cursor: pointer; font-size: 13px; margin-bottom: 8px; }
+    .ld-btn-add:hover { background: #237a4d; }
+    .ld-empty { font-size: 12px; color: #888; text-align: center; padding: 12px; background: #faf7f2; border-radius: 6px; }
+    .ld-object { background: #faf7f2; border: 1px solid #e8d5b5; border-radius: 8px; padding: 8px 10px; margin-bottom: 6px; }
+    .ld-object-main { display: flex; align-items: center; gap: 6px; }
+    .ld-object-icon { font-size: 16px; }
+    .ld-object-ten { font-weight: 600; font-size: 13px; color: #333; }
+    .ld-object-phu { font-size: 11px; color: #666; margin-top: 2px; }
+    .ld-object-ghichu { font-size: 11px; color: #555; font-style: italic; margin-top: 2px; }
+    .ld-object-actions { display: flex; gap: 6px; margin-top: 6px; }
+    .ld-object-actions button { flex: 1; padding: 5px 8px; font-size: 11px; border: none; border-radius: 4px; cursor: pointer; font-weight: 600; width: auto; margin: 0; }
+    .ld-btn-sua { background: #1565c0; color: #fff; }
+    .ld-btn-xoa { background: #c62828; color: #fff; }
+
+    /* Tứ tượng — bao quanh lưới Cửu Cung */
+    .ld-tu-tuong-wrap { display: grid; grid-template-columns: 1fr 3fr 1fr; grid-template-rows: auto 1fr auto; gap: 4px; align-items: stretch; }
+    .ld-tt-slot { display: flex; align-items: center; justify-content: center; }
+    .ld-tt-slot-top { grid-column: 1 / -1; grid-row: 1; }
+    .ld-tt-slot-left { grid-column: 1; grid-row: 2; }
+    .ld-tt-slot-right { grid-column: 3; grid-row: 2; }
+    .ld-tt-slot-bottom { grid-column: 1 / -1; grid-row: 3; }
+    .ld-tu-tuong-wrap .ld-grid { grid-column: 2; grid-row: 2; }
+
+    .ld-tt-card { position: relative; background: #f5f0e6; border: 1px solid #ccc; border-radius: 8px; padding: 6px 8px; text-align: center; cursor: pointer; transition: all 0.15s ease; touch-action: manipulation; display: flex; flex-direction: column; align-items: center; gap: 2px; width: 100%; }
+    .ld-tt-card:active { transform: scale(0.95); }
+    .ld-tt-card-done { border-color: #1a5c3a; background: #e8f5e9; }
+    .ld-tt-card-icon { font-size: 18px; line-height: 1.2; }
+    .ld-tt-card-ten { font-weight: 700; font-size: 12px; color: #333; }
+    .ld-tt-card-vitri { font-size: 9px; color: #888; font-weight: 600; letter-spacing: 0.5px; }
+    .ld-tt-card-done-badge { position: absolute; top: 2px; right: 4px; color: #1a5c3a; font-weight: bold; font-size: 12px; }
+    .ld-btn-khaibao { width: auto; padding: 4px 10px; background: #8b0000; color: #fff; border: none; border-radius: 6px; font-weight: bold; cursor: pointer; font-size: 10px; margin: 2px 0 0; }
+    .ld-tt-mota { font-size: 10px; color: #666; text-align: center; margin-top: 2px; line-height: 1.3; }
+
+    /* Minh đường */
+    .ld-minh-duong-row { display: flex; align-items: center; gap: 8px; margin-bottom: 6px; }
+    .ld-minh-duong-row label { flex: 0 0 90px; font-size: 12px; font-weight: 600; color: #444; }
+    .ld-minh-duong-select { flex: 1; padding: 6px 8px; border: 1px solid #ccc; border-radius: 6px; font-size: 12px; }
+    .ld-minh-duong-ghichu { flex: 1; padding: 6px 8px; border: 1px solid #ccc; border-radius: 6px; font-size: 12px; min-height: 50px; resize: vertical; font-family: inherit; }
+
+    /* Nút reset */
+    .ld-btn-reset { width: 100%; padding: 10px; background: #c62828; color: #fff; border: none; border-radius: 6px; font-weight: bold; cursor: pointer; font-size: 13px; }
+
+    /* Modal */
+    .ld-modal-overlay { display: none; position: fixed; inset: 0; background: rgba(0,0,0,0.55); z-index: 3000; align-items: center; justify-content: center; padding: 20px; box-sizing: border-box; }
+    .ld-modal-overlay.active { display: flex; }
+    .ld-modal-box { background: #fff; border-radius: 12px; padding: 16px; width: 100%; max-width: 340px; max-height: 85vh; overflow-y: auto; box-shadow: 0 8px 32px rgba(0,0,0,0.3); }
+    .ld-modal-title { color: #8b0000; font-size: 14px; font-weight: 700; margin: 0 0 12px; border-bottom: 1px dashed #ddd; padding-bottom: 8px; }
+    .ld-field { margin-bottom: 8px; }
+    .ld-field label { display: block; font-weight: 600; font-size: 12px; color: #444; margin-bottom: 3px; }
+    .ld-field select, .ld-field input[type="text"] { width: 100%; padding: 7px 8px; border: 1px solid #ccc; border-radius: 6px; font-size: 13px; box-sizing: border-box; }
+    .ld-textarea { width: 100%; padding: 7px 8px; border: 1px solid #ccc; border-radius: 6px; font-size: 13px; min-height: 60px; resize: vertical; font-family: inherit; box-sizing: border-box; }
+    .ld-modal-actions { display: flex; gap: 8px; margin-top: 12px; }
+    .ld-modal-actions button { flex: 1; padding: 9px; font-size: 13px; font-weight: bold; border: none; border-radius: 6px; cursor: pointer; color: #fff; width: auto; margin: 0; }
+    .ld-btn-cancel { background: #888; }
+    .ld-btn-save { background: #1a5c3a; }
+
+    /* ===== V2 - Tổng quan khảo sát ===== */
+    .ld-tong-quan-grid { display: grid; grid-template-columns: repeat(2, 1fr); gap: 6px; }
+    .ld-tong-quan-item { background: #faf7f2; border: 1px solid #e8d5b5; border-radius: 6px; padding: 6px 8px; display: flex; flex-direction: column; gap: 2px; }
+    .ld-tong-quan-item .tq-label { font-size: 10px; color: #888; font-weight: 600; }
+    .ld-tong-quan-item .tq-value { font-size: 13px; font-weight: 700; color: #333; }
+
+    /* ===== V2 - Chi tiết cung: 3 Sơn + trạng thái khảo sát ===== */
+    .ld-cung-son { font-size: 12px; color: #555; margin-bottom: 8px; background: #f5f0e6; border-radius: 6px; padding: 6px 8px; }
+    .ld-cung-son b { color: #8b0000; }
+    .ld-khaosat-status { display: flex; align-items: center; gap: 8px; margin-bottom: 8px; flex-wrap: wrap; }
+    .ld-checkbox { display: flex; align-items: center; gap: 4px; font-size: 12px; font-weight: 600; color: #1a5c3a; cursor: pointer; }
+    .ld-checkbox input[type="checkbox"] { width: auto; height: auto; margin: 0; }
+    .ld-ketqua-select { flex: 1; min-width: 140px; padding: 6px 8px; border: 1px solid #ccc; border-radius: 6px; font-size: 12px; }
+    .ld-ketqua-select:disabled { background: #f0f0f0; color: #aaa; }
+    .ld-cung-count-done { background: #1a5c3a; color: #fff !important; }
+
+    /* ===== V2 - Card object: nút chi tiết + quan hệ ===== */
+    .ld-btn-chitiet { background: #5c4a3a; color: #fff; }
+    .ld-object-quanhe { font-size: 11px; color: #1565c0; font-weight: 600; margin-top: 2px; }
+
+    /* ===== V2 - Modal form thông minh theo nhóm ===== */
+    .ld-v2-modal-box { max-width: 380px; max-height: 88vh; }
+    .ld-v2-group { border: 1px solid #e0e0e0; border-radius: 8px; padding: 10px; margin-bottom: 10px; background: #fcfbf9; }
+    .ld-v2-group-title { font-weight: 700; color: #8b0000; font-size: 12px; margin-bottom: 8px; border-bottom: 1px dashed #ddd; padding-bottom: 5px; }
+    .ld-v2-group-thuy { border-color: #b3e5fc; background: #f5fbff; }
+    .ld-v2-group-duong { border-color: #ffe0b2; background: #fffaf2; }
+    .ld-hint { font-size: 10.5px; color: #888; font-style: italic; margin-top: 4px; line-height: 1.4; }
+
+    /* ===== V2 - Modal chi tiết đối tượng ===== */
+    .ld-v2-detail-box { max-height: 88vh; }
+    .ld-detail-cung { font-size: 12px; color: #555; margin-bottom: 8px; padding-bottom: 6px; border-bottom: 1px dashed #ddd; }
+    .ld-detail-row { display: flex; justify-content: space-between; gap: 10px; padding: 4px 0; border-bottom: 1px solid #f0ece4; font-size: 12px; }
+    .ld-detail-row:last-child { border-bottom: none; }
+    .ld-detail-label { color: #888; flex: 0 0 45%; font-weight: 600; }
+    .ld-detail-value { color: #333; flex: 1; text-align: right; }
+    .ld-detail-ghichu { font-size: 12px; color: #555; margin-top: 8px; background: #faf7f2; border-radius: 6px; padding: 8px; font-style: italic; line-height: 1.5; }
+
+    /* Responsive */
+    @media (max-width: 360px) {
+        .ld-cung { min-height: 60px; padding: 6px 2px; }
+        .ld-cung-ten { font-size: 11px; }
+        .ld-cung-kyhieu { font-size: 9px; }
+        .ld-minh-duong-row { flex-direction: column; align-items: stretch; gap: 3px; }
+        .ld-minh-duong-row label { flex: none; }
+        .ld-tu-tuong-wrap { grid-template-columns: 1fr 2.5fr 1fr; gap: 3px; }
+        .ld-tt-card { padding: 4px 4px; }
+        .ld-tt-card-icon { font-size: 15px; }
+        .ld-tt-card-ten { font-size: 10px; }
+        .ld-tt-card-vitri { font-size: 8px; }
+        .ld-btn-khaibao { font-size: 9px; padding: 3px 6px; }
+    }
