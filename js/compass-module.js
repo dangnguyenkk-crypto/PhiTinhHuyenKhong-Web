@@ -393,7 +393,10 @@
       var vshHuong = (window.phiTinhVSH && window.phiTinhVSH[BATQUAI_NAMES[k]]) ? window.phiTinhVSH[BATQUAI_NAMES[k]] : null;
       // Sao Thế (kiêm hướng thế quái) — đọc từ window.banSaoTheSonHienTai/banSaoTheHuongHienTai do
       // phi-tinh.js export sau khi tính (null nếu công tắc Kiêm Hướng tắt hoặc độ hướng không cần kiêm).
-      // Cùng ý nghĩa với "_t{số thế}" hiển thị nhỏ kế bên S/H trên lưới 9 ô của tab Nội Khí.
+      // LƯU Ý: window.phiTinhVSH đã được phi-tinh.js xuất theo bàn HIỆU LỰC (tức đã là số Thế nếu có
+      // kiêm hướng) — vshHuong.S/H bên dưới NGAY BẢN THÂN nó đã là số Thế, không cần cộng thêm nhãn
+      // phụ nữa. Chỉ cần biết CÓ đang dùng Thế hay không (banTheSonHuongK != null) để đổi màu/tooltip
+      // báo cho người dùng biết đây là số đã thế — không hiển thị thêm số gốc như lưới 9 ô tab Nội Khí.
       var soCungHuongK = CUNG_SO_GOC[BATQUAI_NAMES[k]];
       var banTheSonHuongK = window.banSaoTheSonHienTai ? window.banSaoTheSonHienTai.ban[soCungHuongK] : null;
       var banTheHuongHuongK = window.banSaoTheHuongHienTai ? window.banSaoTheHuongHienTai.ban[soCungHuongK] : null;
@@ -416,15 +419,7 @@
         getScaledFontSizeFn(sonTinhText, 8);
         g.appendChild(sonTinhText);
         if (banTheSonHuongK != null) {
-          var sonTheText = document.createElementNS("http://www.w3.org/2000/svg", "tspan");
-          sonTheText.setAttribute("baseline-shift", "sub");
-          sonTheText.setAttribute("fill", "#e86602");
-          sonTheText.setAttribute("font-weight", "600");
-          sonTheText.setAttribute("opacity", "0.85");
-          sonTheText.textContent = "t" + banTheSonHuongK;
-          getScaledFontSizeFn(sonTheText, 5.5);
-          sonTinhText.appendChild(sonTheText);
-          sonTinhText.setAttribute("title", "Sao Thế Sơn tinh: " + window.banSaoTheSonHienTai.soThe + " (thay cho " + vshHuong.S + ")");
+          sonTinhText.setAttribute("title", "Sao Thế Sơn tinh: " + window.banSaoTheSonHienTai.soThe + " (đã thay sao gốc)");
         }
 
         var huongTinhText = document.createElementNS("http://www.w3.org/2000/svg", "text");
@@ -437,15 +432,7 @@
         getScaledFontSizeFn(huongTinhText, 8);
         g.appendChild(huongTinhText);
         if (banTheHuongHuongK != null) {
-          var huongTheText = document.createElementNS("http://www.w3.org/2000/svg", "tspan");
-          huongTheText.setAttribute("baseline-shift", "sub");
-          huongTheText.setAttribute("fill", "#0bbd02");
-          huongTheText.setAttribute("font-weight", "600");
-          huongTheText.setAttribute("opacity", "0.85");
-          huongTheText.textContent = "t" + banTheHuongHuongK;
-          getScaledFontSizeFn(huongTheText, 5.5);
-          huongTinhText.appendChild(huongTheText);
-          huongTinhText.setAttribute("title", "Sao Thế Hướng tinh: " + window.banSaoTheHuongHienTai.soThe + " (thay cho " + vshHuong.H + ")");
+          huongTinhText.setAttribute("title", "Sao Thế Hướng tinh: " + window.banSaoTheHuongHienTai.soThe + " (đã thay sao gốc)");
         }
       }
 
@@ -527,15 +514,7 @@
       getScaledFontSizeFn(centerSonTinhText, 8);
       g.appendChild(centerSonTinhText);
       if (banTheSonTrung != null) {
-        var centerSonTheText = document.createElementNS("http://www.w3.org/2000/svg", "tspan");
-        centerSonTheText.setAttribute("baseline-shift", "sub");
-        centerSonTheText.setAttribute("fill", "#ad021e");
-        centerSonTheText.setAttribute("font-weight", "600");
-        centerSonTheText.setAttribute("opacity", "0.85");
-        centerSonTheText.textContent = "t" + banTheSonTrung;
-        getScaledFontSizeFn(centerSonTheText, 5.5);
-        centerSonTinhText.appendChild(centerSonTheText);
-        centerSonTinhText.setAttribute("title", "Sao Thế Sơn tinh: " + window.banSaoTheSonHienTai.soThe + " (thay cho " + centerVSHT.S + ")");
+        centerSonTinhText.setAttribute("title", "Sao Thế Sơn tinh: " + window.banSaoTheSonHienTai.soThe + " (đã thay sao gốc)");
       }
 
       var centerHuongTinhText = document.createElementNS("http://www.w3.org/2000/svg", "text");
@@ -548,15 +527,7 @@
       getScaledFontSizeFn(centerHuongTinhText, 8);
       g.appendChild(centerHuongTinhText);
       if (banTheHuongTrung != null) {
-        var centerHuongTheText = document.createElementNS("http://www.w3.org/2000/svg", "tspan");
-        centerHuongTheText.setAttribute("baseline-shift", "sub");
-        centerHuongTheText.setAttribute("fill", "#0bbd02");
-        centerHuongTheText.setAttribute("font-weight", "600");
-        centerHuongTheText.setAttribute("opacity", "0.85");
-        centerHuongTheText.textContent = "t" + banTheHuongTrung;
-        getScaledFontSizeFn(centerHuongTheText, 5.5);
-        centerHuongTinhText.appendChild(centerHuongTheText);
-        centerHuongTinhText.setAttribute("title", "Sao Thế Hướng tinh: " + window.banSaoTheHuongHienTai.soThe + " (thay cho " + centerVSHT.H + ")");
+        centerHuongTinhText.setAttribute("title", "Sao Thế Hướng tinh: " + window.banSaoTheHuongHienTai.soThe + " (đã thay sao gốc)");
       }
     }
 
