@@ -966,6 +966,40 @@ function tongKetToanNha(van, ketQua9Cung, sb, sf, hf, hb, bVan, cungToa, cungHuo
         if (khoiTinhHuong.length) {
             html += `<div class="luan-giai-item" style="color:#795500;background:#fff8e1;border-radius:6px;padding:8px;"><b>🏆 Khôi Tinh (1-6)</b> tại cung Hướng (${cungHuong}) — cặp ${khoiTinhHuong.map(k=>`${k.cap} = ${k.saoA}-${k.saoB}`).join(", ")}: lợi công danh, sự nghiệp, thăng tiến quan chức.</div>`;
         }
+
+        // ===== LIÊN CHÂU TAM BAN (連珠三般) — Vận-Sơn-Hướng tạo bộ ba số liên tiếp
+        // vòng tròn (1-2-3 ... 9-1-2) tại từng cung. Báo riêng từng cung có Liên Châu,
+        // rồi tổng kết toàn bàn 9 cung. Nếu bộ ba chạm sao hung (2 hoặc 5) hoặc đúng
+        // tổ hợp 5-6-7 thì tách riêng dòng cảnh báo hung, không gộp vào kết luận cát. =====
+        if (typeof window.xetLienChauTamBanToanCuc === 'function') {
+            let lienChau = window.xetLienChauTamBanToanCuc(bVan, bSon, bHuong, van, SO_TO_CUNG);
+            if (lienChau.soCung > 0) {
+                let dongTungCung = lienChau.chiTiet.map(function(ct) {
+                    let kq = ct.ketQua;
+                    let vuong = [];
+                    if (kq.sonVuong) vuong.push("Sơn tinh vượng khí");
+                    if (kq.huongVuong) vuong.push("Hướng tinh vượng khí");
+                    let ghiChuVuong = vuong.length ? ` — <span style="color:#2e7d32;">${vuong.join(", ")}, vận thế bền vững hơn</span>` : "";
+                    let canhBaoHung = "";
+                    if (kq.laToHopXau567) {
+                        canhBaoHung = `<br><span style="color:#c62828;">⚠️ Tổ hợp 5-6-7 — dù là Liên Châu vẫn mang tính hung, dễ gây hỏa hoạn, kiện tụng. Cần xem thêm Loan Đầu bên ngoài để luận chính xác.</span>`;
+                    } else if (kq.camSaoHung) {
+                        canhBaoHung = `<br><span style="color:#e65100;">⚠️ Bộ số có chạm Nhị Hắc (2) hoặc Ngũ Hoàng (5) — Liên Châu về cấu trúc số nhưng vẫn cần thận trọng, nên kết hợp Loan Đầu và ngũ hành sinh khắc trước khi kết luận cát.</span>`;
+                    }
+                    return `<div style="margin-top:4px;">• <b>${ct.ten}</b>: bộ ${kq.chuoi} (Vận ${bVan[ct.so]} - Sơn ${bSon[ct.so]} - Hướng ${bHuong[ct.so]})${ghiChuVuong}${canhBaoHung}</div>`;
+                }).join("");
+
+                let ketLuanToanCuc = lienChau.duTron9Cung
+                    ? `<div style="margin-top:6px;color:#2e7d32;"><b>✨ Đủ trọn 9/9 cung Liên Châu Tam Ban</b> — đại cách "đường công danh sự nghiệp rộng mở như đi trên mây xanh, vui vẻ, thênh thang, tự tại". Tuy nhiên nếu trong số đó có cung chạm sao hung như đã ghi chú ở trên thì vẫn phải xem xét riêng, không phải mọi mặt đều tốt tuyệt đối.</div>`
+                    : `<div style="margin-top:6px;color:#555;">Có <b>${lienChau.soCung}/9</b> cung đạt Liên Châu Tam Ban (chưa đủ trọn 9 cung nên chưa phải đại cách toàn phần).</div>`;
+
+                html += `<div class="luan-giai-item" style="color:#004d40;background:#e0f2f1;border-radius:6px;padding:8px;">
+                    <b>🔗 Liên Châu Tam Ban</b> (連珠三般 — xét từng cung: Vận-Sơn-Hướng tạo bộ ba số liên tiếp theo vòng Lạc Thư)
+                    ${dongTungCung}
+                    ${ketLuanToanCuc}
+                </div>`;
+            }
+        }
     }
 
     if (tot.length) html += `<div class="luan-giai-item"><b>✅ Cung nên tận dụng:</b> ${tot.map(c=>c.ten).join(", ")}. Đây là các khu vực thuận lợi cho sức khỏe và/hoặc tài lộc — phù hợp đặt phòng khách, bàn làm việc, phòng thờ, giường ngủ chính.</div>`;
@@ -1028,6 +1062,20 @@ async function tinhToanPhiTinh() {
             banSaoTheHuong = lapBanSaoThe(bHuong[5], huongSon.nguyenLong, laThuanHuong);
         }
     }
+    // EXPORT ra window để la bàn 9 ô ở tab khác (Cửu Cung Lưới, Thủy Pháp... qua compass-module.js)
+    // vẽ được nhãn Sao Thế "t{số}" kế bên S/H — giống hệt cách bVanHienTai/bSonHienTai/bHuongHienTai
+    // đã export ở trên. null nếu không kiêm hướng hoặc công tắc tắt (renderCompassOverlay tự bỏ qua).
+    window.banSaoTheSonHienTai = banSaoTheSon;
+    window.banSaoTheHuongHienTai = banSaoTheHuong;
+
+    // ===== BÀN HIỆU LỰC CHO LUẬN GIẢI — khi có Sao Thế (kiêm hướng thế quái đang bật và cần kiêm),
+    // TOÀN BỘ luận giải (từng cung, Tổng kết toàn nhà, Phản/Phục Ngâm, Vượng Sơn Vượng Hướng, Hợp
+    // Thập, Tam Ban Quái, Liên Châu, Nhập Tù, dự báo Ngày/Tháng/Năm...) phải dùng SỐ SAO THẾ thay
+    // cho số sao gốc — vì thế quái đã "thay ngôi" sao gốc trong Trung Cung, ý nghĩa cát hung đi theo
+    // sao thế, không còn theo sao gốc nữa. Lưới ô vuông vẫn hiển thị "S{gốc} t{thế}" (giữ nguyên ở
+    // dưới) để người dùng thấy cả 2, nhưng mọi câu chữ luận giải phải theo bàn hiệu lực này.
+    let bSonHieuLuc = banSaoTheSon ? banSaoTheSon.ban : bSon;
+    let bHuongHieuLuc = banSaoTheHuong ? banSaoTheHuong.ban : bHuong;
 
     let bNien = lapTinhBan(saoNien, true), bNguyet = lapTinhBan(saoNguyet, true), bNhat = lapTinhBan(saoNhat, TRUNG_KHI[trungKhi].thuan);
     const TEN_CUNG = ["","Khảm","Khôn","Chấn","Tốn","Trung","Càn","Đoài","Cấn","Ly"];
@@ -1037,8 +1085,10 @@ async function tinhToanPhiTinh() {
     // xetHopThap/tongKetToanNha/luanGiaiCung bên dưới, vì các hàm dùng chung trong luan-giai.js
     // (xetPhanPhucNgamMotSao...) đọc lại window.phiTinhVSH/window.phiTinhLaThuan.. — export muộn
     // (như bản cũ, ở cuối hàm) khiến các lời gọi bên dưới đọc dữ liệu của LẦN TÍNH TRƯỚC.
+    // Dùng bSonHieuLuc/bHuongHieuLuc (đã gồm sao Thế nếu có) — không dùng bSon/bHuong gốc — để mọi
+    // hàm dùng chung (Phản/Phục Ngâm nền trên lưới, v.v.) tự động luận theo sao Thế khi có kiêm hướng.
     window.phiTinhVSH = {};
-    for (let c = 1; c <= 9; c++) window.phiTinhVSH[TEN_CUNG[c]] = {V: bVan[c], S: bSon[c], H: bHuong[c]};
+    for (let c = 1; c <= 9; c++) window.phiTinhVSH[TEN_CUNG[c]] = {V: bVan[c], S: bSonHieuLuc[c], H: bHuongHieuLuc[c]};
     window.phiTinhLaThuanSon = laThuanSon;
     window.phiTinhLaThuanHuong = laThuanHuong;
     let ketQua9Cung = [];
@@ -1048,7 +1098,7 @@ async function tinhToanPhiTinh() {
         duBao.id = "duBaoThoiGian";
         document.getElementById("vungLuanGiai").insertAdjacentElement("beforebegin", duBao);
     }
-    duBao.innerHTML = xayBangNgay(namXem, thangXem, vanHienTai, bSon[5], bHuong[5], canNgay, chiNgay) + xayBangThang(namXem, thangXem, vanHienTai, bSon[5], bHuong[5]) + xayBangNam(namXem, bSon[5], bHuong[5]) + chuThichMauSao();
+    duBao.innerHTML = xayBangNgay(namXem, thangXem, vanHienTai, bSonHieuLuc[5], bHuongHieuLuc[5], canNgay, chiNgay) + xayBangThang(namXem, thangXem, vanHienTai, bSonHieuLuc[5], bHuongHieuLuc[5]) + xayBangNam(namXem, bSonHieuLuc[5], bHuongHieuLuc[5]) + chuThichMauSao();
 
     // ===== THÀNH MÔN — cứu nguy cho cục Địa không Vượng Sơn Vượng Hướng =====
     // QUAN TRỌNG: Thành Môn chỉ phát huy tác dụng (đem lại cát lành) trong ĐƯƠNG VẬN — tức Vận đang
@@ -1099,7 +1149,7 @@ async function tinhToanPhiTinh() {
         divDiaVan.id = "ketQuaDiaVan";
         divThanhMon.insertAdjacentElement("afterend", divDiaVan);
     }
-    let vanNhapTu = bHuong[5];
+    let vanNhapTu = bHuongHieuLuc[5];
     let namBatDauNhapTu = null;
     for (let k = 0; k <= 10; k++) {
         let mocGoc = 1864 + (vanNhapTu - 1) * 20 + k * 180;
@@ -1113,15 +1163,15 @@ async function tinhToanPhiTinh() {
     let diaVanNam = namBatDauNhapTu !== null ? namBatDauNhapTu - namNhap : null;
 
     // 3 trường hợp ngoại lệ — không phạm Nhập Tù dù đúng Vận:
-    let ngoaiLe1 = (bHuong[5] === 5); // Hướng tinh gốc tại Trung Cung chính là sao 5
+    let ngoaiLe1 = (bHuongHieuLuc[5] === 5); // Hướng tinh (hiệu lực — gốc hoặc Thế) tại Trung Cung chính là sao 5
     // Ngoại lệ 2: tìm các cung BIÊN NHÀ (loại trừ cung Trung — không thể mở cửa/đường sá/thủy tại
-    // Trung cung) trên bàn Hướng GỐC (bHuong, chưa đổi Vận) đang có giá trị = 5 — đây là (các) cung
-    // có thể mở cửa/đường sá/thủy để kích hoạt vượng khí H5, hóa giải. Nếu chính Hướng tinh Trung
-    // cung đã là 5 (ngoaiLe1) thì không cần liệt kê lại ở đây, tránh trùng lặp vô nghĩa.
+    // Trung cung) trên bàn Hướng HIỆU LỰC (bHuongHieuLuc, chưa đổi Vận) đang có giá trị = 5 — đây là
+    // (các) cung có thể mở cửa/đường sá/thủy để kích hoạt vượng khí H5, hóa giải. Nếu chính Hướng
+    // tinh Trung cung đã là 5 (ngoaiLe1) thì không cần liệt kê lại ở đây, tránh trùng lặp vô nghĩa.
     let cacCungCoH5 = [];
     for (let c = 1; c <= 9; c++) {
         if (c === 5) continue; // bỏ qua Trung cung
-        if (bHuong[c] === 5) cacCungCoH5.push(TEN_CUNG[c]);
+        if (bHuongHieuLuc[c] === 5) cacCungCoH5.push(TEN_CUNG[c]);
     }
     let ngoaiLe2 = cacCungCoH5.length > 0;
     // Ngoại lệ 3: Thập Cục toàn bàn — CẢ 9 cung đều thỏa V+S=10 HOẶC V+H=10
@@ -1129,7 +1179,7 @@ async function tinhToanPhiTinh() {
     if (typeof window.xetHopThap === 'function') {
         ngoaiLe3 = true;
         for (let c = 1; c <= 9; c++) {
-            let ht = window.xetHopThap(bVan[c], bSon[c], bHuong[c]);
+            let ht = window.xetHopThap(bVan[c], bSonHieuLuc[c], bHuongHieuLuc[c]);
             if (!ht.hopThapVS && !ht.hopThapVH) { ngoaiLe3 = false; break; }
         }
     }
@@ -1149,7 +1199,7 @@ async function tinhToanPhiTinh() {
         </div>`;
     }
 
-    let noiDungChiTietDiaVan = `<div>Hướng tinh Trung cung H${bHuong[5]} — Vận tinh phi thuận từ Vận nhập trạch (${van}, năm ${namNhap}) tới khi chạm đúng Vận ${vanNhapTu} (năm ${namBatDauNhapTu}) → Địa Vận = ${namBatDauNhapTu} − ${namNhap} = <b>${diaVanNam !== null ? diaVanNam + " năm" : "—"}</b>.</div>${ghiChuNhapTu}`;
+    let noiDungChiTietDiaVan = `<div>Hướng tinh Trung cung H${bHuongHieuLuc[5]} — Vận tinh phi thuận từ Vận nhập trạch (${van}, năm ${namNhap}) tới khi chạm đúng Vận ${vanNhapTu} (năm ${namBatDauNhapTu}) → Địa Vận = ${namBatDauNhapTu} − ${namNhap} = <b>${diaVanNam !== null ? diaVanNam + " năm" : "—"}</b>.</div>${ghiChuNhapTu}`;
 
     divDiaVan.innerHTML = `<div style="background:#f3e9ff;color:#333;border:2px solid #7b1fa2;border-radius:8px;padding:10px 12px;margin:10px 0;">
         <b style="font-size:1.02em;">🌐 Địa Vận<span class="nut-info" onclick='moInfoModal("🌐 Địa Vận", ${JSON.stringify(noiDungChiTietDiaVan)})'>i</span></b>
@@ -1185,11 +1235,14 @@ async function tinhToanPhiTinh() {
     // Vòng 1: vẽ lưới + tính điểm 9 cung (cần đủ trước khi ghép tổng kết vào Trung cung)
     for (let c = 1; c <= 9; c++) {
         let cell = document.getElementById("cung-" + c);
-        let ngamSonNen = xetPhanPhucNgam(bSon[c], TEN_CUNG[c], "Son"), ngamHuongNen = xetPhanPhucNgam(bHuong[c], TEN_CUNG[c], "Huong");
+        // Phản/Phục Ngâm nền + điểm 9 cung xét theo bàn HIỆU LỰC (gồm sao Thế nếu có kiêm hướng) —
+        // ý nghĩa cát hung đi theo sao đang thật sự tác động, không phải sao gốc đã bị thế thay.
+        let ngamSonNen = xetPhanPhucNgam(bSonHieuLuc[c], TEN_CUNG[c], "Son"), ngamHuongNen = xetPhanPhucNgam(bHuongHieuLuc[c], TEN_CUNG[c], "Huong");
         let ngamHitNen = !!(ngamSonNen || ngamHuongNen);
         let soNenGoc = CUNG_TO_SO[TEN_CUNG[c]];
         let nenHTML = `<div class="so-nen-goc-vs" style="position:absolute;inset:0;display:flex;align-items:center;justify-content:center;font-size:1.4em;font-weight:700;pointer-events:none;z-index:0;color:${ngamHitNen?'#b71c1c':'#999'};opacity:${ngamHitNen?'0.30':'0.26'};"${ngamHitNen?` title="${[ngamSonNen&&('Sơn tinh '+ngamSonNen.nhan),ngamHuongNen&&('Hướng tinh '+ngamHuongNen.nhan)].filter(Boolean).join(', ')} — số Lạc Thư nguyên đán ${soNenGoc}"`:''}>${soNenGoc}</div>`;
-        // Sao Thế (nếu có, kiêm hướng thế quái) — hiển thị nhỏ kế bên sao gốc, dạng "_t{số thế}"
+        // Sao Thế (nếu có, kiêm hướng thế quái) — hiển thị nhỏ kế bên sao GỐC trên lưới ô vuông, dạng
+        // "_t{số thế}", để người dùng thấy cả gốc lẫn thế cùng lúc. Luận giải bên dưới dùng bàn hiệu lực.
         let saoTheSonHTML = banSaoTheSon ? `<sub class="sao-the" style="font-size:0.6em;font-weight:600;opacity:0.85;" title="Sao Thế Sơn tinh: ${banSaoTheSon.soThe} (thay cho ${bSon[5]})">t${banSaoTheSon.ban[c]}</sub>` : "";
         let saoTheHuongHTML = banSaoTheHuong ? `<sub class="sao-the" style="font-size:0.6em;font-weight:600;opacity:0.85;" title="Sao Thế Hướng tinh: ${banSaoTheHuong.soThe} (thay cho ${bHuong[5]})">t${banSaoTheHuong.ban[c]}</sub>` : "";
         // Thành Môn đắc khí tại cung này -> gắn biểu tượng ⛩️ ngay cạnh Niên tinh (N) cho dễ nhận biết trực quan
@@ -1198,19 +1251,22 @@ async function tinhToanPhiTinh() {
         cell.innerHTML = `<div class="sao-hang-tren" style="position:relative;">${nenHTML}<span class="sao-item" style="position:relative;z-index:1;color:#d32f2f;">S${bSon[c]}${saoTheSonHTML}</span><span class="cung-ten" style="position:relative;z-index:1;">${TEN_CUNG[c]}</span><span class="sao-item" style="position:relative;z-index:1;color:#388e3c;">H${bHuong[c]}${saoTheHuongHTML}</span></div><div class="van-tinh" style="position:relative;">${bieuTuongThanhMon}${bVan[c]}</div><div class="hang-phu"><span class="phu-item ${getBgClass(bNien[c])}">N${bNien[c]}</span><span class="phu-item ${getBgClass(bNguyet[c])}">Ng${bNguyet[c]}</span><span class="phu-item ${getBgClass(bNhat[c])}">Nh${bNhat[c]}</span></div>`;
         cell.style.cursor = "pointer";
         let hanhCungC = HANH_CUA_CUNG[TEN_CUNG[c]];
-        let qSonC = qCungGoc(hanhCungC, bSon[c]), qHuongC = qCungGoc(hanhCungC, bHuong[c]);
+        let qSonC = qCungGoc(hanhCungC, bSonHieuLuc[c]), qHuongC = qCungGoc(hanhCungC, bHuongHieuLuc[c]);
         let diemC = qSonC.diem + qHuongC.diem;
         ketQua9Cung.push({ten:TEN_CUNG[c], diem:diemC, hanhCung:hanhCungC});
     }
     // Vòng 2: build luận giải từng cung; riêng Trung cung ghép thêm tổng kết toàn nhà vào cuối
     for (let c = 1; c <= 9; c++) {
-        let loiGiai = luanGiaiCung(TEN_CUNG[c], van, bVan[c], bSon[c], bHuong[c], bNien[c], bNguyet[c], bNhat[c], thangXem, vanHienTai);
-        let html = `<div class="luan-giai-item" id="luan-${TEN_CUNG[c]}"><b>Cung ${TEN_CUNG[c]} (S${bSon[c]}-H${bHuong[c]}):</b><br>${loiGiai}</div>`;
+        // Luận giải văn bản dùng bàn HIỆU LỰC (sao Thế nếu có kiêm hướng) — theo đúng nguyên tắc thế
+        // quái: sao Thế thay hẳn vai trò sao gốc trong Trung Cung, cát hung đi theo sao Thế.
+        let loiGiai = luanGiaiCung(TEN_CUNG[c], van, bVan[c], bSonHieuLuc[c], bHuongHieuLuc[c], bNien[c], bNguyet[c], bNhat[c], thangXem, vanHienTai);
+        let tieuDeSaoThe = (banSaoTheSon || banSaoTheHuong) ? ` <span style="font-weight:400;font-size:0.85em;color:#795500;">(theo Sao Thế${banSaoTheSon ? `, gốc S${bSon[c]}` : ''}${banSaoTheHuong ? `${banSaoTheSon ? ',' : ','} gốc H${bHuong[c]}` : ''})</span>` : "";
+        let html = `<div class="luan-giai-item" id="luan-${TEN_CUNG[c]}"><b>Cung ${TEN_CUNG[c]} (S${bSonHieuLuc[c]}-H${bHuongHieuLuc[c]}):</b>${tieuDeSaoThe}<br>${loiGiai}</div>`;
         if (TEN_CUNG[c] === "Trung") {
             let soToa = CUNG_TO_SO[lungSon.cung], soHuong = CUNG_TO_SO[huongSon.cung];
             html += luanChanKhiTienThien(van, huongSon.cung);
             html += luanHaLacTest(van, vanHienTai, huongSon.cung, lungSon.cung, namSinhChu, gioiTinhChu);
-            html += tongKetToanNha(van, ketQua9Cung, bSon[soToa], bSon[soHuong], bHuong[soHuong], bHuong[soToa], bVan, lungSon.cung, huongSon.cung, bSon, bHuong, lungSon, huongSon, namXem);
+            html += tongKetToanNha(van, ketQua9Cung, bSonHieuLuc[soToa], bSonHieuLuc[soHuong], bHuongHieuLuc[soHuong], bHuongHieuLuc[soToa], bVan, lungSon.cung, huongSon.cung, bSonHieuLuc, bHuongHieuLuc, lungSon, huongSon, namXem);
         }
         loiGiaiTheoCung[TEN_CUNG[c]] = html;
         document.getElementById("cung-" + c).onclick = () => hienThiLuanGiaiCung(TEN_CUNG[c]);

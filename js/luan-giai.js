@@ -191,6 +191,70 @@
   }
 
   // ==================================================================
+  // 7) LIÊN CHÂU TAM BAN (連珠三般) — tại 1 cung, Vận-Sơn-Hướng tạo thành
+  // BỘ BA SỐ LIÊN TIẾP theo vòng tròn Lạc Thư 1..9 (có nối vòng 9→1):
+  //   1-2-3, 2-3-4, 3-4-5, 4-5-6, 5-6-7, 6-7-8, 7-8-9, 8-9-1, 9-1-2.
+  // Khác với Tam Ban Quái (3 số CÙNG NHÓM 1-4-7/2-5-8/3-6-9), Liên Châu xét
+  // 3 số LIÊN TỤC nhau bất kể thứ tự Vận/Sơn/Hướng tại cung đó.
+  //
+  // Quy tắc cát/hung (đã chốt với người dùng):
+  //  - Toàn bộ 9 cung đều Liên Châu -> đại cách "mây xanh thênh thang".
+  //  - Cung có Sơn tinh hoặc Hướng tinh là vượng khí (= đúng Vận) thì phát
+  //    triển bền vững hơn.
+  //  - Nếu bộ ba chạm sao hung (có mặt số 2 hoặc số 5) hoặc là tổ hợp xấu
+  //    kinh điển 5-6-7 (hỏa hoạn, kiện tụng) thì vẫn ghi nhận là Liên Châu
+  //    về mặt cấu trúc số, NHƯNG phải nêu rõ mặt hung riêng — không gộp
+  //    chung một kết luận cát. Cần thêm Loan Đầu mới luận chính xác.
+  //
+  // xetLienChauTamBanMotCung(v, s, h, van):
+  //   v, s, h : số Vận tinh, Sơn tinh, Hướng tinh tại cung đang xét
+  //   van     : Vận đang xét (để đánh dấu vượng khí, có thể bỏ qua = undefined)
+  // Trả về null nếu không phải Liên Châu; nếu có, trả về object:
+  //   { chuoi: "4-5-6", boSo: [4,5,6], camSaoHung: true/false,
+  //     laToHopXau567: true/false, sonVuong: bool, huongVuong: bool }
+  // ==================================================================
+  var BO_BA_LIEN_CHAU = ["1-2-3","2-3-4","3-4-5","4-5-6","5-6-7","6-7-8","7-8-9","8-9-1","9-1-2"];
+  function xetLienChauTamBanMotCung(v, s, h, van) {
+    if (v == null || s == null || h == null) return null;
+    var boSoGoc = [v, s, h];
+    var boSoSet = boSoGoc.slice().sort(function (a, b) { return a - b; }).join(",");
+    var match = null;
+    for (var i = 0; i < BO_BA_LIEN_CHAU.length; i++) {
+      var boChuan = BO_BA_LIEN_CHAU[i].split("-").map(Number).sort(function (a, b) { return a - b; }).join(",");
+      if (boChuan === boSoSet) { match = BO_BA_LIEN_CHAU[i]; break; }
+    }
+    if (!match) return null;
+
+    var camSaoHung = boSoGoc.indexOf(2) !== -1 || boSoGoc.indexOf(5) !== -1;
+    var laToHopXau567 = match === "5-6-7";
+    var sonVuong = (van != null) && (s === van);
+    var huongVuong = (van != null) && (h === van);
+
+    return {
+      chuoi: match,
+      boSo: boSoGoc,
+      camSaoHung: camSaoHung,
+      laToHopXau567: laToHopXau567,
+      sonVuong: sonVuong,
+      huongVuong: huongVuong
+    };
+  }
+
+  // Xét toàn cục 9 cung: trả về { soCung: number 0-9, chiTiet: [{so, ten, ketQua}],
+  // duTron9Cung: bool } — không tự kết luận cát/hung, để nơi gọi tự trình bày
+  // theo đúng yêu cầu "hiển thị cả hai khía cạnh cát/hung tách biệt".
+  function xetLienChauTamBanToanCuc(bVan, bSon, bHuong, van, soToCung) {
+    var chiTiet = [];
+    for (var i = 1; i <= 9; i++) {
+      var kq = xetLienChauTamBanMotCung(bVan[i], bSon[i], bHuong[i], van);
+      if (kq) {
+        chiTiet.push({ so: i, ten: (soToCung && soToCung[i]) || i, ketQua: kq });
+      }
+    }
+    return { soCung: chiTiet.length, chiTiet: chiTiet, duTron9Cung: chiTiet.length === 9 };
+  }
+
+  // ==================================================================
   // EXPORT
   // ==================================================================
   window.xetQuanHeNguHanh = xetQuanHeNguHanh;
@@ -199,5 +263,7 @@
   window.xetVuongSuyCachCuc = xetVuongSuyCachCuc;
   window.xetToHopSonHuong = xetToHopSonHuong;
   window.xetChanKhiHaDo = xetChanKhiHaDo;
+  window.xetLienChauTamBanMotCung = xetLienChauTamBanMotCung;
+  window.xetLienChauTamBanToanCuc = xetLienChauTamBanToanCuc;
 
 })();
