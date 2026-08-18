@@ -15,6 +15,9 @@
 
 // ==== TÁI SỬ DỤNG TỪ shared.js và phi-tinh.js ====
 const TN_CUNG_TO_SO = window.CUNG_TO_SO || {"Khảm":1,"Khôn":2,"Chấn":3,"Tốn":4,"Trung":5,"Càn":6,"Đoài":7,"Cấn":8,"Ly":9};
+// Bảng ngược (số -> tên cung) — dùng khi gọi window.xetLienChauTamBanToanCuc(...) cần soToCung để đặt
+// tên cung cho từng phần tử trong chiTiet (hàm đó nhận dạng {1: "Tên cung", ...}, không phải tên->số).
+const TN_SO_TO_CUNG = window.SO_TO_CUNG || {1:"Khảm",2:"Khôn",3:"Chấn",4:"Tốn",5:"Trung",6:"Càn",7:"Đoài",8:"Cấn",9:"Ly"};
 const TN_HANH_CUA_SAO = window.HANH_CUA_SAO || {1:"Thủy",2:"Thổ",3:"Mộc",4:"Mộc",5:"Thổ",6:"Kim",7:"Kim",8:"Thổ",9:"Hỏa"};
 const TN_HANH_CUA_CUNG = window.HANH_CUA_CUNG || {"Khảm":"Thủy","Khôn":"Thổ","Chấn":"Mộc","Tốn":"Mộc","Trung":"Thổ","Càn":"Kim","Đoài":"Kim","Cấn":"Thổ","Ly":"Hỏa"};
 const TN_HANH_SINH = window.HANH_SINH || {"Mộc":"Hỏa","Hỏa":"Thổ","Thổ":"Kim","Kim":"Thủy","Thủy":"Mộc"};
@@ -282,7 +285,8 @@ function tnTinhDiem(sonInfo, van, nam) {
 
   // Ngũ Hoàng TRẠCH TINH (cố định vĩnh viễn theo cách cục, KHÁC Ngũ Hoàng LƯU NIÊN đổi theo năm):
   // là "gốc rễ bệnh của nhà" — ưu tiên xác định trước tiên, xử lý triệt để bằng vật phẩm hành Kim đặt lâu dài.
-  // Quét đúng 3 cung trọng yếu đang xét (Trung/Tọa/Hướng): Sơn tinh hoặc Hướng tinh = 5 ở cung nào thì ghi nhận.
+  // Quét đúng 3 cung trọng yếu đang xét (Trung/Tọa/Hướng): Sơn tinh hoặc Hướng tinh = 5 ở cung nào thì ghi nhận
+  // (viTriNguHoang liệt kê ĐỦ cả 3 cung để hiển thị thông tin/badge cho người dùng biết).
   let viTriNguHoang = [];
   if (sf === 5) viTriNguHoang.push({ loai: "Sơn tinh", ten: `Hướng (${sonInfo.cung})` });
   if (sc === 5) viTriNguHoang.push({ loai: "Sơn tinh", ten: "Trung cung" });
@@ -291,34 +295,55 @@ function tnTinhDiem(sonInfo, van, nam) {
   if (hc === 5) viTriNguHoang.push({ loai: "Hướng tinh", ten: "Trung cung" });
   if (hb === 5) viTriNguHoang.push({ loai: "Hướng tinh", ten: `Tọa (${toaSon.cung})` });
   let coNguHoangTrachTinh = viTriNguHoang.length > 0;
+  // TRỪ ĐIỂM: chỉ tính khi Ngũ Hoàng rơi đúng Tọa hoặc Hướng — số 5 tại Trung cung vốn là vị trí gốc
+  // tự nhiên của mọi bàn Lạc Thư (trung cung luôn mang số 5 ở bàn gốc trước khi phi tinh theo Vận),
+  // không phải hiện tượng "bay lạc" ra ngoài như khi nó rơi vào Tọa/Hướng, nên KHÔNG trừ điểm dù vẫn
+  // hiển thị đầy đủ trong viTriNguHoang/badge ☠☠ để người dùng biết.
+  let coNguHoangTruDiem = (sf === 5) || (sb === 5) || (hf === 5) || (hb === 5);
 
   // Lưu niên có 4 LOẠI độc lập: Ngũ Hoàng Trạch Tinh / Thái Tuế (chỉ xét Hướng) / Tam Sát (chỉ xét Tọa) / Phản-Phục Ngâm.
   // Mỗi loại tự chặn tối đa -1 — nếu dính đủ cả 4 loại thì trừ tối đa -4.
-  let diemNguHoang = coNguHoangTrachTinh ? -1 : 0;
+  let diemNguHoang = coNguHoangTruDiem ? -1 : 0;
   let diemThaiTue = Math.max(xungThaiTue ? -1 : 0, -1);
   let diemTamSat  = Math.max(toaSat ? -1 : 0, -1);
   let diemNgam    = Math.max(soLoiNgam * -1, -1);
-  let tangDGoc = (xungThaiTue?-1:0) + (toaSat?-1:0) + soLoiNgam*(-1) + (coNguHoangTrachTinh?-1:0);
+  let tangDGoc = (xungThaiTue?-1:0) + (toaSat?-1:0) + soLoiNgam*(-1) + (coNguHoangTruDiem?-1:0);
   let tangD = diemNguHoang + diemThaiTue + diemTamSat + diemNgam;
 
   // ===== TẦNG C (CỘNG ĐIỂM THẬT): Hợp Thập — xét 3 cung Trung/Tọa/Hướng, mỗi cung có ít nhất
   // 1 tổ hợp Hợp Thập (V+S=10 hoặc V+H=10) thì +1, tối đa +3 =====
   function coHopThapTaiCung(ng) { return ng.hopThapVS || ng.hopThapVH; }
   let soCungHopThap = [ngamFront, ngamCenter, ngamBack].filter(coHopThapTaiCung).length;
-  let tangC = soCungHopThap * 1;
-
-  let tong = tangA + tangB + tangC + tangD + tangCK;
-  let xepHang = tnXepHang(tong);
-  let cachCuoc = vsCC.cachCuoc;
 
   // ===== TẦNG C (chỉ ghi chú tham khảo, KHÔNG cộng/trừ điểm): Hà Đồ Tứ Tượng + Tam Ban Quái =====
-  // (Hợp Thập đã tách ra cộng điểm thật ở trên — soCungHopThap/tangC)
+  // (Hợp Thập đã tách ra cộng điểm thật ở trên — soCungHopThap)
   let coHaDo = typeof xetHaDoTuTuong === "function";
   let haDoFront  = coHaDo ? xetHaDoTuTuong(sf, hf, van) : null;
   let haDoCenter = coHaDo ? xetHaDoTuTuong(sc, hc, van) : null;
   let haDoBack   = coHaDo ? xetHaDoTuTuong(sb, hb, van) : null;
 
   let tamBanQuai = tnXetTamBanQuaiToanCuc(bVan, bSon, bHuong); // cách cục TOÀN CỤC — không gắn riêng vào 1 cung
+
+  // ===== LIÊN CHÂU TAM BAN (連珠三般) — dùng lại xetLienChauTamBanMotCung/ToanCuc từ luan-giai.js,
+  // KHÔNG viết lại logic. Hai mức độ:
+  //  - Đủ TRỌN 9/9 cung Liên Châu -> đại cách, CỘNG ĐIỂM THẬT +1 (gộp vào tầng C, giống Hợp Thập).
+  //  - Chỉ 3 cung trọng yếu Trung/Tọa/Hướng TỰ đạt Liên Châu riêng lẻ (không cần đủ 9 cung) -> CHỈ
+  //    THÔNG BÁO tham khảo, KHÔNG cộng điểm (giống cách Tam Ban Quái/Hà Đồ Tứ Tượng đang xử lý ở trên).
+  let lienChauToanCuc = typeof window.xetLienChauTamBanToanCuc === 'function'
+    ? window.xetLienChauTamBanToanCuc(bVan, bSon, bHuong, van, TN_SO_TO_CUNG) : null;
+  let lienChauDu9Cung = !!(lienChauToanCuc && lienChauToanCuc.duTron9Cung);
+  let tangLienChau = lienChauDu9Cung ? 1 : 0;
+  let lienChauTrungToaHuong = typeof window.xetLienChauTamBanMotCung === 'function' ? {
+    center: window.xetLienChauTamBanMotCung(vc, sc, hc, van),
+    back:   window.xetLienChauTamBanMotCung(vb, sb, hb, van),
+    front:  window.xetLienChauTamBanMotCung(vf, sf, hf, van)
+  } : { center: null, back: null, front: null };
+  let coLienChauTrungToaHuong = !!(lienChauTrungToaHuong.center || lienChauTrungToaHuong.back || lienChauTrungToaHuong.front);
+
+  let tangC = soCungHopThap * 1 + tangLienChau;
+  let tong = tangA + tangB + tangC + tangD + tangCK;
+  let xepHang = tnXepHang(tong);
+  let cachCuoc = vsCC.cachCuoc;
 
   // Tổ hợp 1-6 mở rộng (V-S, V-H) tại cung HƯỚNG — bổ sung cho cặp S-H đã có sẵn trong TN_TO_HOP_CO_DIEN
   let toHopDacBietHuong = tnXetToHopDacBietMotCung(vf, sf, hf);
@@ -329,6 +354,7 @@ function tnTinhDiem(sonInfo, van, nam) {
     back:   {cung: toaSon.cung,  v: vb, s: sb, h: hb, haDo: haDoBack, ngam: ngamBack},
     qsToa, qhHuong,
     vuongSon, thuongSon, vuongHuong, haThuy, cachCuoc, tamBanQuai, chanKhi,
+    lienChauToanCuc, lienChauDu9Cung, tangLienChau, lienChauTrungToaHuong, coLienChauTrungToaHuong,
     chiNam, toaThaiTue, xungThaiTue, toaSat, loaiTamSat, phuongTamSat, soLoiNgam, coNguHoangTrachTinh, viTriNguHoang,
     tangA, tangB, tangC, tangD, tangCK, tangDGoc, soCungHopThap, tong, xepHang,
     toHopDacBietHuong,
@@ -460,13 +486,16 @@ function tnTaoLuanNgan(kq, van) {
 
   // 0. TẦNG D — Ngũ Hoàng Trạch Tinh, Thái Tuế & Tam Sát (TRỪ ĐIỂM THẬT) — luôn đặt đầu, hung sát nặng nhất
   // Ngũ Hoàng Trạch Tinh (cố định vĩnh viễn, "gốc rễ bệnh của nhà") ưu tiên trên cả Thái Tuế/Tam Sát (lưu niên, đổi theo năm)
+  // CHỈ trừ điểm khi rơi đúng Tọa hoặc Hướng — tại Trung cung không trừ (xem giải thích ở nơi tính coNguHoangTruDiem),
+  // nhưng vẫn hiển thị đầy đủ vị trí (kể cả Trung cung) để người dùng biết.
   if (kq.coNguHoangTrachTinh) {
     let via = kq.viTriNguHoang.map(v => `${v.loai} tại ${v.ten}`).join(", ");
-    luan.push(`<span style="color:#4a148c;font-weight:bold;font-size:9px;">☠☠ Ngũ Hoàng Trạch Tinh (${via}) — gốc rễ bệnh của nhà, cần Kim khí trấn lâu dài, −1</span>`);
+    let coTruDiem = kq.viTriNguHoang.some(v => v.ten !== "Trung cung");
+    luan.push(`<span style="color:#4a148c;font-weight:bold;font-size:9px;">☠☠ Ngũ Hoàng Trạch Tinh (${via}) — gốc rễ bệnh của nhà, cần Kim khí trấn lâu dài${coTruDiem ? ', −1' : ''}</span>`);
   }
   if (kq.toaSat) luan.push(`<span style="color:#b71c1c;font-weight:bold;font-size:9px;">☠ Tọa ${kq.loaiTamSat.ten} (Tam Sát, Chi ${kq.chiNam}) — đại kỵ động thổ tại Tọa, −1</span>`);
   if (kq.xungThaiTue) luan.push(`<span style="color:#c62828;font-weight:bold;font-size:9px;">⚠ Hướng phạm Thái Tuế (${kq.chiNam}) — đối đầu trực diện, −1</span>`);
-  if (kq.toaThaiTue) luan.push(`<span style="color:#2e7d32;font-weight:bold;font-size:9px;">🛡️ Tọa Thái Tuế (${kq.chiNam}) — tựa núi, có thế vững (không trừ điểm)</span>`);
+  if (kq.toaThaiTue) luan.push(`<span style="color:#2e7d32;font-weight:bold;font-size:9px;">🛡️ Tọa Thái Tuế (${kq.chiNam}) — tựa núi, có thế vững</span>`);
 
   // 1. Cách cục Tầng B (Vượng Sơn Vượng Hướng / Thượng Sơn Hạ Thủy) — mỗi nhãn tự tô màu riêng
   // theo đúng dấu điểm của chính nó (xanh = +1, đỏ = -1), KHÔNG gộp chung 1 màu cho cả cụm — tránh
@@ -496,9 +525,11 @@ function tnTaoLuanNgan(kq, van) {
   }
 
   // 3b. Hợp Thập (Tầng C, CỘNG ĐIỂM THẬT +1/cung) / Phản-Phục Ngâm (Tầng D, TRỪ ĐIỂM THẬT)
-  if (kq.soCungHopThap > 0) luan.push(`<span style="color:#00695c;font-weight:bold;font-size:9px;">➕10 Hợp Thập × ${kq.soCungHopThap} cung (+${kq.tangC}) — thông khí</span>`);
+  if (kq.soCungHopThap > 0) luan.push(`<span style="color:#00695c;font-weight:bold;font-size:9px;">➕10 Hợp Thập × ${kq.soCungHopThap} cung (+${kq.soCungHopThap}) — thông khí</span>`);
   if (kq.soLoiNgam > 0) luan.push(`<span style="color:#8b0000;font-weight:bold;font-size:9px;">⚠ Phản/Phục Ngâm × ${kq.soLoiNgam} — loại Phản/Phục Ngâm, quy về −1</span>`);
   if (kq.tamBanQuai) luan.push(`<span style="color:#6a1b9a;font-weight:bold;font-size:9px;">🔺 Tam Ban Quái (toàn cục — quý cách hiếm gặp)</span>`);
+  if (kq.lienChauDu9Cung) luan.push(`<span style="color:#004d40;font-weight:bold;font-size:9px;">🔗 Liên Châu Tam Ban đủ trọn 9/9 cung — đại cách, +${kq.tangLienChau}</span>`);
+  else if (kq.coLienChauTrungToaHuong) luan.push(`<span style="color:#00695c;font-weight:600;font-size:9px;">🔗 Liên Châu Tam Ban tại ${[kq.lienChauTrungToaHuong.center&&'Trung',kq.lienChauTrungToaHuong.back&&'Tọa',kq.lienChauTrungToaHuong.front&&'Hướng'].filter(Boolean).join(', ')} (chưa đủ 9 cung)</span>`);
   if (kq.toHopDacBietHuong && kq.toHopDacBietHuong.length) {
     for (let th of kq.toHopDacBietHuong) {
       luan.push(`<span style="color:#795500;font-weight:600;font-size:9px;">${th.icon} ${th.ten} (${th.cap})</span>`);
@@ -556,6 +587,64 @@ function tnTaoO(c, vaiTro, kq) {
     <div style="font-size:10px;color:#999;">V${c.v}</div>
     <div style="font-size:11px;"><span style="color:${sColor};font-weight:${sBold?700:400};">S${c.s}</span> <span style="color:${hColor};font-weight:${hBold?700:400};">H${c.h}</span></div>
     <div style="display:flex;flex-direction:column;gap:1px;margin-top:1px;">${badges.join("")}</div>
+  </div>`;
+}
+
+// ==================================================================
+// tnLienChauChiTiet — build khối HTML luận giải ĐẦY ĐỦ cho Liên Châu Tam Ban khi người dùng
+// click mở rộng chi tiết 1 sơn. Đủ 3 ý theo đúng lý thuyết đã chốt:
+//  1) Đủ trọn 9/9 cung -> đại cách "mây xanh thênh thang".
+//  2) Cung nào có Sơn tinh hoặc Hướng tinh là VƯỢNG KHÍ (= đúng Vận) thì phát triển bền vững hơn.
+//  3) Chuỗi chạm sao hung (Ngũ Hoàng 5, Nhị Hắc 2) hoặc tổ hợp xấu kinh điển 5-6-7 (hỏa hoạn, kiện
+//     tụng) thì vẫn có thể hung dù là Liên Châu — cần thêm ngũ hành sinh khắc + Loan Đầu mới luận
+//     chính xác. Dùng lại toàn bộ dữ liệu đã có sẵn từ xetLienChauTamBanMotCung/ToanCuc (luan-giai.js),
+//     không tính lại logic ở đây.
+// ==================================================================
+function tnLienChauChiTiet(kq) {
+  let mauNen = "#e0f2f1", mauVien = "#004d40", mauChu = "#004d40";
+  let dongTieuDe, dongY1;
+
+  if (kq.lienChauDu9Cung) {
+    dongTieuDe = `🔗 <b>Liên Châu Tam Ban (連珠三般)</b> — đủ trọn 9/9 cung, mỗi cung Vận-Sơn-Hướng tạo bộ ba số liên tiếp theo vòng Lạc Thư (VD 4-5-6, 8-9-1...) — cộng điểm thật +${kq.tangLienChau}.`;
+    dongY1 = `<div style="margin-top:4px;">✨ Nếu toàn 9 cung thì rất là tốt: đường công danh sự nghiệp rộng mở như đi trên mây xanh, vui vẻ, thênh thang, tự tại.</div>`;
+  } else {
+    let dsCung = [
+      kq.lienChauTrungToaHuong.center && { ten: "Trung", kqc: kq.lienChauTrungToaHuong.center },
+      kq.lienChauTrungToaHuong.back && { ten: "Tọa", kqc: kq.lienChauTrungToaHuong.back },
+      kq.lienChauTrungToaHuong.front && { ten: "Hướng", kqc: kq.lienChauTrungToaHuong.front }
+    ].filter(Boolean);
+    dongTieuDe = `🔗 <b>Liên Châu Tam Ban (連珠三般)</b> — chỉ đạt tại <b>${dsCung.map(d => `${d.ten} (${d.kqc.chuoi})`).join(", ")}</b> — chưa đủ trọn 9 cung.`;
+    dongY1 = "";
+  }
+
+  // Ý 2: vượng khí — quét TẤT CẢ cung đang có Liên Châu (toàn cục nếu đủ 9, hoặc riêng Trung/Tọa/Hướng
+  // nếu chưa đủ) để liệt kê cung nào có Sơn/Hướng tinh vượng khí.
+  let dsCungXet = kq.lienChauDu9Cung && kq.lienChauToanCuc
+    ? kq.lienChauToanCuc.chiTiet.map(ct => ({ ten: ct.ten, kqc: ct.ketQua }))
+    : [
+        kq.lienChauTrungToaHuong.center && { ten: "Trung", kqc: kq.lienChauTrungToaHuong.center },
+        kq.lienChauTrungToaHuong.back && { ten: "Tọa", kqc: kq.lienChauTrungToaHuong.back },
+        kq.lienChauTrungToaHuong.front && { ten: "Hướng", kqc: kq.lienChauTrungToaHuong.front }
+      ].filter(Boolean);
+
+  let dsVuongKhi = dsCungXet.filter(d => d.kqc.sonVuong || d.kqc.huongVuong);
+  let dongY2 = dsVuongKhi.length > 0
+    ? `<div style="margin-top:4px;color:#2e7d32;">💪 Cung <b>${dsVuongKhi.map(d => `${d.ten}${d.kqc.sonVuong && d.kqc.huongVuong ? " (Sơn & Hướng đều vượng khí)" : d.kqc.sonVuong ? " (Sơn tinh vượng khí)" : " (Hướng tinh vượng khí)"}`).join(", ")}</b> đang có Sơn tinh hoặc Hướng tinh là vượng khí (đúng Vận) — vận thế của gia chủ càng phát triển bền vững.</div>`
+    : "";
+
+  // Ý 3: cảnh báo hung — quét cùng danh sách trên tìm cung nào chạm sao hung (2, 5) hoặc đúng 5-6-7.
+  let dsHung567 = dsCungXet.filter(d => d.kqc.laToHopXau567);
+  let dsHungSo = dsCungXet.filter(d => d.kqc.camSaoHung && !d.kqc.laToHopXau567);
+  let dongY3 = "";
+  if (dsHung567.length > 0 || dsHungSo.length > 0) {
+    let chiTietHung = [];
+    if (dsHung567.length > 0) chiTietHung.push(`cung <b>${dsHung567.map(d => `${d.ten} (${d.kqc.chuoi})`).join(", ")}</b> đúng tổ hợp <b>5-6-7</b> — dễ gây họa hỏa hoạn, kiện tụng`);
+    if (dsHungSo.length > 0) chiTietHung.push(`cung <b>${dsHungSo.map(d => `${d.ten} (${d.kqc.chuoi})`).join(", ")}</b> có chạm sao <b>Ngũ Hoàng (5)</b> hoặc <b>Nhị Hắc (2)</b>`);
+    dongY3 = `<div style="margin-top:4px;color:#c62828;">⚠️ Chuỗi liên tiếp này chạm vào sao hung: ${chiTietHung.join("; ")}. Liên Châu Tam Ban không phải cách cục nào cũng đẹp — nếu chạm sao hung như Ngũ Hoàng, Nhị Hắc hoặc tổ hợp xấu thì vẫn có thể hung, dù là Liên Châu. Cần kết hợp với ngũ hành sinh khắc và Loan Đầu (hình thế bên ngoài) mới luận chính xác.</div>`;
+  }
+
+  return `<div style="margin-bottom:8px;padding:6px 8px;background:${mauNen};border-radius:6px;border-left:3px solid ${mauVien};font-size:12px;color:${mauChu};">
+    ${dongTieuDe}${dongY1}${dongY2}${dongY3}
   </div>`;
 }
 
@@ -618,9 +707,11 @@ function tnTaoChiTiet(kq, van) {
   let canhBaoNguHoang = "";
   if (kq.coNguHoangTrachTinh) {
     let via = kq.viTriNguHoang.map(v => `<b>${v.loai}</b> tại <b>${v.ten}</b>`).join(", ");
+    let chiTrungCung = kq.viTriNguHoang.every(v => v.ten === "Trung cung");
     canhBaoNguHoang = `<div style="margin-bottom:8px;padding:8px;background:#f3e5f5;border-radius:6px;border-left:4px solid #4a148c;font-size:12px;color:#4a148c;">
       ☠☠ <b>Ngũ Hoàng Trạch Tinh</b> — ${via}.<br>
       Đây là "gốc rễ bệnh của nhà" (cố định vĩnh viễn theo cách cục, không đổi theo năm) — luôn ưu tiên xử lý trước tiên: đặt vật phẩm hành <b>Kim</b> (chuông gió kim loại, bát quái đồng, khánh đồng...) tại đúng vị trí này và giữ <b>lâu dài</b> để trấn.<br>
+      ${chiTrungCung ? '<span style="font-size:10px;opacity:0.85;">Vị trí này ở Trung cung — vốn là chỗ số 5 luôn nằm ở bàn Lạc Thư gốc, không phải hiện tượng "bay lạc" như khi rơi vào Tọa/Hướng; vẫn nên trấn Kim khí như bình thường.</span><br>' : ''}
       <span style="font-size:10px;opacity:0.85;">Lưu ý: Ngũ Hoàng <i>lưu niên</i> (bay theo từng năm, chưa cài đặt trong bảng này) chỉ thực sự đáng ngại khi bay đúng vào vị trí Ngũ Hoàng Trạch Tinh này hoặc đúng cửa chính/bếp — năm nào bị thì chỉ cần treo chuông gió tạm thời năm đó là đủ, không cần trấn thêm.</span>
     </div>`;
   }
@@ -630,12 +721,12 @@ function tnTaoChiTiet(kq, van) {
   let canhBaoD = "";
   if (kq.toaSat || kq.xungThaiTue) {
     let dong = [];
-    if (kq.toaSat) dong.push(`☠ <b>Tọa ${kq.loaiTamSat.ten}</b> (${kq.loaiTamSat.giaiDoan} — Tam Sát của Chi ${kq.chiNam}) — ${kq.loaiTamSat.moTa} Đại kỵ động thổ, tu sửa tại Tọa (loại Tam Sát, −1 khi cộng Tổng)`);
-    if (kq.xungThaiTue) dong.push(`⚠ <b>Hướng phạm Thái Tuế</b> (Hướng nhà trùng đúng phương Thái Tuế năm ${kq.chiNam}) — đối đầu trực diện với phương Thái Tuế, đại kỵ đào đắp/sửa chữa tại Hướng (loại Thái Tuế, −1 khi cộng Tổng)`);
+    if (kq.toaSat) dong.push(`☠ <b>Tọa ${kq.loaiTamSat.ten}</b> (${kq.loaiTamSat.giaiDoan} — Tam Sát của Chi ${kq.chiNam}) — ${kq.loaiTamSat.moTa} Đại kỵ động thổ, tu sửa tại Tọa`);
+    if (kq.xungThaiTue) dong.push(`⚠ <b>Hướng phạm Thái Tuế</b> (Hướng nhà trùng đúng phương Thái Tuế năm ${kq.chiNam}) — đối đầu trực diện với phương Thái Tuế, đại kỵ đào đắp/sửa chữa tại Hướng`);
     canhBaoD = `<div style="margin-bottom:8px;padding:8px;background:#ffebee;border-radius:6px;border-left:3px solid #b71c1c;font-size:12px;color:#8b0000;">${dong.join("<br>")}</div>`;
   }
   if (kq.toaThaiTue) {
-    canhBaoD += `<div style="margin-bottom:8px;padding:8px;background:#e8f5e9;border-radius:6px;border-left:3px solid #2e7d32;font-size:12px;color:#1b5e20;">🛡️ <b>Tọa Thái Tuế</b> (Tọa sơn trùng đúng phương Thái Tuế năm ${kq.chiNam}) — như tựa lưng vào núi, có quyền uy che chở, thế vững (không trừ điểm). Lưu ý: dù Tọa hay Hướng, phương Thái Tuế tuyệt đối không đào đắp/sửa chữa/đục phá.</div>`;
+    canhBaoD += `<div style="margin-bottom:8px;padding:8px;background:#e8f5e9;border-radius:6px;border-left:3px solid #2e7d32;font-size:12px;color:#1b5e20;">🛡️ <b>Tọa Thái Tuế</b> (Tọa sơn trùng đúng phương Thái Tuế năm ${kq.chiNam}) — như tựa lưng vào núi, có quyền uy che chở, thế vững. Lưu ý: dù Tọa hay Hướng, phương Thái Tuế tuyệt đối không đào đắp/sửa chữa/đục phá.</div>`;
   }
 
   return `<div style="padding:12px;background:#faf8f5;border-radius:8px;margin-top:8px;border:1px solid #e3d5c0;">
@@ -648,9 +739,9 @@ function tnTaoChiTiet(kq, van) {
     ${canhBaoNguHoang}
     ${canhBaoD}
     ${kq.tamBanQuai ? `<div style="margin-bottom:8px;padding:6px 8px;background:#f3e5f5;border-radius:6px;border-left:3px solid #6a1b9a;font-size:12px;color:#6a1b9a;font-weight:bold;">🔺 Tam Ban Quái (三般卦) — cả 9 cung của bàn đều có Vận-Sơn-Hướng cùng nhóm 1-4-7/2-5-8/3-6-9. Quý cách hiếm gặp, đắc quý nhân, thông cả 3 nguyên — nhưng cần Hướng tinh đúng chỗ có thủy thật mới phát huy, nếu không dễ biến cát thành hung.</div>` : ""}
+    ${(kq.lienChauDu9Cung || kq.coLienChauTrungToaHuong) ? tnLienChauChiTiet(kq) : ""}
     ${kq.toHopDacBietHuong && kq.toHopDacBietHuong.length ? `<div style="margin-bottom:8px;padding:6px 8px;background:#fff8e1;border-radius:6px;border-left:3px solid #f9a825;font-size:12px;color:#795500;">
       ${kq.toHopDacBietHuong.map(th => `<div>${th.icon} <b>${th.ten}</b> <span style="font-size:10px;color:#888;">(cặp ${th.cap} = ${th.saoA}-${th.saoB}, tại cung Hướng)</span> — ${th.moTa}</div>`).join("")}
-      <div style="font-size:9px;color:#999;margin-top:2px;">Ghi chú tham khảo — không cộng/trừ điểm vào Tổng.</div>
     </div>` : ""}
     <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:8px;margin-bottom:8px;">
       <div style="padding:8px;background:#fff;border-radius:6px;text-align:center;">
@@ -923,8 +1014,9 @@ function tnKhoiTao() {
           <b>Tầng B</b> (Vượng Sơn Vượng Hướng / Thượng Sơn Hạ Thủy — 4 yếu tố cân xứng, mỗi yếu tố ±1): +1 Vượng Sơn · +1 Vượng Hướng · −1 Thượng Sơn (S lạc Hướng) · −1 Hạ Thủy (H lạc Tọa)<br>
           <b>Tầng D</b> (Hung sát — TRỪ ĐIỂM THẬT, <u>mỗi loại tối đa −1, tổng tối đa −4</u> nếu dính đủ 4 loại — mỗi loại dù nặng hay lặp nhiều lần cũng chỉ trừ tối đa −1, không lấn át cách cục): ☠☠ Loại <b>Ngũ Hoàng Trạch Tinh</b> (cố định vĩnh viễn theo cách cục, KHÁC lưu niên — Sơn tinh hoặc Hướng tinh = 5 tại Trung/Tọa/Hướng — "gốc rễ bệnh của nhà", ưu tiên xử lý trước tiên bằng vật phẩm hành Kim đặt lâu dài) · ☠ Loại <b>Tam Sát</b> (lưu niên theo Năm xem): <u>chỉ kỵ Tọa</u> (đại kỵ động thổ/tu sửa đúng chỗ lưng nhà tựa vào phương Tam Sát của Chi năm; Tam Sát tại Hướng không kỵ) · ⚠ Loại <b>Thái Tuế</b> (lưu niên theo Năm xem): <u>chỉ kỵ Hướng</u> (nhà quay mặt đối đầu trực diện phương Thái Tuế của Chi năm là hung; Thái Tuế tại Tọa ngược lại là tựa núi, có thế vững, không trừ điểm — nhưng dù Tọa hay Hướng, phương Thái Tuế tuyệt đối không đào đắp/sửa chữa/đục phá) · ⚠ Loại <b>Phản/Phục Ngâm</b>: mỗi lỗi (S/H trùng hoặc hợp thập với số Lạc Thư nguyên đán tại chính cung đó, tính cả 3 cung) — mỗi loại dù có nhiều lỗi cũng chỉ trừ tối đa −1<br>
           <span style="font-size:10px;">Ngũ Hoàng <i>lưu niên</i> (bay theo từng năm) chưa cài đặt trong bảng — chỉ thực sự đáng ngại khi bay đúng vào vị trí Ngũ Hoàng Trạch Tinh hoặc đúng cửa/bếp, năm đó treo chuông gió tạm là đủ.</span><br>
+          <span style="font-size:10px;">Ngoại lệ không trừ điểm dù thuộc Tầng D: Ngũ Hoàng Trạch Tinh rơi tại <b>Trung cung</b> (số 5 vốn luôn ở giữa theo bàn Lạc Thư gốc, không phải "bay lạc" như khi rơi vào Tọa/Hướng) · Thái Tuế tại <b>Tọa</b> (tựa núi, thế vững — ngược với phạm Thái Tuế tại Hướng).</span><br>
           <b>Tầng C</b> (Hợp Thập — CỘNG ĐIỂM THẬT): xét 3 cung Trung/Tọa/Hướng, mỗi cung có V+S=10 hoặc V+H=10 thì +1 (tối đa +3) — thông khí, quý nhất ở Vận 1, 9<br>
-          <b>Tham khảo thêm</b> (KHÔNG cộng/trừ điểm): 🌊 Hà Đồ Tứ Tượng · 🔺 Tam Ban Quái (三般卦 — <i>không phải "Tam Bát Quái"</i>: CẢ 9 cung của bàn đều có Vận-Sơn-Hướng cùng nhóm 1-4-7/2-5-8/3-6-9, là cách cục toàn cục chứ không xét riêng 1 cung — rất hiếm gặp) — theo Tử Bạch Quyết/Huyền Không Bí Chỉ<br>
+          <b>Tham khảo thêm</b> (KHÔNG cộng/trừ điểm vào Tổng): 🌊 Hà Đồ Tứ Tượng · 🔺 Tam Ban Quái (三般卦 — <i>không phải "Tam Bát Quái"</i>: CẢ 9 cung của bàn đều có Vận-Sơn-Hướng cùng nhóm 1-4-7/2-5-8/3-6-9, là cách cục toàn cục chứ không xét riêng 1 cung — rất hiếm gặp) · 🔗 Liên Châu Tam Ban khi <i>chưa đủ trọn 9 cung</i> (chỉ đủ tại Trung/Tọa/Hướng) · các tổ hợp đặc biệt Sơn-Hướng ghi ở mục "Tổ hợp đặc biệt" — theo Tử Bạch Quyết/Huyền Không Bí Chỉ<br>
           🎯 Tổ hợp <span style="color:#1565c0;">xanh dương</span> = cổ điển có nguồn sách · <span style="color:#7b1fa2;">tím</span> = diễn giải hiện đại (chưa thấy trong Tử Bạch Quyết/Huyền Không Bí Chỉ)<br>
           <b>Vận</b> dùng để lập Sơn/Hướng tinh (cố định theo thời điểm nhập trạch) — <b>Năm xem</b> dùng riêng để tính Thái Tuế/Tam Sát lưu niên (đổi theo từng năm, độc lập với Vận)<br><br>
           <b>V</b>=Vận tinh (Trung cung luôn = Vận) | <b>S</b>=Sơn tinh | <b>H</b>=Hướng tinh<br>
