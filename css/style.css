@@ -334,13 +334,17 @@
     .ld-btn-sua { background: #1565c0; color: #fff; }
     .ld-btn-xoa { background: #c62828; color: #fff; }
 
-    /* Tứ tượng — bao quanh lưới Cửu Cung */
+    /* Tứ tượng — bao quanh lưới Cửu Cung (bố cục GHẾ TỰA) */
     .ld-tu-tuong-wrap { display: grid; grid-template-columns: 1fr 3fr 1fr; grid-template-rows: auto 1fr auto; gap: 4px; align-items: stretch; }
-    .ld-tt-slot { display: flex; align-items: center; justify-content: center; }
-    .ld-tt-slot-top { grid-column: 1 / -1; grid-row: 1; }
-    .ld-tt-slot-left { grid-column: 1; grid-row: 2; }
-    .ld-tt-slot-right { grid-column: 3; grid-row: 2; }
-    .ld-tt-slot-bottom { grid-column: 1 / -1; grid-row: 3; }
+    .ld-tt-slot { display: flex; align-items: stretch; justify-content: center; }
+    .ld-tt-slot-left .ld-tt-card,
+.ld-tt-slot-right .ld-tt-card {
+    height: 100%;
+}
+    .ld-tt-slot-top { grid-column: 2; grid-row: 1; }
+    .ld-tt-slot-left { grid-column: 1; grid-row: 1 / 3; }
+    .ld-tt-slot-right { grid-column: 3; grid-row: 1 / 3; }
+    .ld-tt-slot-bottom { grid-column: 2; grid-row: 3; }
     .ld-tu-tuong-wrap .ld-grid { grid-column: 2; grid-row: 2; }
 
     .ld-tt-card { position: relative; background: #f5f0e6; border: 1px solid #ccc; border-radius: 8px; padding: 6px 8px; text-align: center; cursor: pointer; transition: all 0.15s ease; touch-action: manipulation; display: flex; flex-direction: column; align-items: center; gap: 2px; width: 100%; }

@@ -19,6 +19,7 @@
         <button class="tab-btn" id="tabBtnTimnha" onclick="chuyenTab('timnha')">🔍 Tìm Nhà</button>
         <button class="tab-btn" id="tabBtnCuucungluoi" onclick="chuyenTab('cuucungluoi')">🔲 C.Cung Lưới</button>
         <button class="tab-btn" id="tabBtnLichvannien" onclick="chuyenTab('lichvannien')">📜 Lịch VN</button>
+        <button class="tab-btn" id="tabBtnLoandau" onclick="chuyenTab('loandau')">🏔️ Loan Đầu</button>
     </div>
 
     <!-- TAB HỒ SƠ NHÀ -->
@@ -635,6 +636,140 @@
         <div id="lvnContainer" style="width:100%;display:flex;flex-direction:column;align-items:center;padding:12px;"></div>
     </div>
 
+    <!-- TAB LOAN ĐẦU -->
+    <div id="tab-loandau" class="tab-content">
+        <div class="ld-container" id="ld-container">
+            <div class="ld-header">
+                <h2>🏔️ LOAN ĐẦU</h2>
+                <p class="ld-subtitle">Khai báo ngoại cảnh quanh nhà</p>
+            </div>
+
+            <!-- LƯỚI 9 CUNG + TỨ TƯỢNG BAO QUANH -->
+            <div class="ld-section">
+                <div class="ld-section-title">SƠ ĐỒ 9 CUNG & TỨ TƯỢNG</div>
+                <div class="ld-huong-indicator" id="ld-huong-indicator">▲ HƯỚNG NHÀ</div>
+                <div class="ld-tu-tuong-wrap">
+                    <div class="ld-tt-slot ld-tt-slot-top" id="ld-tt-chu-tuoc"></div>
+                    <div class="ld-tt-slot ld-tt-slot-left" id="ld-tt-thanh-long"></div>
+                    <div class="ld-grid" id="ld-cung-grid"></div>
+                    <div class="ld-tt-slot ld-tt-slot-right" id="ld-tt-bach-ho"></div>
+                    <div class="ld-tt-slot ld-tt-slot-bottom" id="ld-tt-huyen-vu"></div>
+                </div>
+                <div class="ld-hint">Chạm vào một cung để khảo sát.</div>
+            </div>
+
+            <!-- TỔNG QUAN KHẢO SÁT -->
+            <div class="ld-section">
+                <div id="ld-tong-quan"></div>
+            </div>
+
+            <!-- CHI TIẾT CUNG ĐANG CHỌN -->
+            <div class="ld-section">
+                <div id="ld-chi-tiet-cung"></div>
+            </div>
+
+
+            <!-- MINH ĐƯỜNG -->
+            <div class="ld-section">
+                <div id="ld-minh-duong"></div>
+            </div>
+
+            <!-- NÚT RESET -->
+            <div class="ld-section">
+                <button class="ld-btn-reset" id="ld-btn-reset">↺ Xóa toàn bộ khai báo Loan Đầu</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- MODAL THÊM/SỬA NGOẠI CẢNH V2 (FORM THÔNG MINH THEO LOẠI) -->
+    <div class="ld-modal-overlay" id="ld-v2-modal-overlay">
+        <div class="ld-modal-box ld-v2-modal-box">
+            <div class="ld-modal-title" id="ld-v2-modal-title">➕ Thêm ngoại cảnh</div>
+
+            <div class="ld-field">
+                <label>Cung</label>
+                <select id="ld-v2-f-cung"></select>
+            </div>
+
+            <div id="ld-v2-form-body"></div>
+
+            <div class="ld-modal-actions">
+                <button class="ld-btn-cancel" id="ld-v2-modal-dong">Hủy</button>
+                <button class="ld-btn-save" id="ld-v2-modal-luu">Lưu</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- MODAL CHI TIẾT ĐỐI TƯỢNG -->
+    <div class="ld-modal-overlay" id="ld-v2-detail-overlay">
+        <div class="ld-modal-box ld-v2-detail-box">
+            <div class="ld-modal-title" id="ld-v2-detail-title">Chi tiết ngoại cảnh</div>
+            <div id="ld-v2-detail-body"></div>
+            <div class="ld-modal-actions">
+                <button class="ld-btn-save" id="ld-v2-detail-dong">Đóng</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- MODAL TỨ TƯỢNG -->
+    <div class="ld-modal-overlay" id="ld-tutuong-modal-overlay">
+        <div class="ld-modal-box">
+            <div class="ld-modal-title" id="ld-tutuong-modal-title">Tứ Tượng</div>
+
+            <div class="ld-field">
+                <label>Có gì? (vật thể, cách nhau bằng dấu phẩy)</label>
+                <input type="text" id="ld-tt-vatthe" placeholder="Ví dụ: Núi, Cây lớn, Nhà cao tầng">
+            </div>
+
+            <div class="ld-field">
+                <label>Cao/thấp?</label>
+                <select id="ld-tt-caothap">
+                    <option value="">— Chọn —</option>
+                    <option value="thap">Thấp</option>
+                    <option value="ngang">Ngang</option>
+                    <option value="cao">Cao</option>
+                    <option value="rat-cao">Rất cao</option>
+                    <option value="khong-xac-dinh">Không rõ</option>
+                </select>
+            </div>
+
+            <div class="ld-field">
+                <label>Gần/xa?</label>
+                <select id="ld-tt-ganxa">
+                    <option value="">— Chọn —</option>
+                    <option value="rat-gan">Rất gần</option>
+                    <option value="gan">Gần</option>
+                    <option value="trung-binh">Trung bình</option>
+                    <option value="xa">Xa</option>
+                    <option value="rat-xa">Rất xa</option>
+                    <option value="khong-xac-dinh">Không rõ</option>
+                </select>
+            </div>
+
+            <div class="ld-field">
+                <label>Động/tĩnh?</label>
+                <select id="ld-tt-dongtinh">
+                    <option value="">— Chọn —</option>
+                    <option value="tinh">Tĩnh</option>
+                    <option value="it-dong">Ít động</option>
+                    <option value="dong">Động</option>
+                    <option value="rat-dong">Rất động</option>
+                    <option value="khong-xac-dinh">Không rõ</option>
+                </select>
+            </div>
+
+            <div class="ld-field">
+                <label>Ghi chú</label>
+                <textarea id="ld-tt-ghichu" class="ld-textarea" placeholder="Ghi chú quan sát thực tế..."></textarea>
+            </div>
+
+            <div class="ld-modal-actions">
+                <button class="ld-btn-cancel" id="ld-tutuong-modal-dong">Hủy</button>
+                <button class="ld-btn-save" id="ld-tutuong-modal-luu">Lưu</button>
+            </div>
+        </div>
+    </div>
+
     <script src="js/shared.js"></script>
     <script src="js/luan-giai.js"></script>
     <script src="js/compass-module.js"></script>
@@ -648,5 +783,6 @@
     <script src="js/lich-van-nien.js"></script>
     <script src="js/thong-tin-nha.js"></script>
     <script src="js/ho-so.js"></script>
+    <script src="js/loan-dau.js"></script>
 </body>
 </html>

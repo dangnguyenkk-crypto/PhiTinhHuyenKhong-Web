@@ -379,7 +379,18 @@
   var cuuCungDoors = [];    // cửa của tab này — dùng chung CuaModule (js/cua-module.js)
   var draggingIndex = -1;
   var scalePxPerMeter = 20; // 1 mét = 20px, Ka chỉnh qua thanh trượt
-  var lockedPoints = [];    // true = đỉnh bị khoá, không cho kéo/chỉnh
+  var lockedEdges = [];     // true = CẠNH bị khoá (giữ nguyên chiều dài/hướng), lưu độc lập theo từng cạnh
+                             // — không suy diễn qua đỉnh, tránh việc mở khoá 1 cạnh làm ảnh hưởng cạnh kề
+                             // dùng chung đỉnh (giống model lockedEdges của ve-phong.js / Tâm Nhà).
+
+  // 1 đỉnh bị khoá kéo nếu MỘT TRONG HAI cạnh kề nó (cạnh trước hoặc cạnh sau) đang khoá.
+  function isDinhBiKhoaKeo(idx) {
+    var n = currentPoints.length;
+    if (n === 0) return false;
+    var edgeBefore = (idx - 1 + n) % n;
+    var edgeAfter = idx;
+    return !!lockedEdges[edgeBefore] || !!lockedEdges[edgeAfter];
+  }
 
   // currentPoints đã là toạ độ SVG (viewBox) sẵn — không có hệ world/zoom riêng như tam-nha,
   // nên hàm quy đổi world->screen của CuaModule chỉ cần trả về nguyên giá trị.
@@ -562,22 +573,27 @@
         var lenM = lenPx / scalePxPerMeter;
         var bearing = edgeBearing(a, b);
 
-        var aLocked = lockedPoints[aIdx];
-        var bLocked = lockedPoints[bIdx];
-        var fullyLocked = aLocked && bLocked;
-        var moveA = bLocked && !aLocked;
+        var isEdgeLocked = !!lockedEdges[edgeIdx];
+        // "Cố định" đỉnh: nếu 1 trong 2 đỉnh của cạnh này bị khoá bởi cạnh KHÁC kề nó (không phải
+        // cạnh hiện tại), ta giữ đỉnh đó đứng yên và chỉ di chuyển đỉnh còn lại khi chỉnh dài/góc.
+        var n2 = currentPoints.length;
+        var edgeBeforeA = (aIdx - 1 + n2) % n2; // cạnh đứng trước Đ(a) — khác cạnh hiện tại
+        var edgeAfterOfB = bIdx;                // cạnh kế tiếp bắt đầu từ Đ(b) — khác cạnh hiện tại
+        var aPinnedByOther = !!lockedEdges[edgeBeforeA];
+        var bPinnedByOther = !!lockedEdges[edgeAfterOfB];
+        var moveA = bPinnedByOther && !aPinnedByOther && !isEdgeLocked;
 
         var row = document.createElement("div");
-        row.className = "edge-row" + (fullyLocked ? " locked" : "");
+        row.className = "edge-row" + (isEdgeLocked ? " locked" : "");
 
         var label = document.createElement("span");
         label.className = "edge-label";
         label.textContent = "Đ" + (aIdx + 1) + "→Đ" + (bIdx + 1);
-        label.title = "Cạnh " + (edgeIdx + 1) + (fullyLocked ? " (Đã khoá)" : (moveA ? " (Cố định Đ" + (bIdx + 1) + ")" : ""));
+        label.title = "Cạnh " + (edgeIdx + 1) + (isEdgeLocked ? " (Đã khoá)" : (moveA ? " (Cố định Đ" + (bIdx + 1) + ")" : ""));
         row.appendChild(label);
 
         function applyBearing(newBearing) {
-          if (fullyLocked) return;
+          if (isEdgeLocked) return;
           if (moveA) {
             setPointByBearing(b, a, (newBearing + 180) % 360, lenPx);
           } else {
@@ -589,9 +605,9 @@
         var lenInput = document.createElement("input");
         lenInput.type = "number"; lenInput.step = "0.1"; lenInput.min = "0.1";
         lenInput.value = lenM.toFixed(2);
-        lenInput.disabled = fullyLocked;
+        lenInput.disabled = isEdgeLocked;
         lenInput.addEventListener("change", function () {
-          if (fullyLocked) return;
+          if (isEdgeLocked) return;
           var newLenM = parseFloat(lenInput.value) || 0.1;
           var newLenPx = newLenM * scalePxPerMeter;
           if (moveA) {
@@ -613,7 +629,7 @@
         btnDung.textContent = "↕";
         btnDung.title = "Đứng (dọc)";
         btnDung.type = "button";
-        btnDung.disabled = fullyLocked;
+        btnDung.disabled = isEdgeLocked;
         btnDung.addEventListener("click", function () {
           var target = (bearing < 90 || bearing > 270) ? 0 : 180;
           applyBearing(target);
@@ -626,7 +642,7 @@
         btnNgang.textContent = "↔";
         btnNgang.title = "Ngang";
         btnNgang.type = "button";
-        btnNgang.disabled = fullyLocked;
+        btnNgang.disabled = isEdgeLocked;
         btnNgang.addEventListener("click", function () {
           var target = (bearing < 180) ? 90 : 270;
           applyBearing(target);
@@ -636,7 +652,7 @@
         var angleInput = document.createElement("input");
         angleInput.type = "number"; angleInput.step = "1"; angleInput.min = "0"; angleInput.max = "359";
         angleInput.value = bearing.toFixed(0);
-        angleInput.disabled = fullyLocked;
+        angleInput.disabled = isEdgeLocked;
         angleInput.title = "Góc nghiêng (0°=lên, 90°=phải, 180°=xuống, 270°=trái)";
         angleInput.addEventListener("change", function () {
           var deg = ((parseFloat(angleInput.value) || 0) % 360 + 360) % 360;
@@ -650,15 +666,12 @@
 
         // --- nút Khoá / Mở khoá — gọn, chỉ icon ---
         var btnLock = document.createElement("button");
-        var isEdgeLocked = lockedPoints[aIdx] && lockedPoints[bIdx];
         btnLock.className = "edge-btn" + (isEdgeLocked ? " lock-on" : "");
         btnLock.textContent = isEdgeLocked ? "🔒" : "🔓";
         btnLock.title = "Khoá cạnh";
         btnLock.type = "button";
         btnLock.addEventListener("click", function () {
-          var newState = !(lockedPoints[aIdx] && lockedPoints[bIdx]);
-          lockedPoints[aIdx] = newState;
-          lockedPoints[bIdx] = newState;
+          lockedEdges[edgeIdx] = !lockedEdges[edgeIdx];
           redraw(true);
         });
         row.appendChild(btnLock);
@@ -679,7 +692,7 @@
   function drawHandles() {
     if (screenLocked) return;
     currentPoints.forEach(function (p, idx) {
-      var locked = !!lockedPoints[idx];
+      var locked = isDinhBiKhoaKeo(idx);
       var c = document.createElementNS("http://www.w3.org/2000/svg", "circle");
       c.setAttribute("class", "handle" + (locked ? " locked" : ""));
       c.setAttribute("cx", p.x);
@@ -697,7 +710,7 @@
   }
 
   function onPointerMove(evt) {
-    if (screenLocked || draggingIndex === -1 || lockedPoints[draggingIndex]) return;
+    if (screenLocked || draggingIndex === -1 || isDinhBiKhoaKeo(draggingIndex)) return;
     var p = svgPoint(evt);
     currentPoints[draggingIndex].x = Math.max(0, Math.min(400, p.x));
     currentPoints[draggingIndex].y = Math.max(0, Math.min(400, p.y));
@@ -735,7 +748,7 @@
       phienBan: 1,
       ngayLuu: new Date().toISOString(),
       diem: currentPoints.map(function (p) { return { x: p.x, y: p.y }; }),
-      diemKhoa: lockedPoints.slice(),
+      canhKhoa: lockedEdges.slice(),
       cua: JSON.parse(JSON.stringify(cuuCungDoors)),
       phong: roomsData.map(function (r) {
         return {
@@ -782,7 +795,21 @@
 
     currentPoints = obj.diem.map(function (p) { return { x: p.x, y: p.y }; });
     window.currentPoints = currentPoints;
-    lockedPoints = Array.isArray(obj.diemKhoa) ? obj.diemKhoa.slice() : currentPoints.map(function () { return false; });
+    if (Array.isArray(obj.canhKhoa)) {
+      // File mới: đã lưu đúng theo cạnh.
+      lockedEdges = obj.canhKhoa.slice();
+    } else if (Array.isArray(obj.diemKhoa)) {
+      // File cũ (định dạng khoá-theo-đỉnh trước đây): suy về khoá-theo-cạnh — 1 cạnh coi là khoá
+      // nếu CẢ HAI đỉnh của nó từng được đánh dấu khoá (gần đúng với ý định ban đầu của người dùng).
+      var oldPts = obj.diemKhoa;
+      var nOld = currentPoints.length;
+      lockedEdges = currentPoints.map(function (_, i) {
+        var j = (i + 1) % nOld;
+        return !!oldPts[i] && !!oldPts[j];
+      });
+    } else {
+      lockedEdges = currentPoints.map(function () { return false; });
+    }
     cuuCungDoors.length = 0;
     (obj.cua || []).forEach(function (c) { cuuCungDoors.push(c); });
     scalePxPerMeter = obj.tyLeMet || scalePxPerMeter;
@@ -803,7 +830,15 @@
     if (!Array.isArray(newPoints) || newPoints.length < 3) return;
     currentPoints = newPoints.map(function (p) { return { x: p.x, y: p.y }; });
     window.currentPoints = currentPoints;
-    lockedPoints = currentPoints.map(function () { return false; });
+    lockedEdges = currentPoints.map(function () { return false; });
+    redraw(true);
+  };
+
+  // Expose danh sách cửa cho shared.js dùng khi đồng bộ 2 chiều với Tâm Nhà (đọc + ghi đè toàn bộ)
+  window.__cuuCungDoorsGetter = function () { return cuuCungDoors; };
+  window.apDungDoorsCuuCung = function (newDoors) {
+    cuuCungDoors.length = 0;
+    (newDoors || []).forEach(function (d) { cuuCungDoors.push(d); });
     redraw(true);
   };
 
@@ -864,7 +899,7 @@
       currentPoints = SHAPES[shape].map(function (p) { return { x: p.x, y: p.y }; });
       window.currentPoints = currentPoints;
       document.getElementById("sidesInput").value = currentPoints.length;
-      lockedPoints = currentPoints.map(function () { return false; });
+      lockedEdges = currentPoints.map(function () { return false; });
       // Mặc định luôn có sẵn 1 Cửa chính — thay cho chấm xanh "CỬA" cũ. Đây là cửa THẬT, nằm
       // trong danh sách cửa (cuuCungDoors), chỉnh sửa/xoá được như mọi cửa khác qua CuaModule.
       datCuaChinhMacDinh();
@@ -997,7 +1032,7 @@
     ];
     window.currentPoints = currentPoints;
     document.getElementById("sidesInput").value = currentPoints.length;
-    lockedPoints = currentPoints.map(function () { return false; });
+    lockedEdges = currentPoints.map(function () { return false; });
     datCuaChinhMacDinh(); // cửa chính mặc định (cạnh đầu) — sẽ bị wizard bước 3 ghi đè nếu chọn sơn
     redraw(true);
   }
@@ -1431,7 +1466,7 @@
       sidesInput.value = n;
       currentPoints = regularPolygon(n);
       window.currentPoints = currentPoints;
-      lockedPoints = currentPoints.map(function () { return false; });
+      lockedEdges = currentPoints.map(function () { return false; });
       svgEl.setAttribute("viewBox", "0 0 400 400");
       redraw(true);
     });
