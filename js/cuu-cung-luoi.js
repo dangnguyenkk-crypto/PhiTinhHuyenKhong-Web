@@ -786,6 +786,15 @@
     setVal("doSoTay", inp.doSoTay);
     setVal("compassRotInput", inp.doSoTay); // đồng bộ ô hiển thị tại chỗ
     setVal("vanInput", inp.vanInput);
+    // setVal chỉ ghi .value, không bắn "change" — cần đồng bộ ngược lại #vanNhapTrach (tab Nội Khí)
+    // và Năm nhập trạch tương ứng thủ công, để Vận nhập trạch nạp từ file này áp dụng toàn app.
+    if (inp.vanInput !== undefined) {
+      var vanNhapTrachElLoad = document.getElementById("vanNhapTrach");
+      if (vanNhapTrachElLoad) {
+        vanNhapTrachElLoad.value = inp.vanInput;
+        vanNhapTrachElLoad.dispatchEvent(new Event("change", { bubbles: true }));
+      }
+    }
     setVal("namXemInput", inp.namXemInput);
     setVal("textScaleInput", inp.textScaleInput);
     setChecked("khuyetLabelToggle", inp.khuyetLabelToggle);
@@ -1295,8 +1304,9 @@
     if (doSoTayEl && compassRotEl) compassRotEl.value = doSoTayEl.value; // đồng bộ giá trị hiển thị ban đầu
 
     // ===== Hiển thị Trạch nhà (Vận/Năm nhập trạch) — thuần đọc từ #vanNhapTrach/#namNhapTrach =====
-    // (khai báo gốc ở tab Nội Khí, cũng là nơi tab Thông Tin trỏ vào). Đây CHỈ là hiển thị tham
-    // khảo, không dùng để tính currentVan (bảng 8 hướng vẫn theo "Vận xem"/Niên Tinh như trước).
+    // (khai báo gốc ở tab Nội Khí, cũng là nơi tab Thông Tin trỏ vào). Đây là dòng hiển thị gộp
+    // Vận + Năm nhập trạch; ô "Vận nhập trạch" (#vanInput) riêng bên dưới đồng bộ 2 chiều với
+    // #vanNhapTrach — xem dongBoVanInputTuVanNhapTrach().
     function capNhatHienThiTrachNhaCC() {
         var elText = document.getElementById("ccTrachNhaText");
         if (!elText) return;
@@ -1376,30 +1386,62 @@
       if (ccXoayDaGiacInput) ccXoayDaGiacInput.value = 0; // reset ô nhập về 0 sau khi áp dụng — góc đã "ngấm" vào polygon
     });
 
-    // ===== Đồng bộ "Vận xem" + "Năm xem" với Vận trạch bên tab Nội Khí (phi-tinh.js) =====
-    // Nguồn chân lý duy nhất là ô #namXem (năm đang xem) dùng chung toàn app. #vanInput ở đây
-    // chỉ HIỂN THỊ (readonly) Vận hiện tại tự tính từ năm đó — không cho gõ tay để tránh lệch
-    // với Vận trạch bên Phi Tinh như trước. #namXemInput vẫn cho chỉnh riêng (dùng cho Niên Tinh
-    // của tab này) nhưng khi đổi sẽ đồng bộ ngược lại #namXem để cả 2 tab luôn khớp nhau.
-    function dongBoVanTheoNamXem() {
-      var namXemEl = document.getElementById("namXem"); // input dùng chung, thuộc tab Nội Khí
+    // ===== Đồng bộ "Vận nhập trạch" (#vanInput) 2 CHIỀU với #vanNhapTrach bên tab Nội Khí =====
+    // #vanInput giờ đây CHÍNH LÀ Vận nhập trạch (không còn là "Vận cần xem" quy đổi tự động
+    // theo Năm xem như trước) — cho phép đổi vận nhập trạch ngay tại Cửu Cung Lưới mà không
+    // cần quay lại tab Nội Khí. #namXemInput (Năm xem — Niên Tinh) tách biệt hoàn toàn, chỉ
+    // đồng bộ riêng với #namXem như cũ.
+    var vanInputEl = document.getElementById("vanInput");
+
+    // Đọc #vanNhapTrach (nguồn chân lý, tab Nội Khí) → cập nhật hiển thị tại đây.
+    function dongBoVanInputTuVanNhapTrach() {
+      var vanNhapTrachEl = document.getElementById("vanNhapTrach");
+      var van = vanNhapTrachEl ? parseInt(vanNhapTrachEl.value, 10) : currentVan;
+      if (isNaN(van)) van = currentVan;
+      currentVan = van;
+      if (vanInputEl) vanInputEl.value = van;
+      buildHuongRefTable();
+    }
+    window.dongBoVanInputTuVanNhapTrach = dongBoVanInputTuVanNhapTrach; // để phi-tinh.js gọi ngược lại nếu cần
+
+    var vanNhapTrachGlobalEl2 = document.getElementById("vanNhapTrach");
+    if (vanNhapTrachGlobalEl2) {
+      dongBoVanInputTuVanNhapTrach(); // khởi tạo đúng theo vận hiện có sẵn (vd nạp từ hồ sơ đã lưu)
+      vanNhapTrachGlobalEl2.addEventListener("change", dongBoVanInputTuVanNhapTrach);
+    }
+
+    // Đổi Vận ngay tại đây → ghi ngược lại #vanNhapTrach rồi bắn "change" để phi-tinh.js tự
+    // chạy dongBoNamTuVan() (tự điền Năm nhập trạch tương ứng + tính lại phi tinh), sau đó
+    // listener phía trên sẽ tự đồng bộ ngược lại #vanInput + vẽ lại bảng ở đây.
+    if (vanInputEl) vanInputEl.addEventListener("change", function (evt) {
+      var v = parseInt(evt.target.value, 10) || currentVan;
+      if (vanNhapTrachGlobalEl2) {
+        vanNhapTrachGlobalEl2.value = v;
+        vanNhapTrachGlobalEl2.dispatchEvent(new Event("change", { bubbles: true }));
+      } else {
+        currentVan = v;
+        buildHuongRefTable();
+      }
+      redraw(true);
+    });
+
+    // ===== "Năm xem (Niên Tinh)" (#namXemInput) — đồng bộ 2 chiều với #namXem, TÁCH BIỆT khỏi Vận =====
+    function dongBoNamXemInput() {
+      var namXemEl = document.getElementById("namXem");
       var nam = namXemEl ? parseInt(namXemEl.value, 10) : currentNamXem;
       if (isNaN(nam)) nam = currentNamXem;
       currentNamXem = nam;
-      currentVan = (typeof tinhVanTuNam === "function") ? tinhVanTuNam(nam) : currentVan;
-      var vanInputEl = document.getElementById("vanInput");
-      if (vanInputEl) vanInputEl.value = currentVan;
       var namXemInputEl = document.getElementById("namXemInput");
       if (namXemInputEl) namXemInputEl.value = nam;
       buildHuongRefTable();
     }
-    window.dongBoVanTheoNamXem = dongBoVanTheoNamXem; // để phi-tinh.js gọi ngược lại nếu cần
+    window.dongBoNamXemInput = dongBoNamXemInput;
 
     var namXemGlobalEl = document.getElementById("namXem");
     if (namXemGlobalEl) {
-      dongBoVanTheoNamXem(); // khởi tạo đúng theo năm hiện có sẵn (vd nạp từ hồ sơ đã lưu)
-      namXemGlobalEl.addEventListener("input", dongBoVanTheoNamXem);
-      namXemGlobalEl.addEventListener("change", dongBoVanTheoNamXem);
+      dongBoNamXemInput(); // khởi tạo đúng theo năm hiện có sẵn (vd nạp từ hồ sơ đã lưu)
+      namXemGlobalEl.addEventListener("input", dongBoNamXemInput);
+      namXemGlobalEl.addEventListener("change", dongBoNamXemInput);
     }
 
     var namXemInput = document.getElementById("namXemInput");
@@ -1407,8 +1449,7 @@
     namXemInput.addEventListener("change", function (evt) {
       var y = parseInt(evt.target.value, 10) || currentNamXem;
       evt.target.value = y;
-      // Ghi ngược lại #namXem (nguồn chung) rồi để listener phía trên tự đồng bộ Vận + vẽ lại —
-      // đảm bảo đổi năm ở đây cũng cập nhật đúng Vận trạch bên tab Nội Khí, không chỉ một chiều.
+      // Ghi ngược lại #namXem (nguồn chung) rồi để listener phía trên tự đồng bộ + vẽ lại.
       if (namXemGlobalEl) {
         namXemGlobalEl.value = y;
         namXemGlobalEl.dispatchEvent(new Event("change", { bubbles: true }));

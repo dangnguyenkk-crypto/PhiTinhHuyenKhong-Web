@@ -1595,6 +1595,9 @@ function apDungStatePhiTinh(obj) {
     setVal("gioiTinhChu", obj.gioiTinhChu);
     if (document.getElementById("namSinhChu")) capNhatCanChiNamSinh("namSinhChu", "canChiNamSinhChu");
     if (document.getElementById("namNhapTrach") && document.getElementById("vanNhapTrach")) dongBoVanTuNam();
+    // dongBoVanTuNam() ở trên ghi trực tiếp #vanNhapTrach.value mà không bắn "change", nên ô
+    // "Vận nhập trạch" (#vanInput) ở tab Cửu Cung Lưới cần được đồng bộ lại thủ công tại đây.
+    if (typeof window.dongBoVanInputTuVanNhapTrach === "function") window.dongBoVanInputTuVanNhapTrach();
     if (typeof apDungCanChiTrungKhiTuDuong === "function" && obj.ngayDuongXem && obj.thangDuongXem && obj.namXem) {
         apDungCanChiTrungKhiTuDuong(parseInt(obj.ngayDuongXem), parseInt(obj.thangDuongXem), parseInt(obj.namXem));
         setVal("canNgay", obj.canNgay); setVal("chiNgay", obj.chiNgay); setVal("trungKhi", obj.trungKhi); // ưu tiên giá trị đã lưu nếu người dùng từng sửa tay
