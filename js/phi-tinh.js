@@ -1273,7 +1273,7 @@ async function tinhToanPhiTinh() {
     if (namBatDauNhapTu !== null) {
         let dsHoaGiai = [];
         if (ngoaiLe1) dsHoaGiai.push("Hướng tinh tại Trung cung chính là sao 5 (Ngũ Hoàng) — không phạm Nhập Tù.");
-        if (ngoaiLe2) dsHoaGiai.push(`Trên bàn Hướng hiện tại, cung <b>${cacCungCoH5.join(", ")}</b> đang có Hướng tinh H5 — Đến lúc đó có thể mở cửa, mở đường sá, hoặc tạo thủy tại đúng cung này để kích hoạt vượng khí, hóa giải Nhập Tù.`);
+        if (ngoaiLe2) dsHoaGiai.push(`Trên bàn Hướng hiện tại, cung <b>${cacCungCoH5.join(", ")}</b> đang có Hướng tinh H5 — Đến Vận ${vanNhapTu} (năm ${namBatDauNhapTu}) có thể mở cửa, mở đường sá, hoặc tạo thủy tại đúng cung này để kích hoạt vượng khí, hóa giải Nhập Tù.`);
         if (ngoaiLe3) dsHoaGiai.push("Toàn bàn 9 cung đều Hợp Thập (Thập Cục toàn bàn) — hóa giải được Nhập Tù.");
         ghiChuNhapTu = `<div style="margin-top:8px;padding-top:8px;border-top:1px dashed #7b1fa2;font-size:0.9em;line-height:1.6;">
             <b>⚠️ Lưu ý — Nhập Tù:</b> Khi hết Địa Vận (Vận ${vanNhapTu}, bắt đầu năm ${namBatDauNhapTu}${soNamConLaiTuHomNay !== null ? `, còn <b>${soNamConLaiTuHomNay > 0 ? soNamConLaiTuHomNay : 0} năm</b> nữa tính từ năm ${namXem} đang xem` : ""}), Hướng tinh sẽ bay nhập vào Trung cung — gọi là <b>Hướng tinh Nhập Tù</b>. Khi đó nhà sẽ suy bại cả đinh lẫn tài, linh khí huyệt mộ bị tiêu biến.
