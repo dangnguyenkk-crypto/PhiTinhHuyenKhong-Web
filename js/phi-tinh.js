@@ -924,7 +924,7 @@ function luanChanKhiTienThien(van, cungHuong) {
 
     return `<div class="luan-giai-item" style="border:1px solid ${mauCK};border-radius:8px;padding:10px;margin-top:10px;background:${mauCK}0d;">
         <b style="color:${mauCK};font-size:1.05em;">${iconCK} Luận Chân Khí Tiên Thiên (Hà Đồ)</b><br>
-        <span style="font-size:0.92em;color:#555;">Hà Đồ (Tiên Thiên): 1&6=Thủy · 2&7=Hỏa · 3&8=Mộc · 4&9=Kim · 5&10=Thổ — khác bảng Lạc Thư/Hậu Thiên dùng cho Phi Tinh.</span><br>
+        <span style="font-size:0.8em;color:#555;">Hà Đồ (Tiên Thiên): 1&6=Thủy · 2&7=Hỏa · 3&8=Mộc · 4&9=Kim · 5&10=Thổ — khác bảng Lạc Thư/Hậu Thiên dùng cho Phi Tinh.</span><br>
         Vận ${van} → Hà Đồ <b>${ck.hanhVan}</b> &nbsp;|&nbsp; Hướng (cung ${cungHuong}, số ${CUNG_TO_SO[cungHuong]}) → Hà Đồ <b>${ck.hanhHuong}</b><br>
         <b style="color:${mauCK};">Kết quả: ${ck.nhan}</b><br>
         ${dienGiaiDayDu[ck.loai] || ck.moTa}
