@@ -164,6 +164,41 @@ function tnXetTamBanQuaiToanCuc(bVan, bSon, bHuong) {
   return true;
 }
 
+// ==================================================================
+// THẤT TINH ĐẢ KIẾP (七星打劫) — bí pháp đặc biệt tốt, thông khí Tam Nguyên,
+// phát phúc lâu dài qua hàng thế kỷ. Đồng bộ ĐÚNG công thức với phi-tinh.js
+// (hàm xetThatTinhDaKiep bên tab Nội Khí) — không viết lại logic khác đi.
+// Điều kiện:
+//  1) Sao Vận nhập trạch (van) phải xuất hiện ở Sơn tinh HOẶC Hướng tinh
+//     TẠI CUNG HƯỚNG của nhà (sf/hf) — không xét tại Tọa.
+//  2) Vận tinh (bVan) tại 3 cung Càn-Ly-Chấn CÙNG một nhóm Tam Ban Quái
+//     (1-4-7 / 2-5-8 / 3-6-9) → Đả Kiếp THẬT.
+//  3) Hoặc Vận tinh tại 3 cung Tốn-Khảm-Đoài cùng nhóm → Đả Kiếp GIẢ (hiệu
+//     quả phụ thuộc hình thế Loan Đầu tại cung Tốn — app chưa đo được nên
+//     chỉ ghi chú tham khảo, KHÔNG ảnh hưởng đến điểm cộng ở Tìm Nhà).
+// Trả về null nếu không đạt, hoặc { loai: "that"/"gia", nhom, saoVanKhop }.
+// ==================================================================
+function tnXetThatTinhDaKiep(van, sf, hf, bVan) {
+  if (!bVan) return null;
+  let saoVanKhop = [];
+  if (sf === van) saoVanKhop.push("S");
+  if (hf === van) saoVanKhop.push("H");
+  if (saoVanKhop.length === 0) return null; // điều kiện 1 không đạt
+
+  let soCan = TN_CUNG_TO_SO["Càn"], soLy = TN_CUNG_TO_SO["Ly"], soChan = TN_CUNG_TO_SO["Chấn"];
+  let soTon = TN_CUNG_TO_SO["Tốn"], soKham = TN_CUNG_TO_SO["Khảm"], soDoai = TN_CUNG_TO_SO["Đoài"];
+
+  let nhomThat = TN_NHOM_TBQ[bVan[soCan]];
+  let laThat = nhomThat && nhomThat === TN_NHOM_TBQ[bVan[soLy]] && nhomThat === TN_NHOM_TBQ[bVan[soChan]];
+  if (laThat) return { loai: "that", nhom: nhomThat, saoVanKhop: saoVanKhop.join(",") };
+
+  let nhomGia = TN_NHOM_TBQ[bVan[soTon]];
+  let laGia = nhomGia && nhomGia === TN_NHOM_TBQ[bVan[soKham]] && nhomGia === TN_NHOM_TBQ[bVan[soDoai]];
+  if (laGia) return { loai: "gia", nhom: nhomGia, saoVanKhop: saoVanKhop.join(",") };
+
+  return null;
+}
+
 function tnXetHopThapNgam(v, s, h, cung, soNhapTrungSon, laThuanSon, soNhapTrungHuong, laThuanHuong) {
   let soGoc = cung === "Trung" ? 5 : TN_CUNG_TO_SO[cung];
   // Dùng hàm chung window.xetPhanPhucNgamMotSao (luan-giai.js) — hàm nhận tham số TRỰC TIẾP
@@ -324,6 +359,10 @@ function tnTinhDiem(sonInfo, van, nam) {
 
   let tamBanQuai = tnXetTamBanQuaiToanCuc(bVan, bSon, bHuong); // cách cục TOÀN CỤC — không gắn riêng vào 1 cung
 
+  // ===== THẤT TINH ĐẢ KIẾP (七星打劫) — CỘNG ĐIỂM THẬT: Đả Kiếp thật +3, Đả Kiếp giả +2 =====
+  let thatTinhDaKiep = tnXetThatTinhDaKiep(van, sf, hf, bVan);
+  let tangDaKiep = thatTinhDaKiep ? (thatTinhDaKiep.loai === "that" ? 3 : 2) : 0;
+
   // ===== LIÊN CHÂU TAM BAN (連珠三般) — dùng lại xetLienChauTamBanMotCung/ToanCuc từ luan-giai.js,
   // KHÔNG viết lại logic. Hai mức độ:
   //  - Đủ TRỌN 9/9 cung Liên Châu -> đại cách, CỘNG ĐIỂM THẬT +1 (gộp vào tầng C, giống Hợp Thập).
@@ -340,7 +379,7 @@ function tnTinhDiem(sonInfo, van, nam) {
   } : { center: null, back: null, front: null };
   let coLienChauTrungToaHuong = !!(lienChauTrungToaHuong.center || lienChauTrungToaHuong.back || lienChauTrungToaHuong.front);
 
-  let tangC = soCungHopThap * 1 + tangLienChau;
+  let tangC = soCungHopThap * 1 + tangLienChau + tangDaKiep;
   let tong = tangA + tangB + tangC + tangD + tangCK;
   let xepHang = tnXepHang(tong);
   let cachCuoc = vsCC.cachCuoc;
@@ -355,6 +394,7 @@ function tnTinhDiem(sonInfo, van, nam) {
     qsToa, qhHuong,
     vuongSon, thuongSon, vuongHuong, haThuy, cachCuoc, tamBanQuai, chanKhi,
     lienChauToanCuc, lienChauDu9Cung, tangLienChau, lienChauTrungToaHuong, coLienChauTrungToaHuong,
+    thatTinhDaKiep, tangDaKiep,
     chiNam, toaThaiTue, xungThaiTue, toaSat, loaiTamSat, phuongTamSat, soLoiNgam, coNguHoangTrachTinh, viTriNguHoang,
     tangA, tangB, tangC, tangD, tangCK, tangDGoc, soCungHopThap, tong, xepHang,
     toHopDacBietHuong,
@@ -530,6 +570,11 @@ function tnTaoLuanNgan(kq, van) {
   if (kq.tamBanQuai) luan.push(`<span style="color:#6a1b9a;font-weight:bold;font-size:9px;">🔺 Tam Ban Quái (toàn cục — quý cách hiếm gặp)</span>`);
   if (kq.lienChauDu9Cung) luan.push(`<span style="color:#004d40;font-weight:bold;font-size:9px;">🔗 Liên Châu Tam Ban đủ trọn 9/9 cung — đại cách, +${kq.tangLienChau}</span>`);
   else if (kq.coLienChauTrungToaHuong) luan.push(`<span style="color:#00695c;font-weight:600;font-size:9px;">🔗 Liên Châu Tam Ban tại ${[kq.lienChauTrungToaHuong.center&&'Trung',kq.lienChauTrungToaHuong.back&&'Tọa',kq.lienChauTrungToaHuong.front&&'Hướng'].filter(Boolean).join(', ')} (chưa đủ 9 cung)</span>`);
+  if (kq.thatTinhDaKiep) {
+    let loaiDK = kq.thatTinhDaKiep.loai === "that" ? "thật" : "giả";
+    let mauDK = kq.thatTinhDaKiep.loai === "that" ? "#0d47a1" : "#4527a0";
+    luan.push(`<span style="color:${mauDK};font-weight:bold;font-size:9px;">⚡ Thất Tinh Đả Kiếp (${loaiDK}) — thông khí Tam Nguyên, +${kq.tangDaKiep}</span>`);
+  }
   if (kq.toHopDacBietHuong && kq.toHopDacBietHuong.length) {
     for (let th of kq.toHopDacBietHuong) {
       luan.push(`<span style="color:#795500;font-weight:600;font-size:9px;">${th.icon} ${th.ten} (${th.cap})</span>`);
@@ -739,6 +784,10 @@ function tnTaoChiTiet(kq, van) {
     ${canhBaoNguHoang}
     ${canhBaoD}
     ${kq.tamBanQuai ? `<div style="margin-bottom:8px;padding:6px 8px;background:#f3e5f5;border-radius:6px;border-left:3px solid #6a1b9a;font-size:12px;color:#6a1b9a;font-weight:bold;">🔺 Tam Ban Quái (三般卦) — cả 9 cung của bàn đều có Vận-Sơn-Hướng cùng nhóm 1-4-7/2-5-8/3-6-9. Quý cách hiếm gặp, đắc quý nhân, thông cả 3 nguyên — nhưng cần Hướng tinh đúng chỗ có thủy thật mới phát huy, nếu không dễ biến cát thành hung.</div>` : ""}
+    ${kq.thatTinhDaKiep ? (kq.thatTinhDaKiep.loai === "that"
+      ? `<div style="margin-bottom:8px;padding:6px 8px;background:#e3f2fd;border-radius:6px;border-left:3px solid #0d47a1;font-size:12px;color:#0d47a1;font-weight:bold;">⚡ Thất Tinh Đả Kiếp (thật) — Vận tinh tại 3 cung Càn-Ly-Chấn cùng nhóm ${kq.thatTinhDaKiep.nhom}, và sao Vận nhập trạch (${van}) xuất hiện tại ${kq.thatTinhDaKiep.saoVanKhop === "S,H" ? "cả Sơn tinh lẫn Hướng tinh" : (kq.thatTinhDaKiep.saoVanKhop === "S" ? "Sơn tinh" : "Hướng tinh")} của cung Hướng. Bí pháp đặc biệt tốt — thông khí Tam Nguyên, phát phúc lâu dài qua hàng thế kỷ, cộng điểm thật +${kq.tangDaKiep}.</div>`
+      : `<div style="margin-bottom:8px;padding:6px 8px;background:#ede7f6;border-radius:6px;border-left:3px solid #4527a0;font-size:12px;color:#4527a0;font-weight:bold;">⚡ Thất Tinh Đả Kiếp (giả) — Vận tinh tại 3 cung Tốn-Khảm-Đoài cùng nhóm ${kq.thatTinhDaKiep.nhom}, và sao Vận nhập trạch (${van}) xuất hiện tại ${kq.thatTinhDaKiep.saoVanKhop === "S,H" ? "cả Sơn tinh lẫn Hướng tinh" : (kq.thatTinhDaKiep.saoVanKhop === "S" ? "Sơn tinh" : "Hướng tinh")} của cung Hướng. Về lý thuyết cũng thông khí Tam Nguyên, phát phúc lâu dài qua hàng thế kỷ, cộng điểm thật +${kq.tangDaKiep} — nhưng vì là "giả" nên hiệu quả còn phụ thuộc nhiều vào hình thế Loan Đầu (núi, nước) tại cung Tốn có đẹp, hữu tình hay không (chưa thể tự động đánh giá).</div>`
+    ) : ""}
     ${(kq.lienChauDu9Cung || kq.coLienChauTrungToaHuong) ? tnLienChauChiTiet(kq) : ""}
     ${kq.toHopDacBietHuong && kq.toHopDacBietHuong.length ? `<div style="margin-bottom:8px;padding:6px 8px;background:#fff8e1;border-radius:6px;border-left:3px solid #f9a825;font-size:12px;color:#795500;">
       ${kq.toHopDacBietHuong.map(th => `<div>${th.icon} <b>${th.ten}</b> <span style="font-size:10px;color:#888;">(cặp ${th.cap} = ${th.saoA}-${th.saoB}, tại cung Hướng)</span> — ${th.moTa}</div>`).join("")}
@@ -770,8 +819,8 @@ function tnTaoChiTiet(kq, van) {
       <div>Tầng B (VSVH/TSHT): <b style="color:${kq.tangB>0?'#2e7d32':kq.tangB<0?'#c62828':'#888'}">${kq.tangB>0?'+':''}${kq.tangB}</b>
         <div style="font-size:10px;color:#888;">${kq.cachCuoc || 'Không có cách cục đặc biệt'}</div>
       </div>
-      <div>Tầng C (Hợp Thập): <b style="color:${kq.tangC>0?'#00695c':'#888'}">${kq.tangC>0?'+':''}${kq.tangC}</b>
-        <div style="font-size:10px;color:#888;">${kq.soCungHopThap} / 3 cung có Hợp Thập</div>
+      <div>Tầng C (Hợp Thập/Liên Châu/Đả Kiếp): <b style="color:${kq.tangC>0?'#00695c':'#888'}">${kq.tangC>0?'+':''}${kq.tangC}</b>
+        <div style="font-size:10px;color:#888;">${kq.soCungHopThap} / 3 cung có Hợp Thập${kq.tangLienChau ? ` · Liên Châu đủ 9 cung +${kq.tangLienChau}` : ''}${kq.tangDaKiep ? ` · Thất Tinh Đả Kiếp (${kq.thatTinhDaKiep.loai === 'that' ? 'thật' : 'giả'}) +${kq.tangDaKiep}` : ''}</div>
       </div>
       <div>Tầng D (Hung sát, năm ${kq.chiNam}): <b style="color:${kq.tangD<0?'#c62828':'#888'}">${kq.tangD>0?'+':''}${kq.tangD}</b>
         <div style="font-size:10px;color:#888;">Ngũ Hoàng Trạch Tinh + Thái Tuế + Tam Sát + Phản/Phục Ngâm — mỗi loại tối đa −1${kq.tangDGoc < kq.tangD ? ` (gốc ${kq.tangDGoc} nếu không chặn theo loại)` : ''}</div>
