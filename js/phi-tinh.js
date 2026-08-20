@@ -185,6 +185,39 @@ function xetTamBanQuaiToanCuc(bVan, bSon, bHuong) {
 }
 
 // ==================================================================
+// THẤT TINH ĐẢ KIẾP (七星打劫) — bí pháp đặc biệt tốt, thông khí Tam Nguyên,
+// phát phúc lâu dài qua hàng thế kỷ. Điều kiện:
+//  1) Sao Vận nhập trạch (van) phải xuất hiện ở Sơn tinh HOẶC Hướng tinh
+//     TẠI CUNG HƯỚNG của nhà (sf/hf) — không xét tại Tọa.
+//  2) Vận tinh (bVan) tại 3 cung Càn-Ly-Chấn CÙNG một nhóm Tam Ban Quái
+//     (1-4-7 / 2-5-8 / 3-6-9) → Đả Kiếp THẬT, không cần thêm điều kiện gì khác.
+//  3) Hoặc Vận tinh tại 3 cung Tốn-Khảm-Đoài cùng nhóm → Đả Kiếp GIẢ, hiệu
+//     quả phụ thuộc nhiều vào hình thế Loan Đầu (núi, nước) tại cung Tốn có
+//     đẹp hay không — app chưa đo được Loan Đầu nên chỉ nhắc người dùng tự xét.
+// Trả về null nếu không đạt, hoặc { loai: "that"/"gia", nhom, saoVanKhop: "S"/"H"/"S,H" }.
+// ==================================================================
+function xetThatTinhDaKiep(van, sf, hf, bVan) {
+    if (!bVan) return null;
+    let saoVanKhop = [];
+    if (sf === van) saoVanKhop.push("S");
+    if (hf === van) saoVanKhop.push("H");
+    if (saoVanKhop.length === 0) return null; // điều kiện 1 không đạt
+
+    let soCan = CUNG_TO_SO["Càn"], soLy = CUNG_TO_SO["Ly"], soChan = CUNG_TO_SO["Chấn"];
+    let soTon = CUNG_TO_SO["Tốn"], soKham = CUNG_TO_SO["Khảm"], soDoai = CUNG_TO_SO["Đoài"];
+
+    let nhomThat = NHOM_TAM_BAN_QUAI[bVan[soCan]];
+    let laThat = nhomThat && nhomThat === NHOM_TAM_BAN_QUAI[bVan[soLy]] && nhomThat === NHOM_TAM_BAN_QUAI[bVan[soChan]];
+    if (laThat) return { loai: "that", nhom: nhomThat, saoVanKhop: saoVanKhop.join(",") };
+
+    let nhomGia = NHOM_TAM_BAN_QUAI[bVan[soTon]];
+    let laGia = nhomGia && nhomGia === NHOM_TAM_BAN_QUAI[bVan[soKham]] && nhomGia === NHOM_TAM_BAN_QUAI[bVan[soDoai]];
+    if (laGia) return { loai: "gia", nhom: nhomGia, saoVanKhop: saoVanKhop.join(",") };
+
+    return null;
+}
+
+// ==================================================================
 // TỔ HỢP KHÔI TINH (1-6, cặp V-S hoặc V-H tại cung Hướng) — chuyển từ
 // tim-nha.js (TN_TO_HOP_VSH_HUONG). Cặp S-H tại Hướng đã được xét riêng ở
 // TO_HOP_SON_HUONG_DAC_BIET (luan-giai.js)/toHopDacBiet — không lặp lại.
@@ -962,6 +995,18 @@ function tongKetToanNha(van, ketQua9Cung, sb, sf, hf, hb, bVan, cungToa, cungHuo
         if (xetTamBanQuaiToanCuc(bVan, bSon, bHuong)) {
             html += `<div class="luan-giai-item" style="color:#6a1b9a;background:#f3e5f5;border-radius:6px;padding:8px;"><b>🔺 Tam Ban Quái</b> (toàn cục — xét cả 9 cung, không riêng Trung/Tọa/Hướng) — cả 9 cung của bàn đều có Vận-Sơn-Hướng cùng nhóm 1-4-7/2-5-8/3-6-9. Quý cách hiếm gặp, đắc quý nhân, thông cả 3 nguyên — nhưng cần Hướng tinh đúng chỗ có thủy thật mới phát huy, nếu không dễ biến cát thành hung.</div>`;
         }
+
+        // ===== THẤT TINH ĐẢ KIẾP (七星打劫) — bí pháp đặc biệt tốt. =====
+        let daKiep = xetThatTinhDaKiep(van, sf, hf, bVan);
+        if (daKiep) {
+            let saoVanKhopText = daKiep.saoVanKhop === "S,H" ? "cả Sơn tinh lẫn Hướng tinh" : (daKiep.saoVanKhop === "S" ? "Sơn tinh" : "Hướng tinh");
+            if (daKiep.loai === "that") {
+                html += `<div class="luan-giai-item" style="color:#0d47a1;background:#e3f2fd;border-radius:6px;padding:8px;"><b>⚡ Thất Tinh Đả Kiếp (thật)</b> — Vận tinh tại 3 cung <b>Càn - Ly - Chấn</b> cùng nhóm <b>${daKiep.nhom}</b>, và sao Vận nhập trạch (${van}) xuất hiện tại ${saoVanKhopText} của cung Hướng. Bí pháp đặc biệt tốt, không cần thêm điều kiện gì khác — <b>thông khí Tam Nguyên, phát phúc lâu dài qua hàng thế kỷ</b>.</div>`;
+            } else {
+                html += `<div class="luan-giai-item" style="color:#4527a0;background:#ede7f6;border-radius:6px;padding:8px;"><b>⚡ Thất Tinh Đả Kiếp (giả)</b> — Vận tinh tại 3 cung <b>Tốn - Khảm - Đoài</b> cùng nhóm <b>${daKiep.nhom}</b>, và sao Vận nhập trạch (${van}) xuất hiện tại ${saoVanKhopText} của cung Hướng. Về lý thuyết cũng <b>thông khí Tam Nguyên, phát phúc lâu dài qua hàng thế kỷ</b>, nhưng vì là "giả" nên hiệu quả phụ thuộc nhiều vào <b>hình thế Loan Đầu (núi, nước) tại cung Tốn</b> — cần đẹp, hữu tình mới phát huy trọn vẹn; nếu hình thế xấu thì cách cục khó ứng nghiệm.</div>`;
+            }
+        }
+
         let khoiTinhHuong = xetKhoiTinhVH(bVan[CUNG_TO_SO[cungHuong]], sf, hf);
         if (khoiTinhHuong.length) {
             html += `<div class="luan-giai-item" style="color:#795500;background:#fff8e1;border-radius:6px;padding:8px;"><b>🏆 Khôi Tinh (1-6)</b> tại cung Hướng (${cungHuong}) — cặp ${khoiTinhHuong.map(k=>`${k.cap} = ${k.saoA}-${k.saoB}`).join(", ")}: lợi công danh, sự nghiệp, thăng tiến quan chức.</div>`;

@@ -198,6 +198,59 @@
   var BATQUAI_NAMES = ["Khảm","Cấn","Chấn","Tốn","Ly","Khôn","Đoài","Càn"];
   var CUNG_SO_GOC = window.CUNG_TO_SO || {"Khảm":1,"Khôn":2,"Chấn":3,"Tốn":4,"Trung":5,"Càn":6,"Đoài":7,"Cấn":8,"Ly":9};
 
+  // ==================================================================
+  // NGUYÊN LONG (Thiên/Địa/Nhân) + ÂM DƯƠNG của 24 Sơn — dùng để vẽ nhãn
+  // phụ T/Đ/N dưới mỗi tên sơn trên la bàn. Nguồn ưu tiên: window.DS24_SON
+  // (khai báo gốc trong shared.js, dùng chung toàn app — cùng nguồn với
+  // tim-nha.js/phi-tinh.js). Nếu vì lý do gì đó shared.js chưa load trước
+  // module này thì dùng bảng dự phòng bên dưới (giống hệt fallback trong
+  // tim-nha.js, để không bao giờ lệch dữ liệu giữa các tab).
+  // ==================================================================
+  var SON24_INFO_FALLBACK = {
+    "Nhâm": { nguyenLong: "Dia",   amDuong: "Duong" },
+    "Tý":   { nguyenLong: "Thien", amDuong: "Am" },
+    "Quý":  { nguyenLong: "Nhan",  amDuong: "Am" },
+    "Sửu":  { nguyenLong: "Dia",   amDuong: "Am" },
+    "Cấn":  { nguyenLong: "Thien", amDuong: "Duong" },
+    "Dần":  { nguyenLong: "Nhan",  amDuong: "Duong" },
+    "Giáp": { nguyenLong: "Dia",   amDuong: "Duong" },
+    "Mão":  { nguyenLong: "Thien", amDuong: "Am" },
+    "Ất":   { nguyenLong: "Nhan",  amDuong: "Am" },
+    "Thìn": { nguyenLong: "Dia",   amDuong: "Am" },
+    "Tốn":  { nguyenLong: "Thien", amDuong: "Duong" },
+    "Tị":   { nguyenLong: "Nhan",  amDuong: "Duong" },
+    "Tỵ":   { nguyenLong: "Nhan",  amDuong: "Duong" }, // 2 cách gõ dấu cùng 1 sơn (SON24_NAMES dùng "Tỵ")
+    "Bính": { nguyenLong: "Dia",   amDuong: "Duong" },
+    "Ngọ":  { nguyenLong: "Thien", amDuong: "Am" },
+    "Đinh": { nguyenLong: "Nhan",  amDuong: "Am" },
+    "Mùi":  { nguyenLong: "Dia",   amDuong: "Am" },
+    "Khôn": { nguyenLong: "Thien", amDuong: "Duong" },
+    "Thân": { nguyenLong: "Nhan",  amDuong: "Duong" },
+    "Canh": { nguyenLong: "Dia",   amDuong: "Duong" },
+    "Dậu":  { nguyenLong: "Thien", amDuong: "Am" },
+    "Tân":  { nguyenLong: "Nhan",  amDuong: "Am" },
+    "Tuất": { nguyenLong: "Dia",   amDuong: "Am" },
+    "Càn":  { nguyenLong: "Thien", amDuong: "Duong" },
+    "Hợi":  { nguyenLong: "Nhan",  amDuong: "Duong" }
+  };
+  var NGUYEN_LONG_TAT = { "Thien": "T", "Dia": "Đ", "Nhan": "N" };
+
+  // Trả về { tat: "T"/"Đ"/"N", mau: "#c62828"/"#1565c0" } cho 1 tên sơn, hoặc null nếu không rõ.
+  function laySon24Info(tenSon) {
+    var info = null;
+    if (Array.isArray(window.DS24_SON)) {
+      for (var i = 0; i < window.DS24_SON.length; i++) {
+        if (window.DS24_SON[i].ten === tenSon) { info = window.DS24_SON[i]; break; }
+      }
+    }
+    if (!info) info = SON24_INFO_FALLBACK[tenSon];
+    if (!info || !info.nguyenLong) return null;
+    var tat = NGUYEN_LONG_TAT[info.nguyenLong];
+    if (!tat) return null;
+    var laDuong = info.amDuong === "Duong";
+    return { tat: tat, mau: laDuong ? "#c62828" : "#1565c0" }; // đỏ=Dương, xanh=Âm — theo đúng quy ước la bàn hiện có
+  }
+
   // Các hình mẫu nhà cơ bản (viewBox 400x400 gốc, dùng cho nút "Chọn hình dạng nhà") — dùng chung
   // cho cả Cửu Cung Lưới và Thủy Pháp. Toạ độ giống hệt bản gốc trong cuu-cung-luoi.js.
   var SHAPES = {
@@ -371,6 +424,22 @@
       text.textContent = SON24_NAMES[j];
       getScaledFontSizeFn(text, 10);
       g.appendChild(text);
+
+      // Nhãn phụ Thiên/Địa/Nhân (viết tắt T/Đ/N) xuống dòng nhỏ ngay dưới tên sơn —
+      // đỏ = Dương, xanh = Âm (đúng quy ước Âm Dương của la bàn hiện có).
+      var sonInfo = laySon24Info(SON24_NAMES[j]);
+      if (sonInfo) {
+        var nlText = document.createElementNS("http://www.w3.org/2000/svg", "text");
+        nlText.setAttribute("class", "son-nguyenlong-label");
+        nlText.setAttribute("x", lx.toFixed(2));
+        nlText.setAttribute("y", (ly + scaledOffsetFn(9)).toFixed(2));
+        nlText.setAttribute("text-anchor", "middle");
+        nlText.setAttribute("fill", sonInfo.mau);
+        nlText.setAttribute("font-weight", "bold");
+        nlText.textContent = sonInfo.tat;
+        getScaledFontSizeFn(nlText, 7);
+        g.appendChild(nlText);
+      }
     }
 
     var stats = computeHuongStats(center, housePoints, rotationDeg, centerCellHalfW || 1, centerCellHalfH || 1);
@@ -575,6 +644,8 @@
     // tính toán phong thủy
     getVanTrangThai: getVanTrangThai, scorePhongThuy: scorePhongThuy,
     nienTinhTrungCung: nienTinhTrungCung, flyStarValue: flyStarValue,
+    // Nguyên Long/Âm Dương 24 sơn
+    laySon24Info: laySon24Info,
     // vẽ
     veSoNenGoc: veSoNenGoc, renderCompassOverlay: renderCompassOverlay
   };
