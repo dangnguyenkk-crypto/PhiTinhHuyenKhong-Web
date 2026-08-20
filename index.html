@@ -38,12 +38,12 @@
                     <label>Năm nhập trạch/Vận / Hướng (24 sơn)/ Độ /✅Kiêm(Thế tinh):</label>
                     <div style="display:flex;gap:2px;align-items:center;flex-wrap:wrap;">
                         <input type="number" id="namNhapTrach" value="2026" onchange="dongBoVanTuNam()" style="flex:1;min-width:50px;padding:6px;">
-                        <select id="vanNhapTrach" onchange="dongBoNamTuVan()" style="flex:1;min-width:50px;padding:6px;" title="Vận (Tam Nguyên Cửu Vận)">
+                        <select id="vanNhapTrach" onchange="dongBoNamTuVan()" style="flex:1;min-width:50px;padding:4px;" title="Vận (Tam Nguyên Cửu Vận)">
                             <option value="1">Vận 1</option><option value="2">Vận 2</option><option value="3">Vận 3</option>
                             <option value="4">Vận 4</option><option value="5">Vận 5</option><option value="6">Vận 6</option>
                             <option value="7">Vận 7</option><option value="8" selected>Vận 8</option><option value="9">Vận 9</option>
                         </select>
-                        <select id="huong24Son" onchange="chonHuong24Son()" style="flex:2;min-width:80px;padding:6px;">
+                        <select id="huong24Son" onchange="chonHuong24Son()" style="flex:2;min-width:80px;padding:4px;">
                             <option value="345">Nhâm — Bắc</option><option value="0">Tý — Bắc</option><option value="15">Quý — Bắc</option>
                             <option value="30">Sửu — Đông Bắc</option><option value="45">Cấn — Đông Bắc</option><option value="60">Dần — Đông Bắc</option>
                             <option value="75">Giáp — Đông</option><option value="90">Mão — Đông</option><option value="105">Ất — Đông</option>
@@ -53,8 +53,8 @@
                             <option value="255">Canh — Tây</option><option value="270">Dậu — Tây</option><option value="285">Tân — Tây</option>
                             <option value="300">Tuất — Tây Bắc</option><option value="315">Càn — Tây Bắc</option><option value="330">Hợi — Tây Bắc</option>
                         </select>
-                        <input type="number" id="doSoTay" value="180" min="0" max="360" oninput="capNhatHuongTuDoSo()" style="flex:1;min-width:40px;padding:6px;" title="Hoặc nhập độ">
-                        <input type="checkbox" id="congTacKiemHuong" checked onchange="tinhToanPhiTinh()" style="flex:2;min-width:46px;height:16px;">
+                        <input type="number" id="doSoTay" value="180" min="0" max="360" oninput="capNhatHuongTuDoSo()" style="flex:1;min-width:40px;padding:2px;" title="Hoặc nhập độ">
+                        <input type="checkbox" id="congTacKiemHuong" checked onchange="tinhToanPhiTinh()" style="flex:1;min-width:46px;height:16px;">
 
                     </div>
                     <div style="display:flex;gap:6px;align-items:center;flex-wrap:wrap;margin-top:6px;">
