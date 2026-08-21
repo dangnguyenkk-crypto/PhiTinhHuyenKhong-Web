@@ -804,17 +804,9 @@ function luanGiaiCung(tenCungVi, vanNha, sVan, sSon, sHuong, sNien, sNguyet, sNh
             duoiBang += `<br><br><b style="color:#00695c;">➕10 Hợp Thập ${ghiHT.join(", ")}:</b> thông khí, cứu cục — có tác dụng hóa giải bớt hung khí tại cung này nếu đang thất vận, theo Tử Bạch Quyết.`;
         }
     }
-    // ===== Tổ hợp Sơn tinh – Hướng tinh tại cung này (81 tổ hợp, theo 64 quẻ) — dùng hàm chung
-    // window.xetToHopSonHuong(huongTinh, sonTinh) từ luan-giai.js. LƯU Ý THỨ TỰ: Hướng tinh trước,
-    // Sơn tinh sau (khác chiều với bảng toHopDacBiet cũ ở dưới, vốn dùng Sơn trước - Hướng sau).
-    if (typeof window.xetToHopSonHuong === 'function') {
-        let th = window.xetToHopSonHuong(sHuong, sSon);
-        if (th) {
-            duoiBang += `<br><br><b style="color:#4a148c;">🔯 Tổ hợp Hướng ${sHuong} – Sơn ${sSon} (${th.quaiTen}):</b><br>`
-                + `<span style="color:#2e7d32;">Sinh vượng: ${th.sinhVuong}</span><br>`
-                + `<span style="color:#8b0000;">Khắc sát: ${th.khacSat}</span>`;
-        }
-    }
+    // (Khối tra cứu tổ hợp Sơn-Hướng cũ dùng window.xetToHopSonHuong đã được GỠ BỎ — thay thế hoàn
+    // toàn bởi ghiChuQuanHeSonHuongMoiCung ở cuối bảng luận giải, xét đủ CẢ 2 CHIỀU H-S và S-H,
+    // tránh hiển thị trùng lặp 2 bản luận cho cùng 1 cặp Sơn-Hướng.)
     let capSH = sSon + "-" + sHuong;
     const toHopDacBiet = {"1-6":"Văn Xương — lợi học hành, thi cử, thăng quan tiến chức.","6-1":"Văn Xương — lợi sự nghiệp, thăng tiến công danh.","1-4":"Văn Xương — tốt văn học, nghệ thuật, tình duyên.","4-1":"Văn Xương — tốt văn học, nghệ thuật, tình duyên.","8-9":"Tài lộc đang lên — hợp với thời vận sắp tới.","9-8":"Tài lộc đang lên — hợp với thời vận sắp tới.","2-5":"Nhị Ngũ giao gia — đại hung, dễ sinh bệnh tật.","5-2":"Nhị Ngũ giao gia — đại hung, dễ sinh bệnh tật.","7-9":"Hỏa trạch hỏa tai — đề phòng cháy nổ, tranh chấp.","9-7":"Hỏa trạch hỏa tai — đề phòng cháy nổ, tranh chấp.","3-7":"Tranh chấp, hình tụng — dễ va chạm, kiện tụng."};
     if (toHopDacBiet[capSH]) duoiBang += `<br><br><i>Tổ hợp đặc biệt ${capSH}: ${toHopDacBiet[capSH]}</i>`;
