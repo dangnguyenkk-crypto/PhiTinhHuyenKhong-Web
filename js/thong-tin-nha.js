@@ -17,7 +17,10 @@
         suKien: [],   // [{id, nam, noiDung}]
         huongInfo: [], // [{id, huong, noiDung}]
         // Mặt bằng — state riêng của tab này, chỉ áp dụng sang Cửu Cung Lưới khi người dùng xác nhận.
-        matBang: { shape: 'rect', daiM: 10, rongM: 8, sonCua: '' }
+        matBang: { shape: 'rect', daiM: 10, rongM: 8, sonCua: '' },
+        // Động khẩu tại — sơn (trong 24 sơn) nơi có "khí động" thực tế: đường/ngõ/cửa/nước lưu thông.
+        // Dương trạch lấy động khẩu đường phố làm chuẩn lập hướng; Âm trạch xem Lai Long - Khứ Thủy.
+        dongKhauTaiSon: ''
     };
 
     function escapeHtmlTT(s) {
@@ -54,6 +57,11 @@
     window.thongTinCapNhatHuong = function (id, field, value) {
         let item = thongTinData.huongInfo.find(x => x.id === id);
         if (item) item[field] = value;
+    };
+
+    // ==== ĐỘNG KHẨU TẠI — sơn có khí động thực tế (đường/ngõ/cửa/nước) ====
+    window.thongTinDoiDongKhauTaiSon = function (value) {
+        thongTinData.dongKhauTaiSon = value;
     };
 
     // ==== TRẠCH NHÀ + GIA CHỦ — "gương" 2 chiều với input gốc bên tab Nội Khí ====
@@ -183,6 +191,11 @@
         let canChiNamSinhChu = elGoc('canChiNamSinhChu') ? elGoc('canChiNamSinhChu').textContent : '—';
         let gioiTinhChu = elGoc('gioiTinhChu') ? elGoc('gioiTinhChu').value : 'nam';
 
+        let ds24DongKhau = (typeof DS24_SON !== 'undefined') ? DS24_SON : [];
+        let dongKhauVal = thongTinData.dongKhauTaiSon || '';
+        let dongKhauSonOptions = '<option value="">— Chọn sơn —</option>' + ds24DongKhau.map(s =>
+            `<option value="${s.ten}"${s.ten === dongKhauVal ? ' selected' : ''}>${s.ten}</option>`).join('');
+
         return `
         <div style="margin-bottom:8px;">
             <div style="display:flex;gap:4px;flex-wrap:wrap;">
@@ -194,7 +207,12 @@
             <div style="font-size:10px;color:#999;margin-top:3px;">Năm/Vận nhập trạch — Hướng nhà/Độ hướng · 🔄 đồng bộ với tab Nội Khí</div>
         </div>
 
-        <div style="border-top:1px dashed #e3d5c0;padding-top:8px;">
+        <div style="border-top:1px dashed #e3d5c0;padding-top:8px;margin-top:8px;">
+            <label style="font-size:12px;font-weight:700;color:#5c4a3a;display:block;margin-bottom:4px;">🚪 Động khẩu tại<span class="nut-info" onclick='moInfoModal("🚪 Động khẩu tại", ${JSON.stringify(escapeHtmlTT("Dương trạch thì lấy động khẩu của đường phố làm tiêu chuẩn lập hướng; Âm Trạch thì phải xem Lai long - khứ thủy."))})'>i</span></label>
+            <select id="ttInDongKhauTaiSon" title="Động khẩu tại (24 sơn)" onchange="thongTinDoiDongKhauTaiSon(this.value)" style="width:100%;padding:6px 4px;border:1px solid #ccc;border-radius:6px;font-size:12px;">${dongKhauSonOptions}</select>
+        </div>
+
+        <div style="border-top:1px dashed #e3d5c0;padding-top:8px;margin-top:8px;">
             <label style="font-size:12px;font-weight:700;color:#5c4a3a;display:block;margin-bottom:4px;">👤 Gia chủ</label>
             <div style="display:flex;gap:4px;flex-wrap:wrap;align-items:center;">
                 <input type="number" id="ttInNamSinhChu" value="${escapeHtmlTT(namSinhChu)}" placeholder="Năm sinh" title="Năm sinh" oninput="thongTinDoiNamSinhChu(this.value)" style="width:64px;flex:none;padding:6px 2px;border:1px solid #ccc;border-radius:6px;font-size:12px;text-align:center;">
@@ -370,7 +388,8 @@
             ghiChu: (obj && obj.ghiChu) || '',
             suKien: (obj && Array.isArray(obj.suKien)) ? obj.suKien.map(x => ({ id: ttNextId++, nam: x.nam || '', noiDung: x.noiDung || '' })) : [],
             huongInfo: (obj && Array.isArray(obj.huongInfo)) ? obj.huongInfo.map(x => ({ id: ttNextId++, huong: x.huong || '', noiDung: x.noiDung || '' })) : [],
-            matBang: (obj && obj.matBang) ? Object.assign({ shape: 'rect', daiM: 10, rongM: 8, sonCua: '' }, obj.matBang) : { shape: 'rect', daiM: 10, rongM: 8, sonCua: '' }
+            matBang: (obj && obj.matBang) ? Object.assign({ shape: 'rect', daiM: 10, rongM: 8, sonCua: '' }, obj.matBang) : { shape: 'rect', daiM: 10, rongM: 8, sonCua: '' },
+            dongKhauTaiSon: (obj && obj.dongKhauTaiSon) || ''
         };
         thongTinRenderTab();
     }

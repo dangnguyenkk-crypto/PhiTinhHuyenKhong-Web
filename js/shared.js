@@ -294,10 +294,10 @@ const DS24_SON = [
         // hướng (deg) như cũ. Đặt ở dải bán kính TRONG CÙNG (trong vòng Nguyên Long) để đúng thứ
         // tự từ ngoài vào trong: độ số → vạch chia → 24 sơn → Nguyên Long → 8 hướng.
         const BAT_HUONG = [
-            {deg:0,   ten:"1-Bắc💧Khảm"},   {deg:45,  ten:"8-ĐB🏔️Cấn"},
-            {deg:90,  ten:"3-Đông🌳Chấn"},  {deg:135, ten:"4-ĐN🌳Tốn"},
-            {deg:180, ten:"9-Nam🔥Ly"},   {deg:225, ten:"2-TN🏔️Khôn"},
-            {deg:270, ten:"7-Tây💍Đoài"},   {deg:315, ten:"6-TB💍Càn"}
+            {deg:0,   ten:"1-Bắc💧Khảm☵"},   {deg:45,  ten:"8-ĐB🏔️Cấn☶"},
+            {deg:90,  ten:"3-Đông🌳Chấn☳"},  {deg:135, ten:"4-ĐN🌳Tốn☴"},
+            {deg:180, ten:"9-Nam🔥Ly☲"},   {deg:225, ten:"2-TN🏔️Khôn☷"},
+            {deg:270, ten:"7-Tây💍Đoài☱"},   {deg:315, ten:"6-TB💍Càn☰"}
         ];
         function veVong8Huong() {
             const svg = document.getElementById("doSoRing"), cx = 200, cy = 200;

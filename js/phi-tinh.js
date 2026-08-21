@@ -582,6 +582,38 @@ function ghiChuHaDoTuTuong(sSon, sHuong, vanHienTai) {
         + `</div>`;
 }
 
+// Dựng đoạn ghi chú HTML — Quan hệ 2 sao Sơn-Hướng tại 1 cung (81 tổ hợp, dùng lại window.xetQuanHeSonHuongMoiCung
+// từ luan-giai.js). Độc lập với Hà Đồ Tứ Tượng (chỉ 4 cặp Sinh-Thành) — bảng này phủ đủ mọi cặp S-H 1-9.
+// Hiển thị CẢ 2 CHIỀU tra cứu (Hướng-Sơn và Sơn-Hướng) vì đây là 2 góc luận bổ sung cho nhau (theo tài liệu
+// gốc: luận Hướng thì Hướng đặt trước/quẻ ngoại; luận Sơn thì Sơn đặt trước/quẻ ngoại) — không phải chọn 1.
+function ghiChuQuanHeSonHuongMoiCung(sSon, sHuong) {
+    if (typeof window.xetQuanHeSonHuongMoiCung !== 'function') return "";
+    let theoHuong = window.xetQuanHeSonHuongMoiCung(sSon, sHuong); // key H-S — luận theo Hướng (Hướng là quẻ ngoại)
+    let theoSon = window.xetQuanHeSonHuongMoiCung(sHuong, sSon);   // key S-H — luận theo Sơn (Sơn là quẻ ngoại)
+    if (!theoHuong && !theoSon) return "";
+    function khoi(kq, nhanGoc) {
+        if (!kq) return "";
+        let tieuDe = nhanGoc ? `${nhanGoc} — ${kq.ten} (${kq.key})` : `${kq.ten} (${kq.key})`;
+        return `<div style="margin-top:6px;">
+            <b style="color:#4a0072;">${tieuDe}:</b><br>
+            <span style="color:#2e7d32;"><b>Sinh vượng:</b> ${kq.sinhVuong}</span><br>
+            <span style="color:#8b0000;"><b>Khắc sát:</b> ${kq.khacSat}</span>
+        </div>`;
+    }
+    // Sơn=Hướng (VD 1-1, 2-2...) thì 2 chiều tra trùng nhau hệt (cùng key) — chỉ hiển thị 1 lần, không lặp.
+    if (sSon === sHuong) {
+        return `<div style="border:1px dashed #7b1fa2;border-radius:4px;padding:6px 8px;margin-top:8px;background:#f8f2ff;font-size:12.5px;">`
+            + `<b style="color:#4a0072;">☯️ Quan hệ Sơn-Hướng (S${sSon}-H${sHuong}):</b>`
+            + khoi(theoHuong, "")
+            + `</div>`;
+    }
+    return `<div style="border:1px dashed #7b1fa2;border-radius:4px;padding:6px 8px;margin-top:8px;background:#f8f2ff;font-size:12.5px;">`
+        + `<b style="color:#4a0072;">☯️ Quan hệ Sơn-Hướng (S${sSon}-H${sHuong}) — xét cả 2 chiều luận:</b>`
+        + khoi(theoHuong, "Luận theo Hướng (Hướng làm quẻ ngoại)")
+        + khoi(theoSon, "Luận theo Sơn (Sơn làm quẻ ngoại)")
+        + `</div>`;
+}
+
 // Phản Ngâm / Phục Ngâm (cung vị) — dùng hàm chung window.xetPhanPhucNgamMotSao (luan-giai.js).
 // Hàm chung nhận tham số trực tiếp (không tự đọc window.phiTinhVSH) để dùng chung được với tab
 // Tìm Nhà — nên ở ĐÂY (ngữ cảnh tab Phi Tinh) ta tự tra window.phiTinhVSH["Trung"]/phiTinhLaThuan..
@@ -741,7 +773,8 @@ function luanGiaiCung(tenCungVi, vanNha, sVan, sSon, sHuong, sNien, sNguyet, sNh
             <tr style="background:#fff8f0;"><th style="padding:5px 4px;border:1px solid #e3d5c0;color:#8b0000;width:1%;white-space:nowrap;">Sao</th><th style="padding:5px 6px;border:1px solid #e3d5c0;color:#8b0000;">Luận giải</th></tr>
             ${rows}
           </table>`
-        + (laTrung ? "" : ghiChuHaDoTuTuong(sSon, sHuong, vanHienTai)); // PHẦN E (mục 26-29) — ghi chú bổ sung, không đổi điểm số bên dưới; Trung cung đã có ở Tổng kết toàn nhà (tự động), không lặp lại ở đây
+        + (laTrung ? "" : ghiChuHaDoTuTuong(sSon, sHuong, vanHienTai)) // PHẦN E (mục 26-29) — ghi chú bổ sung, không đổi điểm số bên dưới; Trung cung đã có ở Tổng kết toàn nhà (tự động), không lặp lại ở đây
+        + ghiChuQuanHeSonHuongMoiCung(sSon, sHuong); // Quan hệ 2 sao Sơn-Hướng (81 tổ hợp) — áp dụng cho MỌI cung kể cả Trung, vì đây là bảng riêng biệt với Hà Đồ Tứ Tượng
 
     // Kết luận: dựa trên điểm gốc Quy tắc 1 (qSon.diem + qHuong.diem) — đúng tinh thần "hung cát cố định" làm chủ đạo
     let diem = qSon.diem + qHuong.diem;
@@ -953,11 +986,39 @@ function tongKetToanNha(van, ketQua9Cung, sb, sf, hf, hb, bVan, cungToa, cungHuo
             if (vsCC.haThuy) dong.push(`<span style="color:#c62828;">⚠️ <b>Hạ Thủy</b> (Hướng tinh lạc về Tọa) — <b>hao tán tài lộc</b>, tiền bạc khó tụ.</span>`);
             html += `<div class="luan-giai-item" style="border-radius:6px;padding:8px;background:#fff8e1;"><b>${vsCC.cachCuoc}</b> — cách cục chỉ tốt một phần - không trọn vẹn:<br>${dong.join("<br>")}</div>`;
         }
-        if (typeof window.xetHopThap === 'function' && bVan && cungToa && cungHuong) {
-            let hopThapToa = window.xetHopThap(bVan[CUNG_TO_SO[cungToa]], sb, hb);
-            let hopThapHuong = window.xetHopThap(bVan[CUNG_TO_SO[cungHuong]], sf, hf);
-            let soCoHopThap = (hopThapToa.hopThapVS || hopThapToa.hopThapVH ? 1 : 0) + (hopThapHuong.hopThapVS || hopThapHuong.hopThapVH ? 1 : 0);
-            if (soCoHopThap > 0) html += `<div class="luan-giai-item" style="color:#00695c;"><b>➕10 Hợp Thập</b> tại ${[hopThapToa.hopThapVS||hopThapToa.hopThapVH?'Tọa':null, hopThapHuong.hopThapVS||hopThapHuong.hopThapVH?'Hướng':null].filter(Boolean).join(', ')} — thông khí, cứu cục, quý nhất ở Vận 1 và Vận 9.</div>`;
+    }
+
+    // ===== PHÂN KIM — đối chiếu Động khẩu (đường/cửa/nước có khí động thực tế, khai báo ở tab
+    // Thông Tin) với Hướng nhà: nếu CÙNG Nguyên Long (Thiên/Địa/Nhân) mà NGƯỢC Âm/Dương thì là
+    // "Phúc Lộc Vĩnh Trình" — cách cục quý. Nếu không đạt, gợi ý các sơn cùng Nguyên Long, ngược
+    // Âm/Dương với khẩu, để người dùng biết nên chỉnh Hướng nhà về sơn nào. =====
+    if (typeof DS24_SON !== 'undefined' && typeof window.layStateThongTin === 'function' && tenSonHuong) {
+        let ttState = window.layStateThongTin();
+        let tenKhau = ttState ? ttState.dongKhauTaiSon : '';
+        if (tenKhau) {
+            let sonKhau = DS24_SON.find(x => x.ten === tenKhau);
+            if (sonKhau && tenSonHuong.nguyenLong) {
+                let TEN_NGUYEN_LONG = { "Thien": "Thiên nguyên", "Dia": "Địa nguyên", "Nhan": "Nhân nguyên" };
+                let cungNguyenLong = sonKhau.nguyenLong === tenSonHuong.nguyenLong;
+                let khacAmDuong = sonKhau.amDuong !== tenSonHuong.amDuong;
+                if (cungNguyenLong && khacAmDuong) {
+                    html += `<div class="luan-giai-item" style="color:#2e7d32;background:#e8f5e9;border-radius:6px;padding:8px;">
+                        <b>🌟 Phân Kim — Phúc Lộc Vĩnh Trình</b><br>
+                        Động khẩu tại <b>${sonKhau.ten}</b> (${sonKhau.amDuong === "Duong" ? "Dương khẩu" : "Âm khẩu"}, ${TEN_NGUYEN_LONG[sonKhau.nguyenLong]}) phối với Hướng nhà <b>${tenSonHuong.ten}</b> (${tenSonHuong.amDuong === "Duong" ? "Dương hướng" : "Âm hướng"}, ${TEN_NGUYEN_LONG[tenSonHuong.nguyenLong]}) — cùng Nguyên Long, Âm-Dương giao phối đúng cách → <b>Phúc Lộc Vĩnh Trình</b>, cát lợi lâu bền.
+                    </div>`;
+                } else {
+                    let lyDo = !cungNguyenLong
+                        ? `Khẩu <b>${sonKhau.ten}</b> (${TEN_NGUYEN_LONG[sonKhau.nguyenLong]}) và Hướng nhà <b>${tenSonHuong.ten}</b> (${TEN_NGUYEN_LONG[tenSonHuong.nguyenLong]}) KHÁC Nguyên Long`
+                        : `Khẩu <b>${sonKhau.ten}</b> và Hướng nhà <b>${tenSonHuong.ten}</b> cùng Nguyên Long nhưng lại CÙNG ${sonKhau.amDuong === "Duong" ? "Dương" : "Âm"} (chưa giao phối Âm-Dương)`;
+                    // Gợi ý các sơn cùng Nguyên Long với khẩu, ngược Âm/Dương với khẩu — để chỉnh Hướng nhà về đó
+                    let goiY = DS24_SON.filter(x => x.nguyenLong === sonKhau.nguyenLong && x.amDuong !== sonKhau.amDuong && x.ten !== sonKhau.ten);
+                    let dsGoiY = goiY.map(x => `<b>${x.ten}</b> (${x.amDuong === "Duong" ? "Dương" : "Âm"})`).join(", ");
+                    html += `<div class="luan-giai-item" style="color:#795500;background:#fff8e1;border-radius:6px;padding:8px;">
+                        <b>🌟 Phân Kim</b> — chưa đạt "Phúc Lộc Vĩnh Trình": ${lyDo}.<br>
+                        Gợi ý: muốn đạt Phúc Lộc Vĩnh Trình với Động khẩu <b>${sonKhau.ten}</b> (${TEN_NGUYEN_LONG[sonKhau.nguyenLong]}, ${sonKhau.amDuong === "Duong" ? "Dương" : "Âm"} khẩu), Hướng nhà nên lập tại một trong các sơn cùng Nguyên Long, ngược Âm-Dương với khẩu: ${dsGoiY}.
+                    </div>`;
+                }
+            }
         }
     }
 
@@ -986,8 +1047,32 @@ function tongKetToanNha(van, ketQua9Cung, sb, sf, hf, hb, bVan, cungToa, cungHuo
         }
     }
 
-    // ===== HÀ ĐỒ TỨ TƯỢNG (Sơn-Hướng tại Trung cung) — đưa vào Tổng kết toàn nhà, hiện luôn không
-    // cần chờ click cung. Dùng lại xetHaDoTuTuong (mục 26-29), độc lập điểm số chính. =====
+    // ===== HÀ ĐỒ TỨ TƯỢNG — THỐNG KÊ TOÀN NHÀ (quét cả 9 cung, không chỉ Trung cung) —
+    // Dùng lại đúng xetHaDoTuTuong (mục 26-29) cho từng cung: cặp (Sơn tinh, Hướng tinh) tại
+    // MỖI cung có thể hóa 1 trong 4 khí Hà Đồ (1-6/2-7/3-8/4-9) hay không, và đang Đương vượng/
+    // Tiến khí/Thoái khí/Sát khí so với Vận hiện tại. Độc lập điểm số chính. =====
+    if (bSon && bHuong && vanHienTai) {
+        let dsHaDoToanNha = [];
+        for (let c = 1; c <= 9; c++) {
+            let tenC = SO_TO_CUNG[c];
+            let kq = xetHaDoTuTuong(bSon[c], bHuong[c], vanHienTai);
+            if (kq) dsHaDoToanNha.push(Object.assign({ cung: tenC }, kq));
+        }
+        if (dsHaDoToanNha.length > 0) {
+            let dacVanList = dsHaDoToanNha.filter(d => d.dacVan);
+            let thatVanList = dsHaDoToanNha.filter(d => !d.dacVan);
+            let dongCung = d => `<b>${d.cung}</b> (${d.tenCap}, ${d.trangThai})`;
+            let dacText = dacVanList.length ? `<div style="margin-top:4px;"><b style="color:#2e7d32;">Đắc vận</b>: ${dacVanList.map(dongCung).join(", ")}.</div>` : "";
+            let thatText = thatVanList.length ? `<div style="margin-top:4px;"><b style="color:#8b0000;">Thất vận</b>: ${thatVanList.map(dongCung).join(", ")}.</div>` : "";
+            html += `<div class="luan-giai-item" style="color:#795500;background:#fffaf0;border:1px dashed #b08968;border-radius:6px;padding:8px;">
+                <b>🌊 Hà Đồ Tứ Tượng — thống kê toàn nhà</b> (xét cặp Sơn-Hướng tại từng cung/9 cung, so với Vận hiện tại ${vanHienTai}): có <b>${dsHaDoToanNha.length}/9</b> cung hóa khí Hà Đồ.
+                ${dacText}${thatText}
+            </div>`;
+        }
+    }
+
+    // ===== HÀ ĐỒ TỨ TƯỢNG (Sơn-Hướng tại Trung cung) — riêng dòng tóm tắt tại Trung cung, giữ lại
+    // để không mất chi tiết diễn giải dài (Nhân-Lộc-Thọ) đã có sẵn — không trùng khối thống kê trên. =====
     if (bSon && bHuong && vanHienTai) {
         let ghiChuHaDoTC = ghiChuHaDoTuTuong(bSon[5], bHuong[5], vanHienTai);
         if (ghiChuHaDoTC) html += ghiChuHaDoTC;
@@ -1081,6 +1166,68 @@ function tongKetToanNha(van, ketQua9Cung, sb, sf, hf, hb, bVan, cungToa, cungHuo
                     <b>🔗 Liên Châu Tam Ban</b> (連珠三般 — xét từng cung: Vận-Sơn-Hướng tạo bộ ba số liên tiếp theo vòng Lạc Thư)
                     ${dongTungCung}
                     ${ketLuanToanCuc}
+                </div>`;
+            }
+        }
+
+        // ===== THẬP HỢP (➕10) — TOÀN NHÀ (quét cả 9 cung, không chỉ Trung/Tọa/Hướng) —
+        // dùng lại window.xetHopThap (V+S=10 hoặc V+H=10) cho từng cung. Nếu ĐỦ 9/9 cung thì
+        // không liệt kê từng cung (rối mắt, vô nghĩa vì đã trọn vẹn) — chỉ nêu lợi ích của cách
+        // cục Thập Cục toàn bàn. Nếu chưa đủ, liệt kê cung nào đạt kèm ghi chú cung đó là Tọa
+        // hay Hướng của CHÍNH căn nhà (không phải Sơn tinh/Hướng tinh) — ví dụ nhà hướng Khảm mà
+        // Ly (đối xứng Khảm qua Trung, tức là Tọa) đạt Hợp Thập thì ghi "Ly (Tọa)"; nếu Khảm cũng
+        // đạt thì ghi "Khảm (Hướng)"; cung nào không phải Tọa/Hướng của nhà thì ghi trơn tên cung. =====
+        if (typeof window.xetHopThap === 'function') {
+            let dsHopThapToanNha = [];
+            for (let c = 1; c <= 9; c++) {
+                let tenC = SO_TO_CUNG[c];
+                let ht = window.xetHopThap(bVan[c], bSon[c], bHuong[c]);
+                if (ht.hopThapVS || ht.hopThapVH) {
+                    let ghiChuViTri = tenC === cungHuong ? " (Hướng)" : (tenC === cungToa ? " (Tọa)" : "");
+                    dsHopThapToanNha.push({ cung: tenC, ghiChuViTri });
+                }
+            }
+            if (dsHopThapToanNha.length === 9) {
+                html += `<div class="luan-giai-item" style="color:#00695c;background:#e0f2f1;border-radius:6px;padding:8px;">
+                    <b>➕10 Hợp Thập — thống kê toàn nhà</b>: đủ <b>9/9</b> cung đều Hợp Thập (Thập Cục toàn bàn).<br>
+                    Phối hợp với loan đầu hợp lý thì <b>Phúc Lộc song toàn, hóa hung thành cát, Kích hoạt chính ngẫu</b>.
+                </div>`;
+            } else if (dsHopThapToanNha.length > 0) {
+                html += `<div class="luan-giai-item" style="color:#00695c;background:#e0f2f1;border-radius:6px;padding:8px;">
+                    <b>➕10 Hợp Thập — thống kê toàn nhà</b> (V+S=10 hoặc V+H=10, xét cả 9 cung): có <b>${dsHopThapToanNha.length}/9</b> cung đạt.<br>
+                    ${dsHopThapToanNha.map(d => `• <b>${d.cung}</b>${d.ghiChuViTri}`).join("<br>")}
+                </div>`;
+            }
+        }
+
+        // ===== CẶP SỐ 1-4 (Văn Xương) và 1-6 (Khôi Tinh) — TOÀN NHÀ (quét cả 9 cung) —
+        // Xét ĐỦ 6 tổ hợp tại mỗi cung: 3 cặp giữa các sao bay với nhau (V-S, V-H, S-H)
+        // + 3 cặp giữa SỐ LẠC THƯ GỐC của cung (CUNG_TO_SO — số mờ sau tên cung trên la bàn,
+        // Khảm=1, Khôn=2... Ly=9) với từng sao bay tới (Gốc-V, Gốc-S, Gốc-H).
+        // Ví dụ: cung Khảm gốc=1, nếu Vận bay tới =4 thì tính là cặp 1-4 (Gốc-V). =====
+        {
+            const TEN_CAP_14_16 = { "1-4": { ten: "Văn Xương (1-4)", icon: "🖋️", moTa: "Tốt văn học, nghệ thuật, tình duyên." },
+                                     "1-6": { ten: "Khôi Tinh (1-6)", icon: "🏆", moTa: "Lợi công danh, sự nghiệp, thăng tiến quan chức." } };
+            let dsCap14 = [], dsCap16 = [];
+            for (let c = 1; c <= 9; c++) {
+                let tenC = SO_TO_CUNG[c];
+                let soGoc = CUNG_TO_SO[tenC]; // số Lạc Thư gốc của cung (mờ trên la bàn)
+                let boSao = [
+                    ["V","S",bVan[c],bSon[c]], ["V","H",bVan[c],bHuong[c]], ["S","H",bSon[c],bHuong[c]],
+                    ["Gốc","V",soGoc,bVan[c]], ["Gốc","S",soGoc,bSon[c]], ["Gốc","H",soGoc,bHuong[c]]
+                ];
+                for (let [nhan1, nhan2, x, y] of boSao) {
+                    let key = [Math.min(x,y), Math.max(x,y)].join("-");
+                    if (key === "1-4") dsCap14.push({ cung: tenC, soGoc, cap: `${nhan1}-${nhan2}` });
+                    else if (key === "1-6") dsCap16.push({ cung: tenC, soGoc, cap: `${nhan1}-${nhan2}` });
+                }
+            }
+            if (dsCap14.length > 0 || dsCap16.length > 0) {
+                let dong14 = dsCap14.length ? `<div style="margin-top:4px;">${TEN_CAP_14_16["1-4"].icon} <b>${TEN_CAP_14_16["1-4"].ten}</b> — ${TEN_CAP_14_16["1-4"].moTa}<br>Có <b>${dsCap14.length}</b> cặp tại: ${dsCap14.map(d=>`${d.cung} <span style="opacity:0.55;font-size:0.85em;">(số gốc ${d.soGoc})</span> [${d.cap}]`).join(", ")}</div>` : "";
+                let dong16 = dsCap16.length ? `<div style="margin-top:4px;">${TEN_CAP_14_16["1-6"].icon} <b>${TEN_CAP_14_16["1-6"].ten}</b> — ${TEN_CAP_14_16["1-6"].moTa}<br>Có <b>${dsCap16.length}</b> cặp tại: ${dsCap16.map(d=>`${d.cung} <span style="opacity:0.55;font-size:0.85em;">(số gốc ${d.soGoc})</span> [${d.cap}]`).join(", ")}</div>` : "";
+                html += `<div class="luan-giai-item" style="color:#795500;background:#fff8e1;border-radius:6px;padding:8px;">
+                    <b>🔢 Tổ hợp 1-4 / 1-6 — thống kê toàn nhà</b> (xét cặp giữa các sao bay V-S/V-H/S-H, và cặp giữa số Lạc Thư gốc của cung với từng sao bay: Gốc-V/Gốc-S/Gốc-H)
+                    ${dong14}${dong16}
                 </div>`;
             }
         }
