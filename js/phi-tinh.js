@@ -804,23 +804,27 @@ function luanGiaiCung(tenCungVi, vanNha, sVan, sSon, sHuong, sNien, sNguyet, sNh
             duoiBang += `<br><br><b style="color:#00695c;">➕10 Hợp Thập ${ghiHT.join(", ")}:</b> thông khí, cứu cục — có tác dụng hóa giải bớt hung khí tại cung này nếu đang thất vận, theo Tử Bạch Quyết.`;
         }
     }
-    // ===== TAM HỢP PHÁI (Tam Hợp / Tam Tai / Xung theo Chi năm lưu niên) tại cung này — dùng
-    // hàm chung window.xetTamHopPhaiMotCung từ luan-giai.js. Trung cung không thuộc Bát Quái nên
-    // bỏ qua. Dùng chung ô "Năm xem" (namXem) đã có sẵn trên tab, không cần khai báo thêm năm riêng. =====
-    if (tenCungVi !== "Trung" && typeof window.xetTamHopPhaiMotCung === 'function' && namXem) {
+    // ===== TAM HỢP PHÁI (Tam Hợp / Tam Tai / Xung) tại cung này — dùng hàm chung
+    // window.xetTamHopPhaiMotCung từ luan-giai.js. Trung cung không thuộc Bát Quái nên bỏ qua.
+    // LUÔN hiển thị đủ 3 nhóm Chi (để người dùng biết trước, kể cả khi chưa tới năm đó) — nếu Chi
+    // của năm đang xem (namXem, ô "Năm xem" có sẵn trên tab) rơi đúng vào nhóm nào thì đánh dấu
+    // nổi bật (⚠️ ĐANG ĐÚNG NĂM NÀY) cho nhóm đó, còn lại vẫn liệt kê bình thường để tham khảo. =====
+    if (tenCungVi !== "Trung" && typeof window.xetTamHopPhaiMotCung === 'function') {
         let thp = window.xetTamHopPhaiMotCung(tenCungVi, namXem);
-        if (thp && thp.ketQua) {
-            let kq = thp.ketQua;
-            if (kq.namLaTamHop || kq.namLaTamTai || kq.namLaXung) {
-                let dong = [];
-                if (kq.namLaTamHop) dong.push(`<span style="color:#2e7d32;">🔵 <b>Tam Hợp</b> — năm ${namXem} (${kq.chiNam}) thuộc cục Tam Hợp ${thp.tamHopChi.join("-")} của cung ${tenCungVi}: khí tại cung được kích hoạt/tăng cường mạnh — cát tinh thì bùng phát cát, hung tinh (VD Ngũ Hoàng, Nhị Hắc) thì phát hung mạnh nhất.</span>`);
-                if (kq.namLaTamTai) dong.push(`<span style="color:#c62828;">🔺 <b>Tam Tai</b> — năm ${namXem} (${kq.chiNam}) nằm trong cục Tam Tai ${thp.tamTaiChi.join("-")} của cung ${tenCungVi}: dễ gây tai họa cho cung, cần đặc biệt thận trọng.</span>`);
-                if (kq.namLaXung) dong.push(`<span style="color:#e65100;">⚡ <b>Xung</b> — năm ${namXem} (${kq.chiNam}) xung trực tiếp với Chi của cung ${tenCungVi} (${thp.chiCuaCung.join("/")}) : khí trong cung dễ bị xáo trộn, biến động, thị phi.</span>`);
-                duoiBang += `<br><br><div style="border:1px dashed #5c4a3a;border-radius:4px;padding:6px 8px;background:#fff8f0;">`
-                    + `<b style="color:#5c4a3a;">🧭 Tam Hợp Phái (cung ${tenCungVi}, phương ${thp.phuongVi}):</b><br>`
-                    + dong.join("<br>")
-                    + `</div>`;
+        if (thp) {
+            let kq = thp.ketQua; // có thể null nếu namXem không hợp lệ — các cờ namLaXxx khi đó coi như false
+            function dongChi(nhan, icon, mau, dsChi, dangUngNam) {
+                let canhBao = dangUngNam ? ` <b style="background:${mau};color:#fff;padding:1px 6px;border-radius:4px;">⚠️ ĐANG ĐÚNG NĂM NÀY (${kq.chiNam})</b>` : "";
+                return `<div style="margin-top:3px;"><span style="color:${mau};">${icon} <b>${nhan}</b>: ${dsChi.join(", ")}</span>${canhBao}</div>`;
             }
+            let noiDung = dongChi("Tam Hợp", "🔵", "#2e7d32", thp.tamHopChi, kq && kq.namLaTamHop)
+                + dongChi("Tam Tai", "🔺", "#c62828", thp.tamTaiChi, kq && kq.namLaTamTai)
+                + dongChi("Xung", "⚡", "#e65100", thp.xungChi, kq && kq.namLaXung);
+            duoiBang += `<br><br><div style="border:1px dashed #5c4a3a;border-radius:4px;padding:6px 8px;background:#fff8f0;">`
+                + `<b style="color:#5c4a3a;">🧭 Tam Hợp Phái (cung ${tenCungVi}, phương ${thp.phuongVi}) — Chú ý các năm:</b>`
+                + noiDung
+                + `<div style="margin-top:4px;font-size:0.85em;color:#777;"><i>Tam Hợp: khí được kích hoạt/tăng cường (cát càng cát, hung càng hung). Tam Tai: dễ gây tai họa. Xung: khí bị xáo trộn, biến động, thị phi.</i></div>`
+                + `</div>`;
         }
     }
     // (Khối tra cứu tổ hợp Sơn-Hướng cũ dùng window.xetToHopSonHuong đã được GỠ BỎ — thay thế hoàn
