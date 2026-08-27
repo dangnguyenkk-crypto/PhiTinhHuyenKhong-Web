@@ -359,8 +359,68 @@
   }
 
   // ==================================================================
+  // 8) TAM HỢP PHÁI — Tam Hợp / Tam Tai / Xung theo Chi năm lưu niên, đối
+  // chiếu với TỪNG CUNG bát quái (Khảm/Khôn/Chấn/Tốn/Ly/Đoài/Càn/Cấn).
+  // Nguồn: tam-hop-phai.md. Trung cung (Ngũ Hoàng) không thuộc Bát Quái nên
+  // không có dữ liệu Tam Hợp Phái — bỏ qua khi tra cứu.
+  //
+  //  - tamHop : cục Tam Hợp của chính cung đó (kích hoạt/tăng cường khí tại
+  //             cung — cát tinh thì bùng cát, hung tinh thì phát hung mạnh).
+  //  - tamTai : 3 Chi liên tiếp gây tai hoạ cho cung (khắc theo Ngũ Hành).
+  //  - xung   : Chi xung trực tiếp với Chi của cung — khí bị xáo trộn.
+  // Trả về {tenCung, chiCuaCung, phuongVi, tamHopChi, tamTaiChi, xungChi,
+  //         ketQua:{chiNam, namLaTamHop, namLaTamTai, namLaXung}} hoặc null.
+  // ==================================================================
+  var TAM_HOP_PHAI = {
+    "Khảm": { chi: ["Tý"],          phuongVi: "Bắc",       tamHop: ["Thân","Tý","Thìn"], tamTai: ["Ngọ","Mùi","Thân"], xung: ["Ngọ"] },
+    "Khôn": { chi: ["Mùi","Thân"],  phuongVi: "Tây Nam",   tamHop: ["Thân","Tý","Thìn"], tamTai: ["Dần","Mão","Thìn"], xung: ["Sửu","Dần"] },
+    "Chấn": { chi: ["Mão"],         phuongVi: "Đông",      tamHop: ["Hợi","Mão","Mùi"],  tamTai: ["Thân","Dậu","Tuất"], xung: ["Dậu"] },
+    "Tốn":  { chi: ["Thìn","Tị"],   phuongVi: "Đông Nam",  tamHop: ["Tị","Dậu","Sửu"],   tamTai: ["Hợi","Tý","Sửu"],   xung: ["Tuất","Hợi"] },
+    "Ly":   { chi: ["Ngọ"],         phuongVi: "Nam",       tamHop: ["Dần","Ngọ","Tuất"], tamTai: ["Tý","Sửu","Dần"],   xung: ["Tý"] },
+    "Đoài": { chi: ["Dậu"],         phuongVi: "Tây",       tamHop: ["Tị","Dậu","Sửu"],   tamTai: ["Hợi","Tý","Sửu"],   xung: ["Mão"] },
+    "Càn":  { chi: ["Tuất","Hợi"],  phuongVi: "Tây Bắc",   tamHop: ["Dần","Ngọ","Tuất"], tamTai: ["Thân","Dậu","Tuất"], xung: ["Thìn","Tị"] },
+    "Cấn":  { chi: ["Sửu","Dần"],   phuongVi: "Đông Bắc",  tamHop: ["Tị","Dậu","Sửu"],   tamTai: ["Ngọ","Mùi","Thân"], xung: ["Mùi","Thân"] }
+  };
+  // Danh sách Địa Chi theo thứ tự vòng — dùng khi nơi gọi chưa có sẵn Chi của năm dương lịch.
+  var _THP_CHI_ORDER = ["Tý","Sửu","Dần","Mão","Thìn","Tị","Ngọ","Mùi","Thân","Dậu","Tuất","Hợi"];
+  function _thpChiCuaNam(nam) {
+    var n = parseInt(nam);
+    if (!n || isNaN(n)) return null;
+    return _THP_CHI_ORDER[((n + 8) % 12 + 12) % 12];
+  }
+
+  // tenCung: 1 trong 8 cung bát quái (không nhận "Trung"). nam: năm dương lịch cần đối chiếu (tuỳ chọn).
+  // chiNamCoSan: Chi năm đã tính sẵn ở nơi gọi (tuỳ chọn, ưu tiên dùng nếu có — ví dụ layDiaChiNam() bên
+  // phi-tinh.js — để khỏi tính lại và tránh lệch quy đổi Can-Chi giữa các module khác nhau trong app).
+  function xetTamHopPhaiMotCung(tenCung, nam, chiNamCoSan) {
+    var info = TAM_HOP_PHAI[tenCung];
+    if (!info) return null;
+    var chiNam = chiNamCoSan || _thpChiCuaNam(nam);
+    var ketQua = null;
+    if (chiNam) {
+      ketQua = {
+        chiNam: chiNam,
+        namLaTamHop: info.tamHop.indexOf(chiNam) !== -1,
+        namLaTamTai: info.tamTai.indexOf(chiNam) !== -1,
+        namLaXung: info.xung.indexOf(chiNam) !== -1
+      };
+    }
+    return {
+      tenCung: tenCung,
+      chiCuaCung: info.chi,
+      phuongVi: info.phuongVi,
+      tamHopChi: info.tamHop,
+      tamTaiChi: info.tamTai,
+      xungChi: info.xung,
+      ketQua: ketQua
+    };
+  }
+
+  // ==================================================================
   // EXPORT
   // ==================================================================
+  window.TAM_HOP_PHAI = TAM_HOP_PHAI;
+  window.xetTamHopPhaiMotCung = xetTamHopPhaiMotCung;
   window.xetQuanHeNguHanh = xetQuanHeNguHanh;
   window.xetHopThap = xetHopThap;
   window.xetPhanPhucNgamMotSao = xetPhanPhucNgamMotSao;

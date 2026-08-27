@@ -633,7 +633,7 @@ function xetPhanPhucNgam(sao, tenCungVi, loaiBan) {
         : `5 nhập Trung cung nghịch cục (Phản Ngâm) — cung ${tenCungVi} hợp thập với số Lạc Thư nguyên đán (${soGoc}) — dữ khi thất vận`;
     return { ...ket, tip };
 }
-function luanGiaiCung(tenCungVi, vanNha, sVan, sSon, sHuong, sNien, sNguyet, sNhat, thangXem, vanHienTai) {
+function luanGiaiCung(tenCungVi, vanNha, sVan, sSon, sHuong, sNien, sNguyet, sNhat, thangXem, vanHienTai, namXem) {
     let hanhCung = HANH_CUA_CUNG[tenCungVi];
     let laTrung = tenCungVi === "Trung";
 
@@ -802,6 +802,25 @@ function luanGiaiCung(tenCungVi, vanNha, sVan, sSon, sHuong, sNien, sNguyet, sNh
             if (ht.hopThapVS) ghiHT.push(`Vận-Sơn (${sVan}+${sSon}=10)`);
             if (ht.hopThapVH) ghiHT.push(`Vận-Hướng (${sVan}+${sHuong}=10)`);
             duoiBang += `<br><br><b style="color:#00695c;">➕10 Hợp Thập ${ghiHT.join(", ")}:</b> thông khí, cứu cục — có tác dụng hóa giải bớt hung khí tại cung này nếu đang thất vận, theo Tử Bạch Quyết.`;
+        }
+    }
+    // ===== TAM HỢP PHÁI (Tam Hợp / Tam Tai / Xung theo Chi năm lưu niên) tại cung này — dùng
+    // hàm chung window.xetTamHopPhaiMotCung từ luan-giai.js. Trung cung không thuộc Bát Quái nên
+    // bỏ qua. Dùng chung ô "Năm xem" (namXem) đã có sẵn trên tab, không cần khai báo thêm năm riêng. =====
+    if (tenCungVi !== "Trung" && typeof window.xetTamHopPhaiMotCung === 'function' && namXem) {
+        let thp = window.xetTamHopPhaiMotCung(tenCungVi, namXem);
+        if (thp && thp.ketQua) {
+            let kq = thp.ketQua;
+            if (kq.namLaTamHop || kq.namLaTamTai || kq.namLaXung) {
+                let dong = [];
+                if (kq.namLaTamHop) dong.push(`<span style="color:#2e7d32;">🔵 <b>Tam Hợp</b> — năm ${namXem} (${kq.chiNam}) thuộc cục Tam Hợp ${thp.tamHopChi.join("-")} của cung ${tenCungVi}: khí tại cung được kích hoạt/tăng cường mạnh — cát tinh thì bùng phát cát, hung tinh (VD Ngũ Hoàng, Nhị Hắc) thì phát hung mạnh nhất.</span>`);
+                if (kq.namLaTamTai) dong.push(`<span style="color:#c62828;">🔺 <b>Tam Tai</b> — năm ${namXem} (${kq.chiNam}) nằm trong cục Tam Tai ${thp.tamTaiChi.join("-")} của cung ${tenCungVi}: dễ gây tai họa cho cung, cần đặc biệt thận trọng.</span>`);
+                if (kq.namLaXung) dong.push(`<span style="color:#e65100;">⚡ <b>Xung</b> — năm ${namXem} (${kq.chiNam}) xung trực tiếp với Chi của cung ${tenCungVi} (${thp.chiCuaCung.join("/")}) : khí trong cung dễ bị xáo trộn, biến động, thị phi.</span>`);
+                duoiBang += `<br><br><div style="border:1px dashed #5c4a3a;border-radius:4px;padding:6px 8px;background:#fff8f0;">`
+                    + `<b style="color:#5c4a3a;">🧭 Tam Hợp Phái (cung ${tenCungVi}, phương ${thp.phuongVi}):</b><br>`
+                    + dong.join("<br>")
+                    + `</div>`;
+            }
         }
     }
     // (Khối tra cứu tổ hợp Sơn-Hướng cũ dùng window.xetToHopSonHuong đã được GỠ BỎ — thay thế hoàn
@@ -1102,6 +1121,35 @@ function tongKetToanNha(van, ketQua9Cung, sb, sf, hf, hb, bVan, cungToa, cungHuo
         }
         if (toaThaiTue) {
             html += `<div class="luan-giai-item" style="color:#1b5e20;background:#e8f5e9;border-radius:6px;padding:8px;">🛡️ <b>Tọa Thái Tuế</b> (Tọa sơn trùng đúng phương Thái Tuế của Chi năm ${namXem}, tức năm ${chiNam}) — như tựa lưng vào núi, có thế vững, không phải điều xấu. Lưu ý: dù Tọa hay Hướng, phương Thái Tuế tuyệt đối không đào đắp/sửa chữa/đục phá.</div>`;
+        }
+    }
+
+    // ===== TAM HỢP PHÁI — THỐNG KÊ TOÀN NHÀ (quét 8 cung bát quái, bỏ qua Trung cung) — dùng lại
+    // window.xetTamHopPhaiMotCung (luan-giai.js) và ô "Năm xem" (namXem) đã có sẵn trên tab — không
+    // cần thêm ô năm riêng, tránh trùng lặp với Thái Tuế/Tam Sát ở trên (cùng dùng chung namXem). =====
+    if (typeof window.xetTamHopPhaiMotCung === 'function' && namXem) {
+        let dsTamHop = [], dsTamTai = [], dsXung = [];
+        for (let c = 1; c <= 9; c++) {
+            let tenC = SO_TO_CUNG[c];
+            if (tenC === "Trung") continue;
+            let thp = window.xetTamHopPhaiMotCung(tenC, namXem);
+            if (!thp || !thp.ketQua) continue;
+            let ghiChuViTri = tenC === cungHuong ? " (Hướng)" : (tenC === cungToa ? " (Tọa)" : "");
+            if (thp.ketQua.namLaTamHop) dsTamHop.push({ cung: tenC, ghiChuViTri, phuongVi: thp.phuongVi });
+            if (thp.ketQua.namLaTamTai) dsTamTai.push({ cung: tenC, ghiChuViTri, phuongVi: thp.phuongVi });
+            if (thp.ketQua.namLaXung) dsXung.push({ cung: tenC, ghiChuViTri, phuongVi: thp.phuongVi });
+        }
+        if (dsTamHop.length || dsTamTai.length || dsXung.length) {
+            let chiTHP = layDiaChiNam(namXem);
+            let dong = [];
+            if (dsTamHop.length) dong.push(`<div style="margin-top:4px;color:#2e7d32;">🔵 <b>Tam Hợp</b> (kích hoạt/tăng cường khí — cát càng cát, hung càng hung): ${dsTamHop.map(d => `<b>${d.cung}</b>${d.ghiChuViTri} (${d.phuongVi})`).join(", ")}.</div>`);
+            if (dsTamTai.length) dong.push(`<div style="margin-top:4px;color:#c62828;">🔺 <b>Tam Tai</b> (dễ gây tai họa): ${dsTamTai.map(d => `<b>${d.cung}</b>${d.ghiChuViTri} (${d.phuongVi})`).join(", ")}.</div>`);
+            if (dsXung.length) dong.push(`<div style="margin-top:4px;color:#e65100;">⚡ <b>Xung</b> (khí xáo trộn, biến động): ${dsXung.map(d => `<b>${d.cung}</b>${d.ghiChuViTri} (${d.phuongVi})`).join(", ")}.</div>`);
+            html += `<div class="luan-giai-item" style="color:#5c4a3a;background:#fff8f0;border-radius:6px;padding:8px;">
+                <b>🧭 Tam Hợp Phái — thống kê toàn nhà</b> (năm ${namXem}, Chi ${chiTHP})
+                ${dong.join("")}
+                <div style="margin-top:6px;font-size:0.9em;color:#777;"><i>Đối chiếu Chi của năm lưu niên với Tam Hợp/Tam Tai/Xung riêng của từng cung bát quái. Nếu cung đang có hung tinh (Ngũ Hoàng, Nhị Hắc...) mà rơi vào năm Tam Hợp hoặc Tam Tai của chính cung đó thì hung sát phát tác mạnh nhất; nếu cung có cát tinh mà rơi vào năm Tam Hợp thì cát khí bùng nổ.</i></div>
+            </div>`;
         }
     }
 
@@ -1560,7 +1608,7 @@ async function tinhToanPhiTinh() {
     for (let c = 1; c <= 9; c++) {
         // Luận giải văn bản dùng bàn HIỆU LỰC (sao Thế nếu có kiêm hướng) — theo đúng nguyên tắc thế
         // quái: sao Thế thay hẳn vai trò sao gốc trong Trung Cung, cát hung đi theo sao Thế.
-        let loiGiai = luanGiaiCung(TEN_CUNG[c], van, bVan[c], bSonHieuLuc[c], bHuongHieuLuc[c], bNien[c], bNguyet[c], bNhat[c], thangXem, vanHienTai);
+        let loiGiai = luanGiaiCung(TEN_CUNG[c], van, bVan[c], bSonHieuLuc[c], bHuongHieuLuc[c], bNien[c], bNguyet[c], bNhat[c], thangXem, vanHienTai, namXem);
         let tieuDeSaoThe = (banSaoTheSon || banSaoTheHuong) ? ` <span style="font-weight:400;font-size:0.85em;color:#795500;">(theo Sao Thế${banSaoTheSon ? `, gốc S${bSon[c]}` : ''}${banSaoTheHuong ? `${banSaoTheSon ? ',' : ','} gốc H${bHuong[c]}` : ''})</span>` : "";
         let html = `<div class="luan-giai-item" id="luan-${TEN_CUNG[c]}"><b>Cung ${TEN_CUNG[c]} (S${bSonHieuLuc[c]}-H${bHuongHieuLuc[c]}):</b>${tieuDeSaoThe}<br>${loiGiai}</div>`;
         if (TEN_CUNG[c] === "Trung") {
