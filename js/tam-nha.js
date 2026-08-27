@@ -146,14 +146,20 @@
                 const p = worldToScreenTamNha(tamNhaData.centroidWorld.x, tamNhaData.centroidWorld.y);
                 const az = parseFloat(document.getElementById('tnHuongLaBan').value) || 0;
                 const minDim = Math.min(rect.width, rect.height) * 0.95;
-                const rDoSo = minDim*0.46, rDoTick = minDim*0.44, rDoText = minDim*0.43;
-                const r8Out = minDim*0.41, r8In = minDim*0.34, r8Text = minDim*0.38;
-                const r24Out = minDim*0.34, r24In = minDim*0.28, r24Text = minDim*0.3, rKim = minDim*0.28;
+                // THỨ TỰ TỪ TÂM RA NGOÀI (đúng như veCompassChung mặc định):
+                // 8 hướng -> 24 sơn -> 60 Thấu Địa Long -> vạch chia độ -> số độ.
+                const r8Out = minDim*0.20, r8In = minDim*0.15, r8Text = minDim*0.17;
+                const r24Out = minDim*0.37, r24In = minDim*0.2, r24Text = minDim*0.34, rKim = minDim*0.37;
+                const rTdlOut = minDim*0.44, rTdlIn = r24Out, rTdlTk = (rTdlOut-rTdlIn)*0.9;//thấu địa long
+                const rDoSo = minDim*0.45, rDoTick = rTdlOut, rDoText = minDim*0.47;
+                const rTiaSt = r8In -15;//nơi các tia bắt đầu
                 const tempSvg = document.createElementNS('http://www.w3.org/2000/svg','svg');
                 tempSvg.setAttribute('id','tempSvg'); document.body.appendChild(tempSvg);
                 veCompassChung('tempSvg', p.x, p.y, az, {
                     rDoSo:rDoSo,rDoTick:rDoTick,rDoText:rDoText,r8Outer:r8Out,r8Inner:r8In,r8Text:r8Text,
-                    r24Outer:r24Out,r24Inner:r24In,r24Text:r24Text,rTia:rDoSo*1.8,rKim:rKim,
+                    r24Outer:r24Out,r24Inner:r24In,r24Text:r24Text,
+                    rTdlOuter:rTdlOut,rTdlInner:rTdlIn,rTdlTick:rTdlTk,
+                    rTia:rDoSo*2.8,rTiaStart:rTiaSt,rKim:rKim,
                     doMo:0,mauTia:mauTiaHienTai,isReset:tamNhaData.isResetView,resetOffset:tamNhaData.isResetView?-az:0,
                     sonDen:null,sonDi:null,showLabel:false,fontSize:tamNhaData.fontSizeCompass,mauRanh8:mauRanh8HienTai
                 });

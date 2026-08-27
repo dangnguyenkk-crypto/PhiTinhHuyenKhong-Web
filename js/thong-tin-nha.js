@@ -166,6 +166,14 @@
         capNhat('ttInNamSinhChu', 'namSinhChu');
         capNhat('ttInGioiTinhChu', 'gioiTinhChu');
         capNhat('ttInCanChiNamSinhChu', 'canChiNamSinhChu', true);
+        // Cung Mệnh không có input gốc tương ứng bên Nội Khí — tự tính lại từ giá trị Năm sinh/Giới
+        // tính MỚI NHẤT (đọc trực tiếp từ input gốc, không phải từ ô đang focus) rồi vẽ lại khối này.
+        let cmBox = document.getElementById('ttInCungMenh');
+        if (cmBox) {
+            let namSinhGoc = elGoc('namSinhChu') ? elGoc('namSinhChu').value : '';
+            let gioiTinhGoc = elGoc('gioiTinhChu') ? elGoc('gioiTinhChu').value : 'nam';
+            cmBox.innerHTML = renderCungMenhHtml(namSinhGoc, gioiTinhGoc);
+        }
     }
 
     function renderTrachNhaGiaChuHtml() {
@@ -222,6 +230,22 @@
                     <option value="nu"${gioiTinhChu === 'nu' ? ' selected' : ''}>Nữ</option>
                 </select>
             </div>
+            <div id="ttInCungMenh" style="margin-top:6px;">${renderCungMenhHtml(namSinhChu, gioiTinhChu)}</div>
+        </div>`;
+    }
+
+    // ==== CUNG MỆNH — tính từ năm sinh dương lịch + giới tính (window.tinhMenhQuai, xem shared.js) ====
+    function renderCungMenhHtml(namSinhChu, gioiTinhChu) {
+        if (typeof window.tinhMenhQuai !== 'function') return '';
+        let mq = window.tinhMenhQuai(namSinhChu, gioiTinhChu);
+        if (!mq) {
+            return `<div style="font-size:11px;color:#999;">Nhập năm sinh để tính Cung Mệnh.</div>`;
+        }
+        let mauNhom = mq.nhom === 'Đông Tứ Mệnh' ? '#2e7d32' : '#8b0000';
+        let nenNhom = mq.nhom === 'Đông Tứ Mệnh' ? '#e8f5e9' : '#fdecea';
+        return `<div style="display:flex;align-items:center;gap:6px;padding:6px 8px;background:${nenNhom};border-radius:6px;">
+            <span style="font-size:12px;font-weight:700;color:${mauNhom};">🎋 Cung Mệnh: ${mq.cung} (Quái ${mq.quaiSo}, hành ${mq.hanh})</span>
+            <span style="font-size:11px;color:${mauNhom};margin-left:auto;">${mq.nhom}</span>
         </div>`;
     }
 

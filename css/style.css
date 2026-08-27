@@ -19,6 +19,12 @@
         button:disabled { background: #c9a9a9; cursor: not-allowed; }
         .button-row { display: flex; gap: 10px; margin-top: 14px; }
         .button-row button { flex: 1; margin-top: 0; }
+        /* Nút "XEM SƠ ĐỒ CỬU CUNG" khi thông số đã đổi nhưng chưa bấm lại để cập nhật kết quả */
+        #btnXem.btn-can-cap-nhat { animation: btnCanCapNhatNhapNhay 1.1s ease-in-out infinite; }
+        @keyframes btnCanCapNhatNhapNhay {
+            0%, 100% { box-shadow: 0 0 0 0 rgba(230,81,0,0.55); }
+            50% { box-shadow: 0 0 0 6px rgba(230,81,0,0); }
+        }
         .compass-outer-wrapper { width: 100%; max-width: 440px; display: flex; flex-direction: column; align-items: center; }
         .compass-wrapper { position: relative; width: min(98vw, 420px); height: min(98vw, 420px); margin: 6px auto 14px; }
         .do-so-ring { position: absolute; width: 100%; height: 100%; top: 0; left: 0; pointer-events: none; z-index: 15; overflow: visible; transition: transform 0.5s ease-out; transform-origin: 50% 50%; }

@@ -26,8 +26,8 @@ const DS24_SON = [
             { ten: "Nam", goc: 180 }, { ten: "Tây Nam", goc: 225 }, { ten: "Tây", goc: 270 }, { ten: "Tây Bắc", goc: 315 }
         ];
         const MAU_BAT_QUAI = ["#285AA0","#B4963C","#146B28","#3CA064","#BE2828","#A07832","#C8C8C8","#AAAAB4"];
-        var mauTiaHienTai = "#5c4a3a";
-        var mauRanh8HienTai = "#ff0000";
+        var mauTiaHienTai = "#e91e63";
+        var mauRanh8HienTai = "#1565c0";
         window.mauTiaHienTai = mauTiaHienTai;
         window.mauRanh8HienTai = mauRanh8HienTai;
 
@@ -91,93 +91,207 @@ const DS24_SON = [
         }
         window.capNhatMauRanh8TamNha = capNhatMauRanh8TamNha;
 
-        function veCompassChung(svgId, cx, cy, houseFacing, options) {
-            const svg = document.getElementById(svgId); if (!svg) return;
-            const { rDoSo=430,rDoTick=410,rDoText=390,r8Outer=360,r8Inner=300,r8Text=330,r24Outer=270,r24Inner=170,r24Text=250,
-                    rTia=1400,rKim=420,doMo=0.7,mauTia=mauTiaHienTai,isReset=false,resetOffset=0,sonDen=null,sonDi=null,
-                    showLabel=true,fontSize=10,mauRanh8=mauRanh8HienTai } = options || {};
-            let totalRotation = isReset ? resetOffset : 0;
-            let html = `<g transform="rotate(${totalRotation}, ${cx}, ${cy})">`;
-            html += `<circle cx="${cx}" cy="${cy}" r="${rDoSo}" fill="none" stroke="#5c4a3a" stroke-width="0.5" opacity="0.9"/>`;
-            for (let deg = 0; deg < 360; deg += 5) {
-                let rad = (deg - 90) * Math.PI / 180;
-                let isMajor = deg % 30 === 0;      // vạch tick to/đậm — vẫn giữ mỗi 30° như cũ
-                let showDeg = deg % 10 === 0;       // SỐ ĐỘ hiển thị — đổi sang mỗi 10° theo yêu cầu (trước là trùng isMajor, tức 30°)
-                let rIn = isMajor ? rDoTick - 8 : rDoTick;
-                let x1 = cx + rIn * Math.cos(rad), y1 = cy + rIn * Math.sin(rad);
-                let x2 = cx + rDoSo * Math.cos(rad), y2 = cy + rDoSo * Math.sin(rad);
-                html += `<line x1="${x1.toFixed(1)}" y1="${y1.toFixed(1)}" x2="${x2.toFixed(1)}" y2="${y2.toFixed(1)}" stroke="#fff" stroke-width="${isMajor?4:2.5}" opacity="0.8"/>`;
-                html += `<line x1="${x1.toFixed(1)}" y1="${y1.toFixed(1)}" x2="${x2.toFixed(1)}" y2="${y2.toFixed(1)}" stroke="#2a2a2a" stroke-width="${isMajor?2:1}" opacity="0.9"/>`;
-                if (showDeg) {
-                    let xt = cx + rDoText * Math.cos(rad), yt = cy + rDoText * Math.sin(rad);
-                    html += `<text x="${xt.toFixed(1)}" y="${yt.toFixed(1)}" font-size="${fontSize+2}" font-weight="600" fill="#2a2a2a" stroke="#fff" stroke-width="2" paint-order="stroke" text-anchor="middle" dominant-baseline="middle" transform="rotate(${deg} ${xt.toFixed(1)} ${yt.toFixed(1)})">${deg}</text>`;
-                }
-            }
-            DS8_HUONG.forEach((h, i) => {
-                let rs = (h.goc - 22.5 - 90) * Math.PI / 180, re = (h.goc + 22.5 - 90) * Math.PI / 180;
-                let xS = cx + r8Outer*Math.cos(rs), yS = cy + r8Outer*Math.sin(rs);
-                let xE = cx + r8Outer*Math.cos(re), yE = cy + r8Outer*Math.sin(re);
-                let xSi = cx + r8Inner*Math.cos(re), ySi = cy + r8Inner*Math.sin(re);
-                let xEi = cx + r8Inner*Math.cos(rs), yEi = cy + r8Inner*Math.sin(rs);
-                html += `<path d="M${xS.toFixed(1)},${yS.toFixed(1)} A${r8Outer},${r8Outer} 0 0,1 ${xE.toFixed(1)},${yE.toFixed(1)} L${xSi.toFixed(1)},${ySi.toFixed(1)} A${r8Inner},${r8Inner} 0 0,0 ${xEi.toFixed(1)},${yEi.toFixed(1)} Z" fill="${MAU_BAT_QUAI[i]}" opacity="0.55" stroke="${mauRanh8}" stroke-width="0.1" stroke-opacity="0.5"/>`;
-                let rc = (h.goc - 90) * Math.PI / 180, xt = cx + r8Text*Math.cos(rc), yt = cy + r8Text*Math.sin(rc);
-                let isMain = h.goc % 90 === 0;
-                html += `<text x="${xt.toFixed(1)}" y="${yt.toFixed(1)}" font-size="${isMain?fontSize+4:fontSize+2}" font-weight="700" fill="${isMain?'#8b4500':'#1a1a1a'}" stroke="#fff" stroke-width="2.0" paint-order="stroke" text-anchor="middle" dominant-baseline="middle" transform="rotate(${h.goc} ${xt.toFixed(1)} ${yt.toFixed(1)})">${h.ten}</text>`;
-            });
-            DS8_HUONG.forEach((h) => {
-                let aBien = (h.goc - 22.5 - 90) * Math.PI / 180;
-                let xOut = cx + rTia*Math.cos(aBien), yOut = cy + rTia*Math.sin(aBien);
-                html += `<line x1="${cx}" y1="${cy}" x2="${xOut.toFixed(1)}" y2="${yOut.toFixed(1)}" stroke="${mauRanh8}" stroke-width="1.5" opacity="0.9"/>`;
-            });
-            html += `<circle cx="${cx}" cy="${cy}" r="${r24Outer}" fill="rgba(253,250,242,${doMo*0.85})" stroke="#3a2a1a" stroke-width="0.5" opacity="${Math.max(0.3,doMo)}"/>`;
-            html += `<circle cx="${cx}" cy="${cy}" r="${r24Inner}" fill="none" stroke="#5c4a3a" stroke-width="0.5" opacity="0.7"/>`;
-            function wedge(tenSon, mauNen, mauVien) {
-                let s = DS24_SON.find(x => x.ten === tenSon); if (!s) return "";
-                let rs = (s.goc - 7.5 - 90)*Math.PI/180, re = (s.goc + 7.5 - 90)*Math.PI/180;
-                let xs = cx+r24Outer*Math.cos(rs), ys = cy+r24Outer*Math.sin(rs);
-                let xe = cx+r24Outer*Math.cos(re), ye = cy+r24Outer*Math.sin(re);
-                return `<path d="M${cx},${cy} L${xs.toFixed(1)},${ys.toFixed(1)} A${r24Outer},${r24Outer} 0 0,1 ${xe.toFixed(1)},${ye.toFixed(1)} Z" fill="${mauNen}" stroke="${mauVien}" stroke-width="2"/>`;
-            }
-            if (sonDen) html += wedge(sonDen, "rgba(33,150,243,0.38)", "#1565c0");
-            if (sonDi) html += wedge(sonDi, "rgba(255,152,0,0.38)", "#e65100");
-            let sonHuong = timSonTheoGoc(houseFacing).ten;
-            html += wedge(sonHuong, "rgba(244,67,54,0.30)", "#b71c1c");
-            DS24_SON.forEach(s => {
-                let rb = (s.goc - 7.5 - 90)*Math.PI/180;
-                let xXa = cx + rTia*Math.cos(rb), yXa = cy + rTia*Math.sin(rb);
-                html += `<line x1="${cx}" y1="${cy}" x2="${xXa.toFixed(1)}" y2="${yXa.toFixed(1)}" stroke="${mauTia}" stroke-width="0.4" opacity="0.9"/>`;
-                let x1b = cx+(r24Outer-3)*Math.cos(rb), y1b = cy+(r24Outer-3)*Math.sin(rb);
-                let x2b = cx+r24Outer*Math.cos(rb), y2b = cy+r24Outer*Math.sin(rb);
-                html += `<line x1="${x1b.toFixed(1)}" y1="${y1b.toFixed(1)}" x2="${x2b.toFixed(1)}" y2="${y2b.toFixed(1)}" stroke="#5c4a3a" stroke-width="2"/>`;
-                let r = (s.goc-90)*Math.PI/180, xt = cx+r24Text*Math.cos(r), yt = cy+r24Text*Math.sin(r);
-                html += `<g transform="rotate(${s.goc} ${xt.toFixed(1)} ${yt.toFixed(1)})"><text x="${xt.toFixed(1)}" y="${yt.toFixed(1)}" font-size="${fontSize}" font-weight="800" fill="#7a1010" stroke="#ffffff" stroke-width="3" paint-order="stroke" text-anchor="middle" dominant-baseline="middle">${s.ten}</text></g>`;
-            });
-            let radMui = (houseFacing-90)*Math.PI/180, radVG = radMui + Math.PI/2;
-            let xVG1 = cx+rTia*Math.cos(radVG), yVG1 = cy+rTia*Math.sin(radVG);
-            let xVG2 = cx-rTia*Math.cos(radVG), yVG2 = cy-rTia*Math.sin(radVG);
-            html += `<line x1="${xVG1.toFixed(1)}" y1="${yVG1.toFixed(1)}" x2="${xVG2.toFixed(1)}" y2="${yVG2.toFixed(1)}" stroke="#00c8c8" stroke-width="2.5" opacity="0.85"/>`;
-            function arrow(rad, xTip, yTip, mau) {
-                let tl=20, ta=0.45;
-                let x1a = xTip-tl*Math.cos(rad-ta), y1a = yTip-tl*Math.sin(rad-ta);
-                let x2a = xTip-tl*Math.cos(rad+ta), y2a = yTip-tl*Math.sin(rad+ta);
-                return `<polygon points="${xTip.toFixed(1)},${yTip.toFixed(1)} ${x1a.toFixed(1)},${y1a.toFixed(1)} ${x2a.toFixed(1)},${y2a.toFixed(1)}" fill="${mau}" opacity="0.9"/>`;
-            }
-            let radTy = (0-90)*Math.PI/180;
-            let xTyF = cx+rKim*Math.cos(radTy), yTyF = cy+rKim*Math.sin(radTy);
-            let xTyB = cx-rKim*Math.cos(radTy), yTyB = cy-rKim*Math.sin(radTy);
-            html += `<line x1="${xTyB.toFixed(1)}" y1="${yTyB.toFixed(1)}" x2="${xTyF.toFixed(1)}" y2="${yTyF.toFixed(1)}" stroke="#FFD700" stroke-width="1.8" opacity="0.9"/>`;
-            html += arrow(radTy, xTyF, yTyF, "#FFD700");
-            let xHF = cx+rKim*Math.cos(radMui), yHF = cy+rKim*Math.sin(radMui);
-            let xHB = cx-rKim*Math.cos(radMui), yHB = cy-rKim*Math.sin(radMui);
-            html += `<line x1="${xHB.toFixed(1)}" y1="${yHB.toFixed(1)}" x2="${xHF.toFixed(1)}" y2="${yHF.toFixed(1)}" stroke="#ff0000" stroke-width="1.5"/>`;
-            html += arrow(radMui, xHF, yHF, "#ff0000");
-            if (showLabel) {
-                let xLH = cx+(r8Outer+40)*Math.cos(radMui), yLH = cy+(r8Outer+40)*Math.sin(radMui);
-                html += `<text x="${xLH.toFixed(1)}" y="${yLH.toFixed(1)}" font-size="${fontSize+3}" font-weight="800" fill="#ff0000" stroke="#fff" stroke-width="2.5" paint-order="stroke" text-anchor="middle" transform="rotate(${houseFacing} ${xLH.toFixed(1)} ${yLH.toFixed(1)})">▲ HƯỚNG NHÀ</text>`;
-            }
-            html += `<circle cx="${cx}" cy="${cy}" r="6" fill="#8b0000"/></g>`;
-            svg.innerHTML = html;
+        // ====================================================================
+        // 60 THẤU ĐỊA LONG — chỉ áp dụng cho 12 sơn Địa Chi (Tý, Sửu, Dần...); 12 sơn
+        // Thiên Can + Bát Quái (Giáp, Ất, Cấn...) KHÔNG có vạch Thấu Địa Long (để trống
+        // theo đúng tài liệu gốc). Mỗi Địa Chi có 5 vạch (Can Chi đầy đủ), mỗi vạch cách
+        // nhau 3° trong phạm vi 15° của sơn đó (bắt đầu từ start = goc sơn - 7.5°).
+        // ====================================================================
+        const THAU_DIA_LONG = {
+            "Tý":  ["Giáp","Bính","Mậu","Canh","Nhâm"],
+            "Sửu": ["Ất","Đinh","Kỷ","Tân","Quý"],
+            "Dần": ["Bính","Mậu","Canh","Nhâm","Giáp"],
+            "Mão": ["Đinh","Kỷ","Tân","Quý","Ất"],
+            "Thìn":["Mậu","Canh","Nhâm","Giáp","Bính"],
+            "Tị":  ["Kỷ","Tân","Quý","Ất","Đinh"],
+            "Ngọ": ["Canh","Nhâm","Giáp","Bính","Mậu"],
+            "Mùi": ["Tân","Quý","Ất","Đinh","Kỷ"],
+            "Thân":["Nhâm","Giáp","Bính","Mậu","Canh"],
+            "Dậu": ["Quý","Ất","Đinh","Kỷ","Tân"],
+            "Tuất":["Giáp","Bính","Mậu","Canh","Nhâm"],
+            "Hợi": ["Ất","Đinh","Kỷ","Tân","Quý"]
+        };
+        const DIA_CHI_SET = { "Tý":1,"Sửu":1,"Dần":1,"Mão":1,"Thìn":1,"Tị":1,"Ngọ":1,"Mùi":1,"Thân":1,"Dậu":1,"Tuất":1,"Hợi":1 };
+
+function veCompassChung(svgId, cx, cy, houseFacing, options) {
+    const svg = document.getElementById(svgId); if (!svg) return;
+    // THỨ TỰ TỪ TÂM RA NGOÀI:
+    // 8 hướng -> 24 sơn -> 60 Thấu Địa Long -> vạch chia độ -> số độ.
+    const {
+    // ---- VÒNG 8 HƯỚNG (trong cùng) ----
+    r8Outer=125, // Bán kính ngoài của vòng 8 hướng
+    r8Inner=84,
+    r8Text=100,
+    // ---- VÒNG 24 SƠN ----
+            r24Outer=355,
+            r24Inner=125,
+            r24Text=320,
+    // ---- VÒNG 60 THẤU ĐỊA LONG ----
+                rTdlOuter=410, // Bán kính ngoài của vòng 60 Long
+                rTdlInner=355, // Bán kính trong của vòng 60 Long (sát vòng 24 sơn)
+                rTdlTick=70,    // Chiều dài vạch chia 60 Long (tính từ rTdlOuter vào trong)
+            rDoTick=410, // Điểm bắt đầu vẽ vạch chia độ (tính từ tâm)
+            rDoText=450, // Vị trí đặt số độ (0°, 10°, 20°...)
+            rDoSo=430,// Bán kính ngoài cùng của la bàn (viền ngoài)
+    // ---- KIM CHỈ NAM & TIA ----
+            rTia=1400,
+            rTiaStart=35,
+            rKim=410, doMo=0.7,
+            mauTia=mauTiaHienTai, isReset=false, resetOffset=0, sonDen=null, sonDi=null,
+            showLabel=true, fontSize=15, mauRanh8=mauRanh8HienTai } = options || {};
+
+    let rTamTrong = rTiaStart;
+    let totalRotation = isReset ? resetOffset : 0;
+    let html = `<g transform="rotate(${totalRotation}, ${cx}, ${cy})">`;
+    html += `<circle cx="${cx}" cy="${cy}" r="${rDoSo}" fill="none" stroke="#5c4a3a" stroke-width="0.5" opacity="0.9"/>`;
+
+    // ---- VÒNG CHIA ĐỘ + SỐ ĐỘ (ngoài cùng) ----
+    for (let deg = 0; deg < 360; deg += 5) {
+        let rad = (deg - 90) * Math.PI / 180;
+        let isMajor = deg % 30 === 0;
+        let showDeg = deg % 10 === 0;
+        let rIn = isMajor ? rDoTick - 5 : rDoTick;
+        let x1 = cx + rIn * Math.cos(rad), y1 = cy + rIn * Math.sin(rad);
+        let x2 = cx + rDoSo * Math.cos(rad), y2 = cy + rDoSo * Math.sin(rad);
+        html += `<line x1="${x1.toFixed(1)}" y1="${y1.toFixed(1)}" x2="${x2.toFixed(1)}" y2="${y2.toFixed(1)}" stroke="#fff" stroke-width="${isMajor?3:2.4}" opacity="0.9"/>`;
+        html += `<line x1="${x1.toFixed(1)}" y1="${y1.toFixed(1)}" x2="${x2.toFixed(1)}" y2="${y2.toFixed(1)}" stroke="#d40606" stroke-width="${isMajor?1.5:1.2}" opacity="1"/>`;// vạch chia độ
+        if (showDeg) {
+            let xt = cx + rDoText * Math.cos(rad), yt = cy + rDoText * Math.sin(rad);
+            html += `<text x="${xt.toFixed(1)}" y="${yt.toFixed(1)}" font-size="${fontSize+2}" font-weight="600" fill="#2a2a2a" stroke="#fff" stroke-width="2" paint-order="stroke" text-anchor="middle" dominant-baseline="middle" transform="rotate(${deg} ${xt.toFixed(1)} ${yt.toFixed(1)})">${deg}</text>`;
         }
+    }
+
+        // ---- VÒNG 60 THẤU ĐỊA LONG - VẠCH BIÊN + CHỮ XUYÊN TÂM ----
+        html += `<circle cx="${cx}" cy="${cy}" r="${rTdlOuter}" fill="rgba(253,250,242,${doMo*0.6})" stroke="#3a2a1a" stroke-width="0.5" opacity="${Math.max(0.3,doMo)}"/>`;
+        html += `<circle cx="${cx}" cy="${cy}" r="${rTdlInner}" fill="none" stroke="#5c4a3a" stroke-width="0.5" opacity="0.6"/>`;
+        let rTdlText = rTdlInner + 5;
+
+        DS24_SON.forEach(s => {
+            // Vạch ranh giới sơn (biên trái và phải)
+            let rbTdl = (s.goc - 7.5 - 90) * Math.PI / 180;
+            let x1t = cx + (rTdlOuter - rTdlTick) * Math.cos(rbTdl), y1t = cy + (rTdlOuter - rTdlTick) * Math.sin(rbTdl);
+            let x2t = cx + rTdlOuter * Math.cos(rbTdl), y2t = cy + rTdlOuter * Math.sin(rbTdl);
+            html += `<line x1="${x1t.toFixed(1)}" y1="${y1t.toFixed(1)}" x2="${x2t.toFixed(1)}" y2="${y2t.toFixed(1)}" stroke="#2a2a2a" stroke-width="1.5"/>`;
+
+            // Nếu là Địa Chi, vẽ 5 vạch biên
+            if (!DIA_CHI_SET[s.ten]) return;
+            let ten5 = THAU_DIA_LONG[s.ten];
+            if (!ten5) return;
+
+            for (let k = 0; k < 5; k++) {
+                let degK = s.goc - 7.5 + 3 + k * 3;
+                let radK = (degK - 90) * Math.PI / 180;
+
+                // VẠCH BIÊN 60 LONG
+                let xk1 = cx + (rTdlOuter - rTdlTick * 0.7) * Math.cos(radK), yk1 = cy + (rTdlOuter - rTdlTick * 0.7) * Math.sin(radK);
+                let xk2 = cx + rTdlOuter * Math.cos(radK), yk2 = cy + rTdlOuter * Math.sin(radK);
+                html += `<line x1="${xk1.toFixed(1)}" y1="${yk1.toFixed(1)}" x2="${xk2.toFixed(1)}" y2="${yk2.toFixed(1)}" stroke="${mauTia}" stroke-width="0.5"/>`;
+                html += `<line x1="${xk1.toFixed(1)}" y1="${yk1.toFixed(1)}" x2="${xk2.toFixed(1)}" y2="${yk2.toFixed(1)}" stroke="#ffffff" stroke-width="1" opacity="0.2"/>`;
+
+                // ===== TÊN 60 LONG - VIẾT XUYÊN TÂM (CHỮ ĐỨNG THEO BÁN KÍNH) =====
+                let degCenter = s.goc - 7.5 + 1.5 + k * 3;
+                let radCenter = (degCenter - 90) * Math.PI / 180;
+                let xkt = cx + rTdlText * Math.cos(radCenter), ykt = cy + rTdlText * Math.sin(radCenter);
+
+                let tenDayDu = ten5[k];
+                let tenHienThi = tenDayDu; //.replace(/\s/g, '');
+                let fontSizeTdl = fontSize * 0.9;
+
+                // XOAY CHỮ: degCenter - 90 để chữ đứng dọc theo bán kính
+                let gocXoay = degCenter - 90;
+                html += `<g transform="rotate(${gocXoay.toFixed(2)} ${xkt.toFixed(1)} ${ykt.toFixed(1)})">`;
+                html += `<text x="${xkt.toFixed(1)}" y="${ykt.toFixed(1)}" font-size="${fontSizeTdl.toFixed(1)}" font-weight="700" fill="#2a2a2a" stroke="#fff" stroke-width="2" paint-order="stroke" text-anchor="start" dominant-baseline="middle">${tenHienThi}</text>`;
+                html += `</g>`;
+            }
+        });
+
+    // ---- VÒNG 24 SƠN ----
+    html += `<circle cx="${cx}" cy="${cy}" r="${r24Outer}" fill="rgba(253,250,242,${doMo*0.85})" stroke="#3a2a1a" stroke-width="0.5" opacity="${Math.max(0.3,doMo)}"/>`;
+    html += `<circle cx="${cx}" cy="${cy}" r="${r24Inner}" fill="none" stroke="#5c4a3a" stroke-width="0.5" opacity="0.7"/>`;
+
+    function wedge(tenSon, mauNen, mauVien) {
+        let s = DS24_SON.find(x => x.ten === tenSon); if (!s) return "";
+        let rs = (s.goc - 7.5 - 90)*Math.PI/180, re = (s.goc + 7.5 - 90)*Math.PI/180;
+        let xsO = cx+r24Outer*Math.cos(rs), ysO = cy+r24Outer*Math.sin(rs);
+        let xeO = cx+r24Outer*Math.cos(re), yeO = cy+r24Outer*Math.sin(re);
+        let xsI = cx+r24Inner*Math.cos(re), ysI = cy+r24Inner*Math.sin(re);
+        let xeI = cx+r24Inner*Math.cos(rs), yeI = cy+r24Inner*Math.sin(rs);
+        return `<path d="M${xsO.toFixed(1)},${ysO.toFixed(1)} A${r24Outer},${r24Outer} 0 0,1 ${xeO.toFixed(1)},${yeO.toFixed(1)} L${xsI.toFixed(1)},${ysI.toFixed(1)} A${r24Inner},${r24Inner} 0 0,0 ${xeI.toFixed(1)},${yeI.toFixed(1)} Z" fill="${mauNen}" stroke="${mauVien}" stroke-width="2"/>`;
+    }
+    if (sonDen) html += wedge(sonDen, "rgba(33,150,243,0.38)", "#1565c0");
+    if (sonDi) html += wedge(sonDi, "rgba(255,152,0,0.38)", "#e65100");
+    let sonHuong = timSonTheoGoc(houseFacing).ten;
+    html += wedge(sonHuong, "rgba(244,67,54,0.30)", "#b71c1c");
+
+    // Tia và nhãn 24 sơn
+    DS24_SON.forEach(s => {
+        let rb = (s.goc - 7.5 - 90)*Math.PI/180;
+        let xXa = cx + rTia*Math.cos(rb), yXa = cy + rTia*Math.sin(rb);
+        let xTiaStart = cx + rTamTrong*Math.cos(rb), yTiaStart = cy + rTamTrong*Math.sin(rb);
+        html += `<line x1="${xTiaStart.toFixed(1)}" y1="${yTiaStart.toFixed(1)}" x2="${xXa.toFixed(1)}" y2="${yXa.toFixed(1)}" stroke="${mauTia}" stroke-width="0.5" opacity="0.9"/>`;
+        let x1b = cx+(r24Outer-3)*Math.cos(rb), y1b = cy+(r24Outer-3)*Math.sin(rb);
+        let x2b = cx+r24Outer*Math.cos(rb), y2b = cy+r24Outer*Math.sin(rb);
+        html += `<line x1="${x1b.toFixed(1)}" y1="${y1b.toFixed(1)}" x2="${x2b.toFixed(1)}" y2="${y2b.toFixed(1)}" stroke="#5c4a3a" stroke-width="2"/>`;
+        let r = (s.goc-90)*Math.PI/180, xt = cx+r24Text*Math.cos(r), yt = cy+r24Text*Math.sin(r);
+        html += `<g transform="rotate(${s.goc} ${xt.toFixed(1)} ${yt.toFixed(1)})"><text x="${xt.toFixed(1)}" y="${yt.toFixed(1)}" font-size="${fontSize}" font-weight="800" fill="#7a1010" stroke="#ffffff" stroke-width="3" paint-order="stroke" text-anchor="middle" dominant-baseline="middle">${s.ten}</text></g>`;
+    });
+
+    // ---- VÒNG 8 HƯỚNG ----
+    DS8_HUONG.forEach((h, i) => {
+        let rs = (h.goc - 22.5 - 90) * Math.PI / 180, re = (h.goc + 22.5 - 90) * Math.PI / 180;
+        let xS = cx + r8Outer*Math.cos(rs), yS = cy + r8Outer*Math.sin(rs);
+        let xE = cx + r8Outer*Math.cos(re), yE = cy + r8Outer*Math.sin(re);
+        let html8;
+        if (r8Inner <= 0) {
+            html8 = `<path d="M${cx},${cy} L${xS.toFixed(1)},${yS.toFixed(1)} A${r8Outer},${r8Outer} 0 0,1 ${xE.toFixed(1)},${yE.toFixed(1)} Z" fill="${MAU_BAT_QUAI[i]}" opacity="0.55" stroke="${mauRanh8}" stroke-width="0.1" stroke-opacity="0.5"/>`;
+        } else {
+            let xSi = cx + r8Inner*Math.cos(re), ySi = cy + r8Inner*Math.sin(re);
+            let xEi = cx + r8Inner*Math.cos(rs), yEi = cy + r8Inner*Math.sin(rs);
+            html8 = `<path d="M${xS.toFixed(1)},${yS.toFixed(1)} A${r8Outer},${r8Outer} 0 0,1 ${xE.toFixed(1)},${yE.toFixed(1)} L${xSi.toFixed(1)},${ySi.toFixed(1)} A${r8Inner},${r8Inner} 0 0,0 ${xEi.toFixed(1)},${yEi.toFixed(1)} Z" fill="${MAU_BAT_QUAI[i]}" opacity="0.55" stroke="${mauRanh8}" stroke-width="0.1" stroke-opacity="0.5"/>`;
+        }
+        html += html8;
+        let rc = (h.goc - 90) * Math.PI / 180, xt = cx + r8Text*Math.cos(rc), yt = cy + r8Text*Math.sin(rc);
+        let isMain = h.goc % 90 === 0;
+        html += `<text x="${xt.toFixed(1)}" y="${yt.toFixed(1)}" font-size="${isMain?fontSize+2:fontSize}" font-weight="700" fill="${isMain?'#8b4500':'#1a1a1a'}" stroke="#fff" stroke-width="2.0" paint-order="stroke" text-anchor="middle" dominant-baseline="middle" transform="rotate(${h.goc} ${xt.toFixed(1)} ${yt.toFixed(1)})">${h.ten}</text>`;
+    });
+
+    // Tia ranh 8 hướng
+    DS8_HUONG.forEach((h) => {
+        let aBien = (h.goc - 22.5 - 90) * Math.PI / 180;
+        let xOut = cx + rTia*Math.cos(aBien), yOut = cy + rTia*Math.sin(aBien);
+        let xTiaStart2 = cx + rTamTrong*Math.cos(aBien), yTiaStart2 = cy + rTamTrong*Math.sin(aBien);
+        html += `<line x1="${xTiaStart2.toFixed(1)}" y1="${yTiaStart2.toFixed(1)}" x2="${xOut.toFixed(1)}" y2="${yOut.toFixed(1)}" stroke="${mauRanh8}" stroke-width="1.5" opacity="0.9"/>`;
+    });
+
+    // Kim chỉ nam (cố định)
+    let radMui = (houseFacing-90)*Math.PI/180, radVG = radMui + Math.PI/2;
+    let xVG1 = cx+rTia*Math.cos(radVG), yVG1 = cy+rTia*Math.sin(radVG);
+    let xVG2 = cx-rTia*Math.cos(radVG), yVG2 = cy-rTia*Math.sin(radVG);
+    html += `<line x1="${xVG1.toFixed(1)}" y1="${yVG1.toFixed(1)}" x2="${xVG2.toFixed(1)}" y2="${yVG2.toFixed(1)}" stroke="#00c8c8" stroke-width="1.5" opacity="1"/>`;
+
+    function arrow(rad, xTip, yTip, mau) {
+        let tl=17, ta=0.29;//tl = chiều dài cánh, ta = góc mở
+        let x1a = xTip-tl*Math.cos(rad-ta), y1a = yTip-tl*Math.sin(rad-ta);
+        let x2a = xTip-tl*Math.cos(rad+ta), y2a = yTip-tl*Math.sin(rad+ta);
+        return `<polygon points="${xTip.toFixed(1)},${yTip.toFixed(1)} ${x1a.toFixed(1)},${y1a.toFixed(1)} ${x2a.toFixed(1)},${y2a.toFixed(1)}" fill="${mau}" opacity="0.9"/>`;
+    }
+    let radTy = (0-90)*Math.PI/180;
+    let xTyF = cx+rKim*Math.cos(radTy), yTyF = cy+rKim*Math.sin(radTy);
+    let xTyB = cx-rKim*Math.cos(radTy), yTyB = cy-rKim*Math.sin(radTy);
+    html += `<line x1="${xTyB.toFixed(1)}" y1="${yTyB.toFixed(1)}" x2="${xTyF.toFixed(1)}" y2="${yTyF.toFixed(1)}" stroke="#FFD700" stroke-width="1.8" opacity="0.9"/>`;
+    html += arrow(radTy, xTyF, yTyF, "#FFD700");
+    let xHF = cx+rKim*Math.cos(radMui), yHF = cy+rKim*Math.sin(radMui);
+    let xHB = cx-rKim*Math.cos(radMui), yHB = cy-rKim*Math.sin(radMui);
+    html += `<line x1="${xHB.toFixed(1)}" y1="${yHB.toFixed(1)}" x2="${xHF.toFixed(1)}" y2="${yHF.toFixed(1)}" stroke="#00c8c8" stroke-width="1.8"/>`;
+    html += arrow(radMui, xHF, yHF, "#00c8c8");
+    if (showLabel) {
+        let xLH = cx+(rDoSo+40)*Math.cos(radMui), yLH = cy+(rDoSo+40)*Math.sin(radMui);
+        html += `<text x="${xLH.toFixed(1)}" y="${yLH.toFixed(1)}" font-size="${fontSize+3}" font-weight="800" fill="#ff0000" stroke="#fff" stroke-width="1.5" paint-order="stroke" text-anchor="middle" transform="rotate(${houseFacing} ${xLH.toFixed(1)} ${yLH.toFixed(1)})">▲ HƯỚNG NHÀ</text>`;
+    }
+    // Chấm đỏ tâm (nền trắng mờ)
+    html += `<circle cx="${cx}" cy="${cy}" r="7" fill="#ff1a1a" stroke="#ffffff" stroke-width="2.5"/></g>`;
+    svg.innerHTML = html;
+}
  // xoay cửu cung
         const BEARING_CUA_CUNG = {"Khảm":0,"Cấn":45,"Chấn":90,"Tốn":135,"Ly":180,"Khôn":225,"Đoài":270,"Càn":315};
         const CUNG_SO_TO_TEN2 = {1:"Khảm",2:"Khôn",3:"Chấn",4:"Tốn",5:"Trung",6:"Càn",7:"Đoài",8:"Cấn",9:"Ly"};
@@ -200,7 +314,15 @@ const DS24_SON = [
         window.boTriLuoiTheoHuong = boTriLuoiTheoHuong;
         //=======Kết thúc củu cung xoay
 
-        var huongHienTai = 180, tpFontSize = 18;
+        // Đọc font-size ban đầu từ chính input HTML (#tpFontSize) thay vì hardcode — để thay đổi
+        // value trong index.html (vd 10 -> 17) có tác dụng ngay khi tải trang, không cần đợi người
+        // dùng kéo thanh trượt mới cập nhật.
+        var _tpFontSizeInputEl = document.getElementById("tpFontSize");
+        var huongHienTai = 180, tpFontSize = _tpFontSizeInputEl ? (parseInt(_tpFontSizeInputEl.value) || 18) : 18;
+        (function () {
+            var lbl = document.getElementById("tpFontSizeLabel");
+            if (lbl) lbl.textContent = tpFontSize + "px";
+        })();
 
         function capNhatHuongTuDoSo() {
             let val = parseFloat(document.getElementById("doSoTay").value) || 0; huongHienTai = val;
@@ -483,3 +605,64 @@ function dongBoCuuCungSangTamNha() {
     alert("✅ Đã đồng bộ khung nhà + " + newRooms.length + " phòng + cửa từ Cửu Cung Lưới sang Tâm Nhà (" + newVertices.length + " đỉnh — cạnh AB = Đ1→Đ2 bên Cửu Cung Lưới), và tính lại tâm nhà. Dữ liệu cũ bên Tâm Nhà đã bị ghi đè.");
 }
 window.dongBoCuuCungSangTamNha = dongBoCuuCungSangTamNha;
+
+// ====================================================================
+// CUNG MỆNH GIA CHỦ — tính theo năm sinh DƯƠNG LỊCH (cách rút gọn, không qua Can Chi/Tam Nguyên).
+// Cách tính: cộng các chữ số năm sinh -> nếu >9 cộng tiếp cho tới 1 chữ số; nếu chia hết cho 9 thì
+// lấy 9 (không lấy 0). Tra bảng Nam/Nữ ra Quái số (1-9) rồi ra Cung Bát Quái tương ứng.
+// Dùng chung toàn app: mọi module (Nội Khí, Thông Tin, Hà-Lạc Luận...) đều gọi window.tinhMenhQuai.
+// ====================================================================
+const BANG_MENH_QUAI_THEO_SO = {
+    // so (1-9): { nam: {quaiSo, cung}, nu: {quaiSo, cung} }
+    1: { nam: { quaiSo: 1, cung: "Khảm" }, nu: { quaiSo: 8, cung: "Cấn" } },
+    2: { nam: { quaiSo: 9, cung: "Ly" }, nu: { quaiSo: 6, cung: "Càn" } },
+    3: { nam: { quaiSo: 8, cung: "Cấn" }, nu: { quaiSo: 7, cung: "Đoài" } },
+    4: { nam: { quaiSo: 7, cung: "Đoài" }, nu: { quaiSo: 8, cung: "Cấn" } },
+    5: { nam: { quaiSo: 6, cung: "Càn" }, nu: { quaiSo: 9, cung: "Ly" } },
+    6: { nam: { quaiSo: 2, cung: "Khôn" }, nu: { quaiSo: 1, cung: "Khảm" } },
+    7: { nam: { quaiSo: 3, cung: "Chấn" }, nu: { quaiSo: 2, cung: "Khôn" } },
+    8: { nam: { quaiSo: 2, cung: "Khôn" }, nu: { quaiSo: 3, cung: "Chấn" } },
+    9: { nam: { quaiSo: 4, cung: "Tốn" }, nu: { quaiSo: 9, cung: "Ly" } }
+};
+// Nhóm Đông tứ mệnh / Tây tứ mệnh theo Cung
+const NHOM_DONG_TAY_TU_MENH = {
+    "Khảm": "Đông Tứ Mệnh", "Ly": "Đông Tứ Mệnh", "Chấn": "Đông Tứ Mệnh", "Tốn": "Đông Tứ Mệnh",
+    "Càn": "Tây Tứ Mệnh", "Khôn": "Tây Tứ Mệnh", "Cấn": "Tây Tứ Mệnh", "Đoài": "Tây Tứ Mệnh"
+};
+// Ngũ hành theo Cung (Hậu Thiên Bát Quái) — dùng riêng cho module này, tách khỏi HANH_CUA_CUNG bên
+// phi-tinh.js để tinhMenhQuai không phụ thuộc thứ tự nạp file (shared.js có thể được nạp trước).
+const HANH_CUA_CUNG_MENH = { "Khảm": "Thủy", "Khôn": "Thổ", "Chấn": "Mộc", "Tốn": "Mộc", "Càn": "Kim", "Đoài": "Kim", "Cấn": "Thổ", "Ly": "Hỏa" };
+
+function tinhTongChuSoVeMotChuSo(soNam) {
+    let n = Math.abs(parseInt(soNam) || 0);
+    if (n === 0) return 0;
+    let tong = String(n).split("").reduce((s, ch) => s + (parseInt(ch) || 0), 0);
+    while (tong > 9) {
+        tong = String(tong).split("").reduce((s, ch) => s + (parseInt(ch) || 0), 0);
+    }
+    return tong === 0 ? 9 : tong; // tổng rút gọn = 0 chỉ xảy ra khi tổng gốc chia hết cho 9 -> quy ước lấy 9
+}
+
+// Trả về { namSinh, gioiTinh, soRutGon, quaiSo, cung, hanh, nhom } hoặc null nếu năm sinh không hợp lệ.
+function tinhMenhQuai(namSinhDuongLich, gioiTinh) {
+    let nam = parseInt(namSinhDuongLich);
+    if (!nam || isNaN(nam)) return null;
+    let soRutGon = tinhTongChuSoVeMotChuSo(nam);
+    let hang = BANG_MENH_QUAI_THEO_SO[soRutGon];
+    if (!hang) return null;
+    let gt = (gioiTinh === "nu") ? "nu" : "nam";
+    let ket = hang[gt];
+    let cung = ket.cung;
+    let hanh = HANH_CUA_CUNG_MENH[cung];
+    let nhom = NHOM_DONG_TAY_TU_MENH[cung];
+    return {
+        namSinh: nam,
+        gioiTinh: gt,
+        soRutGon: soRutGon,
+        quaiSo: ket.quaiSo,
+        cung: cung,
+        hanh: hanh,
+        nhom: nhom
+    };
+}
+window.tinhMenhQuai = tinhMenhQuai;

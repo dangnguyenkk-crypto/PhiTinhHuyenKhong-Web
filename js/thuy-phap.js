@@ -28,9 +28,16 @@
             // tròn (đúng như veCompassChung trong shared.js mong đợi ở tham số fontSize, mặc định 10).
             // Với 2 kiểu la bàn mới (vuông 9 ô, đa giác nhà) vốn dùng cỡ chữ cơ sở khác, ta suy ra một
             // HỆ SỐ NHÂN từ tpFontSize/10 để áp dụng tương ứng — giữ đúng UX cũ cho la bàn tròn khi
-            // người dùng chưa từng đụng vào thanh trượt (mặc định 10 → hệ số 1.0, không đổi gì).
-            let tpFontSize = 10;
+            // người dùng chưa từng đụng vào thanh trượt.
+            // Khởi tạo ĐỌC TRỰC TIẾP từ input HTML #tpFontSize (thay vì hardcode 10) — để đổi value
+            // trong index.html có tác dụng ngay khi tải trang, không cần chạm vào thanh trượt trước.
+            let _tpFontSizeInputElTP = document.getElementById("tpFontSize");
+            let tpFontSize = _tpFontSizeInputElTP ? (parseFloat(_tpFontSizeInputElTP.value) || 10) : 10;
             function tpFontScale() { return tpFontSize / 10; }
+            (function () {
+                let label = document.getElementById("tpFontSizeLabel");
+                if (label) label.textContent = tpFontSize + "px";
+            })();
             window.capNhatFontSizeThuyPhap = function(val) {
                 tpFontSize = parseFloat(val) || 10;
                 let label = document.getElementById("tpFontSizeLabel");
@@ -281,8 +288,9 @@
                 const cx = 500, cy = 500;
                 const sonDen = document.getElementById("selSonDen")?.value, sonDi = document.getElementById("selSonDi")?.value;
                 veCompassChung("compassSvg", cx, cy, houseFacing, {
-                    rDoSo:430,rDoTick:410,rDoText:390,r8Outer:360,r8Inner:300,r8Text:330,r24Outer:270,r24Inner:170,r24Text:220,
-                    rTia:1400,rKim:420,doMo:doMoNenLaBan,mauTia:mauTiaHienTai,isReset:isResetMode,
+                    // Bán kính KHÔNG truyền cứng nữa — để veCompassChung() tự dùng default mới (8 hướng
+                    // trong cùng -> 24 sơn -> vạch chia độ -> số độ), tránh đè lên thay đổi trong shared.js.
+                    doMo:doMoNenLaBan,mauTia:mauTiaHienTai,isReset:isResetMode,
                     resetOffset:isResetMode?-houseFacing:0,sonDen:sonDen,sonDi:sonDi,showLabel:true,fontSize:tpFontSize,mauRanh8:mauRanh8HienTai
                 });
                 // (Đã bỏ kiểu "vuông 9 ô" — chỉ còn Tròn 24 sơn ↔ Đa giác nhà.)
@@ -457,8 +465,12 @@
                 function getClientPos(e) { return e.touches ? {x:e.touches[0].clientX,y:e.touches[0].clientY} : {x:e.clientX,y:e.clientY}; }
                 function getTouchDist(t0, t1) { return Math.hypot(t1.clientX - t0.clientX, t1.clientY - t0.clientY); }
                 function isImageMode() { let img = document.getElementById('mapImage'); return img && img.style.display !== 'none'; }
+                // Cho phép kéo/pinch bằng tay ở CẢ 2 chế độ: ảnh tĩnh (isImageMode) VÀ Maps sống
+                // (dangODoiMaps). Trước đây hàm này chỉ hoạt động ở chế độ ảnh — khiến chế độ Maps
+                // không kéo/zoom bằng gesture được (chỉ dùng được nút mũi tên qua panAnhNenThuyPhap).
+                function isPanZoomEnabled() { return isImageMode() || dangODoiMaps(); }
                 function start(e) {
-                    if (laBanDaKhoa || !isImageMode()) return;
+                    if (laBanDaKhoa || !isPanZoomEnabled()) return;
                     if (e.target.closest && e.target.closest('button')) return; // không bắt đầu kéo khi chạm vào nút
                     if (e.touches && e.touches.length === 2) {
                         pinching = true; dragging = false;
@@ -470,7 +482,18 @@
                     dragging = true; let p = getClientPos(e); lastX = p.x; lastY = p.y;
                 }
                 function move(e) {
-                    if (laBanDaKhoa || !isImageMode()) return;
+                    if (laBanDaKhoa || !isPanZoomEnabled()) return;
+                    if (dangODoiMaps()) {
+                        // Chế độ Maps: kéo tay -> map.panBy() trực tiếp trên Leaflet (không có ảnh tĩnh
+                        // để dịch offset). Pinch 2 ngón để Leaflet tự xử lý zoom gốc của nó (không can
+                        // thiệp imgScale vì bản đồ sống không dùng imgScale).
+                        if (!dragging || !map) return;
+                        let p = getClientPos(e);
+                        map.panBy([lastX - p.x, lastY - p.y]);
+                        lastX = p.x; lastY = p.y;
+                        e.preventDefault();
+                        return;
+                    }
                     if (pinching && e.touches && e.touches.length === 2) {
                         let dist = getTouchDist(e.touches[0], e.touches[1]);
                         imgScale = Math.max(0.2, Math.min(6, pinchStartScale * (dist / pinchStartDist)));
@@ -493,10 +516,15 @@
                 stage.addEventListener("mousedown", start); stage.addEventListener("touchstart", start, {passive:false});
                 window.addEventListener("mousemove", move); window.addEventListener("touchmove", move, {passive:false});
                 window.addEventListener("mouseup", end); window.addEventListener("touchend", end);
-                // Zoom bằng lăn chuột (desktop)
+                // Zoom bằng lăn chuột (desktop) — ở chế độ Maps dùng map.setZoom(), ở chế độ ảnh dùng imgScale.
                 stage.addEventListener("wheel", function(e) {
-                    if (laBanDaKhoa || !isImageMode()) return;
+                    if (laBanDaKhoa || !isPanZoomEnabled()) return;
                     e.preventDefault();
+                    if (dangODoiMaps()) {
+                        if (!map) return;
+                        if (e.deltaY < 0) map.zoomIn(); else map.zoomOut();
+                        return;
+                    }
                     let factor = e.deltaY < 0 ? 1.1 : (1 / 1.1);
                     imgScale = Math.max(0.2, Math.min(6, imgScale * factor));
                     capNhatViTriAnhNen();

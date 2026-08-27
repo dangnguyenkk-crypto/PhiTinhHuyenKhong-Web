@@ -120,6 +120,9 @@
                 </div>
             </div>
             <div class="button-row"><button id="btnXem" onclick="tinhToanPhiTinh()">XEM SƠ ĐỒ CỬU CUNG</button></div>
+            <div id="canhBaoChuaCapNhat" style="display:none;background:#fff3e0;color:#e65100;border:1.5px solid #ff9800;border-radius:6px;padding:6px 10px;margin:6px 0 0;font-size:12.5px;font-weight:600;text-align:center;">
+                ⚠️ Thông số đã thay đổi — bấm "XEM SƠ ĐỒ CỬU CUNG" để cập nhật kết quả bên dưới
+            </div>
         </div>
         <div class="compass-outer-wrapper">
             <div class="compass-wrapper">
@@ -241,15 +244,15 @@
             <div style="display:flex; gap:6px; flex-wrap:wrap; margin-bottom:6px; align-items:flex-end;">
                 <div style="flex:2; min-width:100px;"><label style="font-size:10px; display:block; margin-bottom:1px;">🔤 Cỡ chữ</label>
                     <div style="display:flex; align-items:center; gap:4px;">
-                        <input type="range" id="tpFontSize" min="4" max="24" value="10" style="flex:1; padding:0; height:4px; cursor:pointer;" oninput="capNhatFontSizeThuyPhap(this.value)">
-                        <span id="tpFontSizeLabel" style="font-size:11px; color:#444; min-width:24px; text-align:center; font-weight:bold;">10</span>
+                        <input type="range" id="tpFontSize" min="8" max="28" value="17" style="flex:1; padding:0; height:4px; cursor:pointer;" oninput="capNhatFontSizeThuyPhap(this.value)">
+                        <span id="tpFontSizeLabel" style="font-size:11px; color:#444; min-width:24px; text-align:center; font-weight:bold;">17</span>
                     </div>
                 </div>
                 <div style="flex:1; min-width:70px;"><label style="font-size:10px; display:block; margin-bottom:1px;">🎨 Màu tia</label>
-                    <input type="color" id="colorTiaNetDut" value="#5c4a3a" style="height:26px; padding:2px; cursor:pointer; width:100%; max-width:80px;" oninput="capNhatMauTia()" onchange="capNhatMauTia()">
+                    <input type="color" id="colorTiaNetDut" value="#e91e63" style="height:26px; padding:2px; cursor:pointer; width:100%; max-width:80px;" oninput="capNhatMauTia()" onchange="capNhatMauTia()">
                 </div>
                 <div style="flex:1; min-width:70px;"><label style="font-size:10px; display:block; margin-bottom:1px;">🎨 Ranh 8</label>
-                    <input type="color" id="colorRanh8Huong" value="#ff0000" style="height:26px; padding:2px; cursor:pointer; width:100%; max-width:80px;" oninput="capNhatMauRanh8()" onchange="capNhatMauRanh8()">
+                    <input type="color" id="colorRanh8Huong" value="#1565c0" style="height:26px; padding:2px; cursor:pointer; width:100%; max-width:80px;" oninput="capNhatMauRanh8()" onchange="capNhatMauRanh8()">
                 </div>
             </div>
             <div style="display:flex; gap:6px; flex-wrap:wrap;">
@@ -312,11 +315,11 @@
                 </div>
                 <div style="flex:1; min-width:70px;">
                     <label style="font-size:10px; display:block; margin-bottom:1px; font-weight:600; color:#444;">🎨 Màu tia</label>
-                    <input type="color" id="tnColorTia" value="#5c4a3a" style="height:24px; padding:2px; cursor:pointer; width:100%; max-width:70px;" oninput="capNhatMauTiaTamNha()" onchange="capNhatMauTiaTamNha()">
+                    <input type="color" id="tnColorTia" value="#e91e63" style="height:24px; padding:2px; cursor:pointer; width:100%; max-width:70px;" oninput="capNhatMauTiaTamNha()" onchange="capNhatMauTiaTamNha()">
                 </div>
                 <div style="flex:1; min-width:70px;">
                     <label style="font-size:10px; display:block; margin-bottom:1px; font-weight:600; color:#444;">🎨 Ranh 8</label>
-                    <input type="color" id="tnColorRanh8Huong" value="#2bff00" style="height:24px; padding:2px; cursor:pointer; width:100%; max-width:70px;" oninput="capNhatMauRanh8TamNha()" onchange="capNhatMauRanh8TamNha()">
+                    <input type="color" id="tnColorRanh8Huong" value="#1565c0" style="height:24px; padding:2px; cursor:pointer; width:100%; max-width:70px;" oninput="capNhatMauRanh8TamNha()" onchange="capNhatMauRanh8TamNha()">
                 </div>
                 <div style="flex:1; min-width:70px;">
                     <label style="font-size:10px; display:block; margin-bottom:1px; font-weight:600; color:#444;">🔄 Xoay ảnh</label>

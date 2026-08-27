@@ -491,6 +491,21 @@
           sonTinhText.setAttribute("title", "Sao Thế Sơn tinh: " + window.banSaoTheSonHienTai.soThe + " (đã thay sao gốc)");
         }
 
+        // Thành Môn đắc khí tại cung này (nếu có) — chèn biểu tượng ⛩️ ngay giữa S và H, cùng dòng.
+        var thanhMonHuongK = (window.phiTinhThanhMon || []).find(function (tm) { return tm.quai === BATQUAI_NAMES[k]; });
+        if (thanhMonHuongK) {
+          var tmTextK = document.createElementNS("http://www.w3.org/2000/svg", "text");
+          tmTextK.setAttribute("class", "thanh-mon-icon");
+          tmTextK.setAttribute("x", hx.toFixed(2)); tmTextK.setAttribute("y", (hy - scaledOffsetFn(10)).toFixed(2));
+          tmTextK.setAttribute("text-anchor", "middle");
+          tmTextK.textContent = "⛩️";
+          getScaledFontSizeFn(tmTextK, 8);
+          var tmTitleK = document.createElementNS("http://www.w3.org/2000/svg", "title");
+          tmTitleK.textContent = "Thành Môn " + thanhMonHuongK.loai + " đắc khí" + (thanhMonHuongK.sonThanhMon ? " tại sơn " + thanhMonHuongK.sonThanhMon : "");
+          tmTextK.appendChild(tmTitleK);
+          g.appendChild(tmTextK);
+        }
+
         var huongTinhText = document.createElementNS("http://www.w3.org/2000/svg", "text");
         huongTinhText.setAttribute("class", "huong-huong-tinh");
         huongTinhText.setAttribute("x", (hx + scaledOffsetFn(16)).toFixed(2)); huongTinhText.setAttribute("y", (hy - scaledOffsetFn(10)).toFixed(2));
@@ -584,6 +599,22 @@
       g.appendChild(centerSonTinhText);
       if (banTheSonTrung != null) {
         centerSonTinhText.setAttribute("title", "Sao Thế Sơn tinh: " + window.banSaoTheSonHienTai.soThe + " (đã thay sao gốc)");
+      }
+
+      // Thành Môn đắc khí tại Trung cung (nếu có, hiếm khi Thành Môn rơi đúng Trung cung nhưng vẫn
+      // xử lý cho đầy đủ) — chèn ⛩️ giữa S và H, cùng dòng, giống hệt logic tại 8 hướng bát quái.
+      var thanhMonTrung = (window.phiTinhThanhMon || []).find(function (tm) { return tm.quai === "Trung"; });
+      if (thanhMonTrung) {
+        var tmTextTrung = document.createElementNS("http://www.w3.org/2000/svg", "text");
+        tmTextTrung.setAttribute("class", "thanh-mon-icon");
+        tmTextTrung.setAttribute("x", center.x.toFixed(2)); tmTextTrung.setAttribute("y", (center.y - scaledOffsetFn(8)).toFixed(2));
+        tmTextTrung.setAttribute("text-anchor", "middle");
+        tmTextTrung.textContent = "⛩️";
+        getScaledFontSizeFn(tmTextTrung, 8);
+        var tmTitleTrung = document.createElementNS("http://www.w3.org/2000/svg", "title");
+        tmTitleTrung.textContent = "Thành Môn " + thanhMonTrung.loai + " đắc khí" + (thanhMonTrung.sonThanhMon ? " tại sơn " + thanhMonTrung.sonThanhMon : "");
+        tmTextTrung.appendChild(tmTitleTrung);
+        g.appendChild(tmTextTrung);
       }
 
       var centerHuongTinhText = document.createElementNS("http://www.w3.org/2000/svg", "text");

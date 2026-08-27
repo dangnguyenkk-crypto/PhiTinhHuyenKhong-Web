@@ -1215,10 +1215,10 @@ function tongKetToanNha(van, ketQua9Cung, sb, sf, hf, hb, bVan, cungToa, cungHuo
                 }
             }
             if (dsCap14.length > 0 || dsCap16.length > 0) {
-                let dong14 = dsCap14.length ? `<div style="margin-top:4px;">${TEN_CAP_14_16["1-4"].icon} <b>${TEN_CAP_14_16["1-4"].ten}</b> — ${TEN_CAP_14_16["1-4"].moTa}<br>Có <b>${dsCap14.length}</b> cặp tại: ${dsCap14.map(d=>`${d.cung} <span style="opacity:0.55;font-size:0.85em;">(số gốc ${d.soGoc})</span> [${d.cap}]`).join(", ")}</div>` : "";
-                let dong16 = dsCap16.length ? `<div style="margin-top:4px;">${TEN_CAP_14_16["1-6"].icon} <b>${TEN_CAP_14_16["1-6"].ten}</b> — ${TEN_CAP_14_16["1-6"].moTa}<br>Có <b>${dsCap16.length}</b> cặp tại: ${dsCap16.map(d=>`${d.cung} <span style="opacity:0.55;font-size:0.85em;">(số gốc ${d.soGoc})</span> [${d.cap}]`).join(", ")}</div>` : "";
+                let dong14 = dsCap14.length ? `<div style="margin-top:4px;">${TEN_CAP_14_16["1-4"].icon} <b>${TEN_CAP_14_16["1-4"].ten}</b> — ${TEN_CAP_14_16["1-4"].moTa}<br>Có <b>${dsCap14.length}</b> cặp tại: ${dsCap14.map(d=>d.cung).join(", ")}</div>` : "";
+                let dong16 = dsCap16.length ? `<div style="margin-top:4px;">${TEN_CAP_14_16["1-6"].icon} <b>${TEN_CAP_14_16["1-6"].ten}</b> — ${TEN_CAP_14_16["1-6"].moTa}<br>Có <b>${dsCap16.length}</b> cặp tại: ${dsCap16.map(d=>d.cung).join(", ")}</div>` : "";
                 html += `<div class="luan-giai-item" style="color:#795500;background:#fff8e1;border-radius:6px;padding:8px;">
-                    <b>🔢 Tổ hợp 1-4 / 1-6 — thống kê toàn nhà</b> (xét cặp giữa các sao bay V-S/V-H/S-H, và cặp giữa số Lạc Thư gốc của cung với từng sao bay: Gốc-V/Gốc-S/Gốc-H)
+                    <b>🔢 Học hành-Công Danh</b> <small> (xét cặp giữa các sao bay V-S/V-H/S-H, và cặp giữa số Lạc Thư gốc của cung với từng sao bay: Gốc-V/Gốc-S/Gốc-H)</small>
                     ${dong14}${dong16}
                 </div>`;
             }
@@ -1238,6 +1238,60 @@ function tongKetToanNha(van, ketQua9Cung, sb, sf, hf, hb, bVan, cungToa, cungHuo
     html += `<div class="luan-giai-item"><i>Lưu ý: đây là gợi ý tổng quan dựa trên Sơn/Hướng tinh; nên kết hợp thêm tuổi, mục đích sử dụng phòng và hiện trạng thực tế của nhà trước khi quyết định.</i></div>`;
     return html;
 }
+// ===== Theo dõi "chưa bấm XEM SƠ ĐỒ" =====
+// Danh sách toàn bộ input/select trong tab Nội Khí có ảnh hưởng đến kết quả tính toán. Nếu người
+// dùng đổi bất kỳ ô nào trong danh sách này mà chưa bấm lại nút, ta hiện cảnh báo + đổi màu nút,
+// để tránh nhầm tưởng bảng lưới/luận giải bên dưới đã phản ánh đúng thông số mới nhất.
+const _DS_INPUT_ANH_HUONG_PHI_TINH = [
+    "namNhapTrach", "vanNhapTrach", "huong24Son", "doSoTay", "congTacKiemHuong",
+    "namSinhChu", "gioiTinhChu",
+    "ngayDuongXem", "thangDuongXem", "namXem",
+    "ngayAmLichXem", "thangXemAm", "namAmXem", "ngayAmNhuan",
+    "canNgay", "chiNgay", "trungKhi"
+];
+function _layDauVanTayInputPhiTinh() {
+    return _DS_INPUT_ANH_HUONG_PHI_TINH.map(id => {
+        let el = document.getElementById(id);
+        if (!el) return id + "=?";
+        let v = el.type === "checkbox" ? (el.checked ? "1" : "0") : el.value;
+        return id + "=" + v;
+    }).join("|");
+}
+// Đánh dấu kết quả hiện tại đã khớp với thông số hiện tại — gọi ngay sau khi tính toán xong.
+function _danhDauPhiTinhDaCapNhat() {
+    window._phiTinhDauVanTayDaTinh = _layDauVanTayInputPhiTinh();
+    let btn = document.getElementById("btnXem");
+    let canhBao = document.getElementById("canhBaoChuaCapNhat");
+    if (btn) { btn.style.background = ""; btn.classList.remove("btn-can-cap-nhat"); }
+    if (canhBao) canhBao.style.display = "none";
+}
+// Kiểm tra xem thông số hiện tại có còn khớp với lần tính gần nhất không — nếu lệch, bật cảnh báo.
+function _kiemTraPhiTinhChuaCapNhat() {
+    let dauMoi = _layDauVanTayInputPhiTinh();
+    let chuaCapNhat = window._phiTinhDauVanTayDaTinh !== undefined && dauMoi !== window._phiTinhDauVanTayDaTinh;
+    let btn = document.getElementById("btnXem");
+    let canhBao = document.getElementById("canhBaoChuaCapNhat");
+    if (btn) {
+        btn.style.background = chuaCapNhat ? "#e65100" : "";
+        btn.classList.toggle("btn-can-cap-nhat", chuaCapNhat);
+    }
+    if (canhBao) canhBao.style.display = chuaCapNhat ? "block" : "none";
+}
+// Gắn 1 listener duy nhất (event delegation) lên toàn bộ tab Nội Khí — không cần sửa từng thẻ input
+// trong index.html. Chạy ở cả sự kiện "input" (gõ số) lẫn "change" (chọn select) để bắt mọi trường hợp.
+(function _khoiTaoTheoDoiPhiTinhChuaCapNhat() {
+    function gan() {
+        let tab = document.getElementById("tab-noikhi");
+        if (!tab || tab.dataset.theoDoiChuaCapNhat === "1") return;
+        tab.addEventListener("input", _kiemTraPhiTinhChuaCapNhat);
+        tab.addEventListener("change", _kiemTraPhiTinhChuaCapNhat);
+        tab.dataset.theoDoiChuaCapNhat = "1";
+    }
+    gan();
+    setTimeout(gan, 500);
+    setTimeout(gan, 1500);
+})();
+
 async function tinhToanPhiTinh() {
     let btn = document.getElementById("btnXem"); btn.disabled = true; btn.innerText = "Đang tính...";
     let namNhap = parseInt(document.getElementById("namNhapTrach").value);
@@ -1337,6 +1391,9 @@ async function tinhToanPhiTinh() {
     }
     let bVanHienTaiChoThanhMon = lapTinhBan(vanHienTai, true);
     let dsThanhMon = xetThanhMon(huongSon, bVanHienTaiChoThanhMon, vanHienTai);
+    // Xuất ra window để các module dùng chung (vd. compass-module.js ở tab Cửu Cung Lưới/Tâm Nhà)
+    // có thể hiển thị biểu tượng ⛩️ ngay tại cung tương ứng mà không cần tính lại Thành Môn.
+    window.phiTinhThanhMon = dsThanhMon;
     if (dsThanhMon.length > 0) {
         let tmChinh = dsThanhMon.find(tm => tm.loai === "Chính");
         let tmPhu = dsThanhMon.find(tm => tm.loai === "Phụ");
@@ -1516,6 +1573,7 @@ async function tinhToanPhiTinh() {
         document.getElementById("cung-" + c).onclick = () => hienThiLuanGiaiCung(TEN_CUNG[c]);
     }
     btn.disabled = false; btn.innerText = "XEM SƠ ĐỒ CỬU CUNG";
+    _danhDauPhiTinhDaCapNhat(); // kết quả vừa hiển thị đã khớp thông số hiện tại — tắt cảnh báo
 
     // (window.phiTinhVSH đã được xuất SỚM hơn, ngay sau khi khai báo TEN_CUNG — xem ở trên)
     try { if (typeof cuuCungLuoiRedraw === "function") cuuCungLuoiRedraw(); } catch (e) {}
