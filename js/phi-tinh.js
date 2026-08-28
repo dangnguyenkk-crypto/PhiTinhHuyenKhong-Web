@@ -1483,7 +1483,12 @@ async function tinhToanPhiTinh() {
     if (!divLuanGiaiToanNha) {
         divLuanGiaiToanNha = document.createElement("div");
         divLuanGiaiToanNha.id = "ketQuaLuanGiaiToanNha";
-        divLuanGiaiToanNha.className = "luan-giai-container";
+        // Không dùng class "luan-giai-container" (nền trắng + bo góc + box-shadow) ở đây vì tạo
+        // khung to gây rối mắt cho cả khối Thành Môn/Địa Vận/Kiêm Hướng/Tổng kết; chỉ giữ lại
+        // khoảng cách như class cũ bằng style riêng cho div này (không đụng CSS global vì class
+        // đó còn dùng ở index.html). Không set max-width (khác class cũ) để chiều rộng khớp với
+        // khối "Lịch nhà" (#duBaoThoiGian) ngay phía trên, vốn không giới hạn max-width.
+        divLuanGiaiToanNha.style.cssText = "margin-top:4px; padding:16px; box-sizing:border-box;";
         divLuanGiaiToanNha.innerHTML = `<div class="luan-giai-title">📋 Luận giải toàn nhà cho Vận (<span id="tieuDeVanLGTN"></span>):</div><div id="ketQuaLuanGiaiToanNhaBody"></div>`;
         duBao.insertAdjacentElement("afterend", divLuanGiaiToanNha);
     }
