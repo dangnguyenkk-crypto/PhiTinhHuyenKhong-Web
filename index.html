@@ -155,7 +155,13 @@
             </div>
         </div>
         <div class="luan-giai-container">
-            <div class="luan-giai-title">📜 Luận Giải Cát Hung Các Cung (Sơn-Hướng):</div>
+            <div class="luan-giai-title">🗓️ Lịch nhà</div>
+            <div id="chonCungLichNha" style="display:flex;gap:14px;align-items:center;flex-wrap:wrap;margin-bottom:8px;padding:6px 8px;background:#f5f5f0;border-radius:6px;font-size:13px;">
+                <span style="color:#666;">Xét theo cung:</span>
+                <label style="display:flex;align-items:center;gap:4px;cursor:pointer;"><input type="checkbox" id="lichNhaXetToa" checked onchange="if(typeof tinhToanPhiTinh==='function')tinhToanPhiTinh();"> Tọa</label>
+                <label style="display:flex;align-items:center;gap:4px;cursor:pointer;"><input type="checkbox" id="lichNhaXetHuong" checked onchange="if(typeof tinhToanPhiTinh==='function')tinhToanPhiTinh();"> Hướng</label>
+                <label style="display:flex;align-items:center;gap:4px;cursor:pointer;"><input type="checkbox" id="lichNhaXetTrung" checked onchange="if(typeof tinhToanPhiTinh==='function')tinhToanPhiTinh();"> Trung</label>
+            </div>
             <div id="vungLuanGiai">Bấm nút xem để hiển thị luận giải chi tiết.</div>
         </div>
     </div>
