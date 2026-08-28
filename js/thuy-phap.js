@@ -570,18 +570,11 @@
                 for (let ten of ["Tuyệt Mệnh","Lục Sát","Ngũ Quỷ","Họa Hại"]) { if (bang.huong[ten]===tenPhuong) return {ten,diem:-60-10*["Tuyệt Mệnh","Lục Sát","Ngũ Quỷ","Họa Hại"].indexOf(ten)}; }
                 return null;
             }
-            function rutGonMotChuSo(n) { while (n>9) { n = String(n).split("").reduce((a,b)=>a+parseInt(b),0); } return n; }
-            const soToQuaiMenh = {1:"Khảm",2:"Khôn",3:"Chấn",4:"Tốn",6:"Càn",7:"Đoài",8:"Cấn",9:"Ly"};
-            function tinhQuaiMenh(namSinh, gioiTinh) {
-                let haiSoCuoi = namSinh%100, soGoc = rutGonMotChuSo(Math.floor(haiSoCuoi/10)+(haiSoCuoi%10));
-                let soKetQua;
-                if (namSinh>=2000) soKetQua = gioiTinh==="Nam" ? 9-soGoc : 6+soGoc;
-                else soKetQua = gioiTinh==="Nam" ? 10-soGoc : 5+soGoc;
-                soKetQua = rutGonMotChuSo(soKetQua);
-                if (soKetQua===0) soKetQua = 9;
-                if (soKetQua===5) soKetQua = gioiTinh==="Nam" ? 2 : 8;
-                return {so:soKetQua, quai:soToQuaiMenh[soKetQua]};
-            }
+            // Trạch mệnh (Quái Mệnh Bát Trạch) — dùng chung window.tinhMenhQuai (shared.js)
+            // thay vì công thức riêng ở đây, để tránh lệch kết quả Đông Tứ Mệnh / Tây Tứ Mệnh
+            // giữa các tab (trước đây module này tự tính bằng công thức "2 số cuối năm sinh +
+            // mốc năm 2000" khác với công thức chuẩn "tổng 4 chữ số năm sinh" ở shared.js,
+            // dẫn tới sai lệch quái mệnh với một số năm sinh, ví dụ 1988 Nam ra Chấn thay vì Khôn).
             window.xacNhanThuyKhau = function() {
                 let sonDen = document.getElementById("selSonDen").value, sonDi = document.getElementById("selSonDi").value;
                 let houseFacing = parseFloat(document.getElementById("houseFacing").value) || 0;
@@ -603,13 +596,16 @@
                     let bieuTuong = kq.diem>0?"★".repeat(soKy):"☠".repeat(soKy), mauChu = kq.diem>0?"#1565c0":"#c62828";
                     return `${label} (${phuong}): <b>${kq.ten}</b> (${kq.diem>0?"+":""}${kq.diem}) → <b style="color:${mauChu}">${bieuTuong}</b>`;
                 }
-                let namSinh = parseInt(document.getElementById("namSinhGiaChu").value)||1990, gioiTinh = document.getElementById("gioiTinhGiaChu").value;
-                let menh = tinhQuaiMenh(namSinh, gioiTinh), nhomMenh = nhomTuTrach[menh.quai], hopMenh = (nhomMenh===nhomTrach);
+                let namSinh = parseInt(document.getElementById("namSinhGiaChu").value)||1990, gioiTinhRaw = document.getElementById("gioiTinhGiaChu").value;
+                let gioiTinhChu = (gioiTinhRaw === "Nữ" || gioiTinhRaw === "nu") ? "nu" : "nam";
+                let menh = window.tinhMenhQuai(namSinh, gioiTinhChu);
+                let nhomMenh = menh ? menh.nhom : null, hopMenh = (nhomMenh===nhomTrach);
                 document.getElementById("ketQuaThuyKhau").style.display = "block";
                 document.getElementById("ketQuaThuyKhau").innerHTML =
                     `<b>Đã ghi nhận Thủy Khẩu:</b><br>house_facing = ${houseFacing}° (hướng nhà ≈ sơn <b>${sonHuongNhaTamHop.ten}</b>)<br>water_in_direction (Nước đến) = ${sonDen}<br>water_out_direction (Nước đi) = ${sonDi}<br><br>
-                     <b>👤 Quái Mệnh gia chủ:</b> Năm sinh ${namSinh} (${gioiTinh}) → số ${menh.so} → Quái <b>${menh.quai}</b> (${nhomMenh})<br>
-                     <b style="color:${hopMenh?'#1565c0':'#c62828'}">${hopMenh?'✅ Mệnh gia chủ HỢP với Trạch nhà (cùng nhóm '+nhomMenh+')':'⚠️ Mệnh gia chủ KHÔNG hợp Trạch nhà — phạm "Đông Tây hỗn loạn" (Mệnh '+nhomMenh+', Trạch '+nhomTrach+')'}</b><br><br>
+                     ${menh ? `<b>🏡 Trạch mệnh gia chủ:</b> Năm sinh ${namSinh} (${gioiTinhRaw}) → Quái <b>${menh.cung}</b> (Quái ${menh.quaiSo}, hành ${menh.hanh}, ${nhomMenh})<br>
+                     <b style="color:${hopMenh?'#1565c0':'#c62828'}">${hopMenh?'✅ Mệnh gia chủ HỢP với Trạch nhà (cùng nhóm '+nhomMenh+')':'⚠️ Mệnh gia chủ KHÔNG hợp Trạch nhà — phạm "Đông Tây hỗn loạn" (Mệnh '+nhomMenh+', Trạch '+nhomTrach+')'}</b><br><br>`
+                     : `<b>🏡 Trạch mệnh gia chủ:</b> <i>Không xác định được (kiểm tra lại năm sinh)</i><br><br>`}
                      <b>📘 Tam Hợp Trường Sinh:</b> Hướng nhà quy về Địa Chi <b>${diaChiHuong}</b> → thuộc <b>${cuc} Cục</b><br>
                      ${dinhDangKetQua("Nước Đến",ketQuaDen,"den")}<br>${dinhDangKetQua("Nước Đi",ketQuaDi,"di")}<br><br>
                      <b>📗 Bát Trạch Thủy Pháp:</b> Hướng nhà ≈ ${quaiTrachNha.phuong} → Quái Trạch <b>${quaiTrachNha.ten}</b> (${nhomTrach})<br>

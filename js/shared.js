@@ -666,3 +666,35 @@ function tinhMenhQuai(namSinhDuongLich, gioiTinh) {
     };
 }
 window.tinhMenhQuai = tinhMenhQuai;
+
+// ====================================================================
+// NẠP ÂM NGŨ HÀNH — tính theo Can Chi năm sinh DƯƠNG LỊCH (nam/nữ như nhau).
+// Công thức: số Can + số Chi (nếu >5 thì trừ 5) -> tra Ngũ hành.
+// Dùng chung toàn app qua window.tinhNapAmNguHanh.
+// ====================================================================
+const NAM_CAN_NAP_AM = ["Giáp", "Ất", "Bính", "Đinh", "Mậu", "Kỷ", "Canh", "Tân", "Nhâm", "Quý"];
+const CHI_NAP_AM = ["Tý", "Sửu", "Dần", "Mão", "Thìn", "Tỵ", "Ngọ", "Mùi", "Thân", "Dậu", "Tuất", "Hợi"];
+const SO_CAN_NAP_AM = { "Giáp": 1, "Ất": 1, "Bính": 2, "Đinh": 2, "Mậu": 3, "Kỷ": 3, "Canh": 4, "Tân": 4, "Nhâm": 5, "Quý": 5 };
+const SO_CHI_NAP_AM = { "Tý": 0, "Sửu": 0, "Ngọ": 0, "Mùi": 0, "Dần": 1, "Mão": 1, "Thân": 1, "Dậu": 1, "Thìn": 2, "Tỵ": 2, "Tuất": 2, "Hợi": 2 };
+const NGU_HANH_THEO_SO_NAP_AM = { 1: "Kim", 2: "Thủy", 3: "Hỏa", 4: "Thổ", 5: "Mộc" };
+
+// Trả về { namSinh, can, chi, canChi, hanh } hoặc null nếu năm sinh không hợp lệ.
+function tinhNapAmNguHanh(namSinhDuongLich) {
+    let nam = parseInt(namSinhDuongLich);
+    if (!nam || isNaN(nam)) return null;
+    let can = NAM_CAN_NAP_AM[(nam + 6) % 10];
+    let chi = CHI_NAP_AM[(nam + 8) % 12];
+    let soCan = SO_CAN_NAP_AM[can];
+    let soChi = SO_CHI_NAP_AM[chi];
+    let tong = soCan + soChi;
+    if (tong > 5) tong -= 5;
+    let hanh = NGU_HANH_THEO_SO_NAP_AM[tong];
+    return {
+        namSinh: nam,
+        can: can,
+        chi: chi,
+        canChi: can + " " + chi,
+        hanh: hanh
+    };
+}
+window.tinhNapAmNguHanh = tinhNapAmNguHanh;
