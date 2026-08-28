@@ -281,33 +281,44 @@ function mauChuTheoSao(sao) {
     if (sao === 3) return "#c9860a";
     return null;
 }
-// ===== Tổng hợp "sao nặng nhất" giữa 3 cung TỌA / HƯỚNG / TRUNG cho bảng dự báo Ngày-Tháng-Năm =====
-// Trước đây 3 bảng chỉ xét sao lưu niên/nguyệt/nhật bay tới TRUNG CUNG. Giờ xét cả 3 cung Tọa-Hướng-
-// Trung cùng lúc (tuỳ chọn qua 3 checkbox #lichNhaXetToa/Huong/Trung), lấy sao nặng nhất theo đúng thứ
-// tự nguy hiểm sẵn có của app: 5 (Ngũ Hoàng) > 2 (Nhị Hắc) > 7 (Thất Xích) > 3 (Tam Bích) — các sao
-// khác (1,4,6,8,9) coi như nhau, không phân biệt thêm.
+// ===== Tổng hợp "sao nặng nhất" giữa 3 cung TỌA / HƯỚNG / TRUNG + 1 CUNG TỰ DO cho bảng dự báo
+// Ngày-Tháng-Năm ===== Trước đây 3 bảng chỉ xét sao lưu niên/nguyệt/nhật bay tới TRUNG CUNG. Giờ xét
+// tối đa 4 nơi cùng lúc (tuỳ chọn qua checkbox #lichNhaXetToa/Huong/Trung + #lichNhaXetCungKhac với
+// cung do người dùng chọn ở #lichNhaCungKhacChon), lấy sao nặng nhất theo đúng thứ tự nguy hiểm sẵn
+// có của app: 5 (Ngũ Hoàng) > 2 (Nhị Hắc) > 7 (Thất Xích) > 3 (Tam Bích) — các sao khác (1,4,6,8,9)
+// coi như nhau, không phân biệt thêm. Cung tự do trùng với Tọa/Hướng/Trung vẫn được tính bình thường,
+// không cần cảnh báo hay loại trừ gì thêm (người dùng có thể cố ý chọn trùng để xem rõ hơn).
 // LƯU Ý ĐẶC BIỆT: khi sao bay tới TRUNG CUNG đúng bằng 5 thì KHÔNG tính vào thống kê tại cung Trung
 // (vì Ngũ Hoàng vốn luôn ở Trung cung khi nhập trung — không phải hiện tượng lưu niên/nguyệt/nhật ghé
-// qua, nên không có giá trị cảnh báo thêm) — vẫn xét bình thường các cung còn lại đang được tick.
+// qua, nên không có giá trị cảnh báo thêm) — vẫn xét bình thường các cung còn lại đang được tick. Quy
+// tắc loại trừ số 5 này CHỈ áp dụng riêng cho Trung cung, không áp dụng cho cung tự do (kể cả khi cung
+// tự do đó lại trùng đúng vị trí Trung — nhưng Trung là 1 cung cố định, không thể chọn làm "cung khác").
 const THU_TU_NANG_SAO = {5:4, 2:3, 7:2, 3:1}; // số càng lớn càng nặng; sao không có trong bảng = 0 (bình thường)
 function doNangSao(sao) { return THU_TU_NANG_SAO[sao] || 0; }
-// Đọc trạng thái 3 checkbox chọn cung cho Lịch nhà — mặc định TRUE nếu chưa render (an toàn khi gọi sớm).
+// Đọc trạng thái 4 mục chọn cung cho Lịch nhà — mặc định TRUE/rỗng nếu chưa render (an toàn khi gọi sớm).
 function layCoChonCungLichNha() {
     let elToa = document.getElementById("lichNhaXetToa");
     let elHuong = document.getElementById("lichNhaXetHuong");
     let elTrung = document.getElementById("lichNhaXetTrung");
+    let elCungKhac = document.getElementById("lichNhaXetCungKhac");
+    let elChonCungKhac = document.getElementById("lichNhaCungKhacChon");
     return {
         toa: elToa ? elToa.checked : true,
         huong: elHuong ? elHuong.checked : true,
-        trung: elTrung ? elTrung.checked : true
+        trung: elTrung ? elTrung.checked : true,
+        cungKhac: elCungKhac ? elCungKhac.checked : false,
+        tenCungKhac: elChonCungKhac ? elChonCungKhac.value : null
     };
 }
-function saoNangNhatToaHuongTrung(saoToa, saoHuong, saoTrung, coChon) {
-    coChon = coChon || {toa:true, huong:true, trung:true};
+// soTaiCungKhac: số Vận/Sơn/Hướng-tương-ứng của SAO LƯU NIÊN/NGUYỆT/NHẬT (không phải Vận/Sơn/Hướng cố
+// định của nhà) tại đúng cung tự do đang chọn — do nơi gọi tự lập bàn và tra theo CUNG_TO_SO[tenCungKhac].
+function saoNangNhatToaHuongTrung(saoToa, saoHuong, saoTrung, coChon, saoTaiCungKhac) {
+    coChon = coChon || {toa:true, huong:true, trung:true, cungKhac:false};
     let ungVien = [];
     if (coChon.toa) ungVien.push(saoToa);
     if (coChon.huong) ungVien.push(saoHuong);
     if (coChon.trung && saoTrung !== 5) ungVien.push(saoTrung); // bỏ qua Trung cung nếu đúng là số 5
+    if (coChon.cungKhac && saoTaiCungKhac !== undefined && saoTaiCungKhac !== null) ungVien.push(saoTaiCungKhac);
     let nangNhat = 0, doNang = -1;
     for (let s of ungVien) {
         if (doNangSao(s) > doNang) { doNang = doNangSao(s); nangNhat = s; }
@@ -1292,7 +1303,7 @@ function tongKetToanNha(van, ketQua9Cung, sb, sf, hf, hb, bVan, cungToa, cungHuo
             if (dsTamTai.length) dong.push(`<div style="margin-top:4px;color:#c62828;">🔺 <b>Tam Tai</b> (dễ gây tai họa): ${dsTamTai.map(d => `<b>${d.cung}</b>${d.ghiChuViTri} (${d.phuongVi})`).join(", ")}.</div>`);
             if (dsXung.length) dong.push(`<div style="margin-top:4px;color:#e65100;">⚡ <b>Xung</b> (khí xáo trộn, biến động): ${dsXung.map(d => `<b>${d.cung}</b>${d.ghiChuViTri} (${d.phuongVi})`).join(", ")}.</div>`);
             html += `<div class="luan-giai-item" style="color:#5c4a3a;background:#fff8f0;border-radius:6px;padding:8px;">
-                <b>🧭 Tam Hợp Phái — thống kê toàn nhà</b> (năm ${namXem}, Chi ${chiTHP})
+                <b>🧭 Tam Hợp Phái — toàn cục</b> (năm ${namXem}, Chi ${chiTHP})
                 ${dong.join("")}
                 <div style="margin-top:6px;font-size:0.9em;color:#777;"><i>Đối chiếu Chi của năm lưu niên với Tam Hợp/Tam Tai/Xung riêng của từng cung bát quái. Nếu cung đang có hung tinh (Ngũ Hoàng, Nhị Hắc...) mà rơi vào năm Tam Hợp hoặc Tam Tai của chính cung đó thì hung sát phát tác mạnh nhất; nếu cung có cát tinh mà rơi vào năm Tam Hợp thì cát khí bùng nổ.</i></div>
             </div>`;
@@ -1322,7 +1333,7 @@ function tongKetToanNha(van, ketQua9Cung, sb, sf, hf, hb, bVan, cungToa, cungHuo
         }).join(" ");
         html += `<div class="luan-giai-item"><b>🔧 Hướng hóa giải gợi ý:</b> ${goiY}</div>`;
     }
-    html += `<div class="luan-giai-item"><i>Lưu ý: đây là gợi ý tổng quan dựa trên Sơn/Hướng tinh; nên kết hợp thêm tuổi, mục đích sử dụng phòng và hiện trạng thực tế của nhà trước khi quyết định.</i></div>`;
+    html += `<div class="luan-giai-item"><i>Lưu ý: đây là gợi ý tổng quan dựa trên Các Tinh tú; nên kết hợp Loan đầu hình thế để kết luận.</i></div>`;
     return html;
 }
 // ===== Theo dõi "chưa bấm XEM SƠ ĐỒ" =====
@@ -1697,7 +1708,8 @@ function moTaCungDangXet(coChon) {
     if (coChon.toa) ten.push("Tọa");
     if (coChon.huong) ten.push("Hướng");
     if (coChon.trung) ten.push("Trung");
-    if (ten.length === 0) return "chưa chọn cung nào — tick ít nhất 1 cung ở trên";
+    if (coChon.cungKhac && coChon.tenCungKhac) ten.push(coChon.tenCungKhac);
+    if (ten.length === 0) return "chưa chọn cung nào — tick ít nhất 1 mục ở trên";
     return "xét cung " + ten.join("/");
 }
 function xayBangThang(namXem, thangXem, vanHienTai, sSonTC, sHuongTC, soToa, soHuong) {
@@ -1705,21 +1717,24 @@ function xayBangThang(namXem, thangXem, vanHienTai, sSonTC, sHuongTC, soToa, soH
     let qSonTC = qCungGoc(hanhCungTC, sSonTC), qHuongTC = qCungGoc(hanhCungTC, sHuongTC);
     let namAmHienTai = parseInt(document.getElementById("namAmXem")?.value) || namXem;
     let coChon = layCoChonCungLichNha();
+    let soCungKhac = (coChon.cungKhac && coChon.tenCungKhac) ? CUNG_TO_SO[coChon.tenCungKhac] : null;
     let o = "";
     for (let t = 1; t <= 12; t++) {
         let saoNg = tinhSaoNguyet(namXem, t);
         let xau = laThoiDiemXau(saoNg, vanHienTai, hanhCungTC, qSonTC, qHuongTC, sSonTC, sHuongTC);
         // Nguyệt tinh bay THUẬN (giống bNguyet ở bàn chính) — lập bàn 9 cung cho riêng tháng này để
-        // lấy đúng số Nguyệt tinh tại cung Tọa/Hướng, rồi tổng hợp theo các cung đang được tick.
+        // lấy đúng số Nguyệt tinh tại cung Tọa/Hướng/Cung-khác, rồi tổng hợp theo các mục đang được tick.
         let bNgTemp = lapTinhBan(saoNg, true);
-        let saoNangNhat = saoNangNhatToaHuongTrung(bNgTemp[soToa], bNgTemp[soHuong], saoNg, coChon);
+        let saoTaiCungKhac = soCungKhac ? bNgTemp[soCungKhac] : null;
+        let saoNangNhat = saoNangNhatToaHuongTrung(bNgTemp[soToa], bNgTemp[soHuong], saoNg, coChon, saoTaiCungKhac);
         let mauChuSao = mauChuTheoSao(saoNangNhat);
         let mauChu = mauChuSao || "#333";
         // Chấm nâu trên đầu chỉ hiện khi thời điểm xấu NHƯNG sao đó không thuộc 4 sao nguy hiểm đã có màu chữ riêng
         let chamNau = (xau && !mauChuSao) ? `<span style="position:absolute;top:-1px;left:50%;transform:translateX(-50%);width:5px;height:5px;border-radius:50%;background:#795548;"></span>` : "";
-        o += `<div style="position:relative;display:inline-block;width:7.6%;text-align:center;padding:3px 0;font-weight:700;font-size:12px;cursor:pointer;color:${mauChu};${t===thangXem?'text-decoration:underline;':''}" title="Nguyệt tinh — Trung:${saoNg}, Tọa:${bNgTemp[soToa]}, Hướng:${bNgTemp[soHuong]} — bấm để xem tháng ${t} âm lịch" onclick="nhayToiThang(${namAmHienTai},${t})">${chamNau}T${t}</div>`;
+        let tooltipCungKhac = soCungKhac ? `, ${coChon.tenCungKhac}:${saoTaiCungKhac}` : "";
+        o += `<div style="position:relative;display:inline-block;width:7.6%;text-align:center;padding:3px 0;font-weight:700;font-size:12px;cursor:pointer;color:${mauChu};${t===thangXem?'text-decoration:underline;':''}" title="Nguyệt tinh — Trung:${saoNg}, Tọa:${bNgTemp[soToa]}, Hướng:${bNgTemp[soHuong]}${tooltipCungKhac} — bấm để xem tháng ${t} âm lịch" onclick="nhayToiThang(${namAmHienTai},${t})">${chamNau}T${t}</div>`;
     }
-    return `<div class="luan-giai-item"><b>📅 Dự báo 12 tháng ÂM LỊCH năm ${namXem}</b> <span style="font-weight:normal;font-size:12px;color:#888;">(theo Nguyệt tinh, ${moTaCungDangXet(coChon)} — lấy sao nặng nhất; số tháng là tháng ÂM LỊCH)</span><div style="margin-top:4px;">${o}</div></div>`;
+    return `<div class="luan-giai-item"><b>📅 Dự báo 12 tháng ÂM LỊCH năm ${namXem}</b> <span style="font-weight:normal;font-size:12px;color:#888;">(theo Nguyệt tinh, ${moTaCungDangXet(coChon)} — lấy sao nặng nhất )</span><div style="margin-top:4px;">${o}</div></div>`;
 }
 function xayBangNam(namXem, sSonTC, sHuongTC, soToa, soHuong) {
     let hanhCungTC = "Thổ";
@@ -1727,6 +1742,7 @@ function xayBangNam(namXem, sSonTC, sHuongTC, soToa, soHuong) {
     let ngayDuongHienTai = parseInt(document.getElementById("ngayDuongXem")?.value) || 1;
     let thangDuongHienTai = parseInt(document.getElementById("thangDuongXem")?.value) || 1;
     let coChon = layCoChonCungLichNha();
+    let soCungKhac = (coChon.cungKhac && coChon.tenCungKhac) ? CUNG_TO_SO[coChon.tenCungKhac] : null;
     let o = "";
     for (let dY = -3; dY <= 3; dY++) {
         let nam = namXem + dY;
@@ -1734,13 +1750,15 @@ function xayBangNam(namXem, sSonTC, sHuongTC, soToa, soHuong) {
         let saoNienNam = tinhSaoNien(nam);
         let xau = laThoiDiemXau(saoNienNam, vanNam, hanhCungTC, qSonTC, qHuongTC, sSonTC, sHuongTC);
         // Niên tinh bay THUẬN (giống bNien ở bàn chính) — lập bàn 9 cung riêng cho năm này để lấy đúng
-        // số Niên tinh tại cung Tọa/Hướng, rồi tổng hợp theo các cung đang được tick.
+        // số Niên tinh tại cung Tọa/Hướng/Cung-khác, rồi tổng hợp theo các mục đang được tick.
         let bNienTemp = lapTinhBan(saoNienNam, true);
-        let saoNangNhat = saoNangNhatToaHuongTrung(bNienTemp[soToa], bNienTemp[soHuong], saoNienNam, coChon);
+        let saoTaiCungKhac = soCungKhac ? bNienTemp[soCungKhac] : null;
+        let saoNangNhat = saoNangNhatToaHuongTrung(bNienTemp[soToa], bNienTemp[soHuong], saoNienNam, coChon, saoTaiCungKhac);
         let mauChuSao = mauChuTheoSao(saoNangNhat);
         let mauChu = mauChuSao || "#333";
         let chamNau = (xau && !mauChuSao) ? `<span style="position:absolute;top:-1px;left:50%;transform:translateX(-50%);width:5px;height:5px;border-radius:50%;background:#795548;"></span>` : "";
-        o += `<div style="position:relative;display:inline-block;width:13.6%;text-align:center;padding:3px 0;font-weight:700;font-size:12px;cursor:pointer;color:${mauChu};${dY===0?'text-decoration:underline;':''}" title="Niên tinh — Trung:${saoNienNam}, Tọa:${bNienTemp[soToa]}, Hướng:${bNienTemp[soHuong]} — bấm để xem năm này" onclick="nhayToiNam(${nam},${thangDuongHienTai},${ngayDuongHienTai})">${chamNau}${nam}</div>`;
+        let tooltipCungKhac = soCungKhac ? `, ${coChon.tenCungKhac}:${saoTaiCungKhac}` : "";
+        o += `<div style="position:relative;display:inline-block;width:13.6%;text-align:center;padding:3px 0;font-weight:700;font-size:12px;cursor:pointer;color:${mauChu};${dY===0?'text-decoration:underline;':''}" title="Niên tinh — Trung:${saoNienNam}, Tọa:${bNienTemp[soToa]}, Hướng:${bNienTemp[soHuong]}${tooltipCungKhac} — bấm để xem năm này" onclick="nhayToiNam(${nam},${thangDuongHienTai},${ngayDuongHienTai})">${chamNau}${nam}</div>`;
     }
     return `<div class="luan-giai-item"><b>🗓️ Dự báo 7 năm (${namXem-3}–${namXem+3})</b> <span style="font-weight:normal;font-size:12px;color:#888;">(theo Niên tinh, ${moTaCungDangXet(coChon)} — lấy sao nặng nhất)</span><div style="margin-top:4px;">${o}</div></div>`;
 }
@@ -1796,6 +1814,7 @@ function xayBangNgay(namXemAm, thangXemAm, vanHienTai, sSonTC, sHuongTC, canNgay
         }
     }
     let coChon = layCoChonCungLichNha();
+    let soCungKhac = (coChon.cungKhac && coChon.tenCungKhac) ? CUNG_TO_SO[coChon.tenCungKhac] : null;
     let o = "";
     ngayKhopThangAm.forEach(({ dd, mm, yy, info }) => {
         let [can, chi] = info.canChiDay.split(" ");
@@ -1804,15 +1823,17 @@ function xayBangNgay(namXemAm, thangXemAm, vanHienTai, sSonTC, sHuongTC, canNgay
         let xau = laThoiDiemXau(saoNhatNgay, vanHienTai, hanhCungTC, qSonTC, qHuongTC, sSonTC, sHuongTC);
         let laNgayDangXem = can === canNgayXem && chi === chiNgayXem;
         // Nhật tinh bay thuận/nghịch tuỳ Trung Khí (giống bNhat ở bàn chính) — lập bàn 9 cung riêng cho
-        // ngày này để lấy đúng số Nhật tinh tại cung Tọa/Hướng, tổng hợp theo các cung đang được tick.
+        // ngày này để lấy đúng số Nhật tinh tại cung Tọa/Hướng/Cung-khác, tổng hợp theo các mục đang được tick.
         let bNhatTemp = lapTinhBan(saoNhatNgay, TRUNG_KHI[trungKhiKey].thuan);
-        let saoNangNhat = saoNangNhatToaHuongTrung(bNhatTemp[soToa], bNhatTemp[soHuong], saoNhatNgay, coChon);
+        let saoTaiCungKhac = soCungKhac ? bNhatTemp[soCungKhac] : null;
+        let saoNangNhat = saoNangNhatToaHuongTrung(bNhatTemp[soToa], bNhatTemp[soHuong], saoNhatNgay, coChon, saoTaiCungKhac);
         let mauChuSao = mauChuTheoSao(saoNangNhat);
         let mauChu = mauChuSao || "#333";
         let chamNau = (xau && !mauChuSao) ? `<span style="position:absolute;top:0;left:50%;transform:translateX(-50%);width:4px;height:4px;border-radius:50%;background:#795548;"></span>` : "";
-        o += `<div style="position:relative;display:inline-block;width:24px;text-align:center;padding:3px 0;font-weight:700;font-size:10.5px;cursor:pointer;color:${mauChu};${laNgayDangXem?'text-decoration:underline;':''}" title="${dd}/${mm}/${yy} — ${info.canChiDay} — Nhật tinh: Trung ${saoNhatNgay}, Tọa ${bNhatTemp[soToa]}, Hướng ${bNhatTemp[soHuong]} — bấm để xem ngày này" onclick="nhayToiNgay(${dd},${mm},${yy})">${chamNau}${info.lunarDayNum}</div>`;
+        let tooltipCungKhac = soCungKhac ? `, ${coChon.tenCungKhac} ${saoTaiCungKhac}` : "";
+        o += `<div style="position:relative;display:inline-block;width:24px;text-align:center;padding:3px 0;font-weight:700;font-size:10.5px;cursor:pointer;color:${mauChu};${laNgayDangXem?'text-decoration:underline;':''}" title="${dd}/${mm}/${yy} — ${info.canChiDay} — Nhật tinh: Trung ${saoNhatNgay}, Tọa ${bNhatTemp[soToa]}, Hướng ${bNhatTemp[soHuong]}${tooltipCungKhac} — bấm để xem ngày này" onclick="nhayToiNgay(${dd},${mm},${yy})">${chamNau}${info.lunarDayNum}</div>`;
     });
-    return `<div class="luan-giai-item"><b>📆 Ngày xấu trong tháng ${thangXemAm} âm lịch, năm ${namXemAm}</b> <span style="font-weight:normal;font-size:12px;color:#888;">(theo Nhật tinh, ${moTaCungDangXet(coChon)} — lấy sao nặng nhất; số hiển thị là ngày ÂM LỊCH)</span><div style="margin-top:4px;">${o}</div><div style="font-size:11px;color:#888;margin-top:4px;">Can-Chi và Trung Khí lấy trực tiếp từ Lịch Vạn Niên (Trung Khí tính theo vị trí mặt trời thực).</div></div>`;
+    return `<div class="luan-giai-item"><b>📆 Ngày xấu trong tháng ${thangXemAm} Âm Lịch, năm ${namXemAm}</b> <span style="font-weight:normal;font-size:12px;color:#888;">(theo Nhật tinh, ${moTaCungDangXet(coChon)} — lấy sao nặng nhất)</span><div style="margin-top:4px;">${o}</div><div style="font-size:11px;color:#888;margin-top:4px;">Can-Chi và Trung Khí lấy trực tiếp từ Lịch Vạn Niên (Trung Khí tính theo vị trí mặt trời thực).</div></div>`;
 }
 window.nhayToiNgay = function(dd, mm, yy) {
     document.getElementById("ngayDuongXem").value = dd;

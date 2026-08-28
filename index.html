@@ -156,11 +156,26 @@
         </div>
         <div class="luan-giai-container">
             <div class="luan-giai-title">🗓️ Lịch nhà</div>
-            <div id="chonCungLichNha" style="display:flex;gap:14px;align-items:center;flex-wrap:wrap;margin-bottom:8px;padding:6px 8px;background:#f5f5f0;border-radius:6px;font-size:13px;">
-                <span style="color:#666;">Xét theo cung:</span>
-                <label style="display:flex;align-items:center;gap:4px;cursor:pointer;"><input type="checkbox" id="lichNhaXetToa" checked onchange="if(typeof tinhToanPhiTinh==='function')tinhToanPhiTinh();"> Tọa</label>
-                <label style="display:flex;align-items:center;gap:4px;cursor:pointer;"><input type="checkbox" id="lichNhaXetHuong" checked onchange="if(typeof tinhToanPhiTinh==='function')tinhToanPhiTinh();"> Hướng</label>
-                <label style="display:flex;align-items:center;gap:4px;cursor:pointer;"><input type="checkbox" id="lichNhaXetTrung" checked onchange="if(typeof tinhToanPhiTinh==='function')tinhToanPhiTinh();"> Trung</label>
+            <div id="chonCungLichNha" style="display:flex; gap:15px; align-items:center; flex-wrap:nowrap; overflow-x:auto; padding:4px 6px; background:#f5f5f0; border-radius:6px; font-size:12px; white-space:nowrap;">
+                <span style="color:#666; flex-shrink:0; font-size:12px;">Xét theo:</span>
+                <label style="display:flex; align-items:center; gap:1px; cursor:pointer; flex-shrink:0; margin:0;"><input type="checkbox" id="lichNhaXetToa" checked onchange="if(typeof tinhToanPhiTinh==='function')tinhToanPhiTinh();" style="margin:0; width:14px; height:14px;"> Tọa 🧑‍🤝‍🧑</label>
+                <label style="display:flex; align-items:center; gap:1px; cursor:pointer; flex-shrink:0; margin:0;"><input type="checkbox" id="lichNhaXetHuong" checked onchange="if(typeof tinhToanPhiTinh==='function')tinhToanPhiTinh();" style="margin:0; width:14px; height:14px;"> Hướng 💰</label>
+                <label style="display:flex; align-items:center; gap:1px; cursor:pointer; flex-shrink:0; margin:0;"><input type="checkbox" id="lichNhaXetTrung" checked onchange="if(typeof tinhToanPhiTinh==='function')tinhToanPhiTinh();" style="margin:0; width:14px; height:14px;"> Trung</label>
+
+                <!-- CHỈ SỬA 2 MỤC CUỐI: gộp vào 1 div với gap=0px -->
+                <div style="display:flex; align-items:center; gap:0px; flex-shrink:0;">
+                    <input type="checkbox" id="lichNhaXetCungKhac" onchange="if(typeof tinhToanPhiTinh==='function')tinhToanPhiTinh();" style="margin:0; width:15px; height:15px;">
+                    <select id="lichNhaCungKhacChon" onchange="if(typeof tinhToanPhiTinh==='function')tinhToanPhiTinh();" style="padding:2px 12px 2px 4px; border-radius:4px; border:1px solid #ccc; font-size:12px; flex-shrink:0; height:22px; background:#fff; margin:0;">
+                        <option value="Khảm">Khảm</option>
+                        <option value="Khôn">Khôn</option>
+                        <option value="Chấn">Chấn</option>
+                        <option value="Tốn">Tốn</option>
+                        <option value="Ly">Ly</option>
+                        <option value="Đoài">Đoài</option>
+                        <option value="Càn">Càn</option>
+                        <option value="Cấn">Cấn</option>
+                    </select>
+                </div>
             </div>
             <div id="vungLuanGiai">Bấm nút xem để hiển thị luận giải chi tiết.</div>
         </div>
