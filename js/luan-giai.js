@@ -27,6 +27,30 @@
   window.HANH_SINH = HANH_SINH;
   window.HANH_KHAC = HANH_KHAC;
 
+  // ==================================================================
+  // Ý NGHĨA RIÊNG CỦA TỪNG SAO (1-9) khi Đắc vận (cat) / Thất vận (hung) —
+  // dùng cho MỌI loại sao Phi Tinh (Vận/Sơn/Hướng/Niên/Nguyệt/Nhật tinh),
+  // không phân biệt sao đó đang bay tới cung nào. Đây là NGUỒN DUY NHẤT;
+  // phi-tinh.js và các tab khác chỉ đọc lại qua window.SAO_Y_NGHIA.
+  // Trường luuY chỉ có ở các sao có ghi chú bổ sung đặc thù (5,7,8,9);
+  // các sao còn lại (1,2,3,4,6) không có luuY.
+  // Câu đầu tiên (trước dấu phẩy đầu) của "cat" phải tự đọc trọn nghĩa vì
+  // cơ chế hiển thị lúc Suy khí/Thoái khí (xem yNghiaSaoTheoVan trong
+  // phi-tinh.js) cắt lấy đúng phần đó để tránh câu cụt ý.
+  // ==================================================================
+  var SAO_Y_NGHIA = window.SAO_Y_NGHIA || {
+    1: {ten:"Nhất Bạch (Tham Lang)", cat:"thăng quan tiến chức, tiếng tăm vang xa, đỗ trạng nguyên, quan vận và tài vận đều vượng", hung:"gặp kiếp đào hoa, nhà tan cửa mất, thậm chí còn mắc bệnh lậu, bệnh nan y, phải sống lưu vong nơi xứ người"},
+    2: {ten:"Nhị Hắc (Cự Môn)", cat:"phát về ruộng đất, đông người lắm của, xuất anh hùng hào kiệt", hung:"phụ nữ mang thai dễ sảy thai, quả phụ cai quản gia đình, hoặc do phụ nữ mà kiện tụng hoặc gây điều tiếng thị phi"},
+    3: {ten:"Tam Bích (Lộc Tồn)", cat:"thành gia lập nghiệp, giàu sang phú quý, công thành danh toại, thăng quan tiến chức", hung:"là \"Quan Phủ tinh\", chủ gây rắc rối, bị tiểu nhân cản trở, thường gặp kiện tụng, bệnh tật triền miên, hình khắc vợ"},
+    4: {ten:"Tứ Lục (Văn Khúc)", cat:"thi cử đỗ đạt, thăng quan tiến chức, đất đai nhiều, được vợ hoặc chồng giúp đỡ", hung:"dễ mắc bệnh phong, hen suyễn, viêm gan, đau vùng dưới thắt lưng, thậm chí còn phải treo cổ tự tử, hoặc uống thuốc tự sát"},
+    5: {ten:"Ngũ Hoàng (Liêm Trinh)", cat:"sức mạnh vô song, giống như hoàng đế, uy danh bốn phương", hung:"là Ngũ Hoàng sát, sao xấu nhất trong Cửu tinh, nếu gặp Nhị Hắc hay Tam Bích sẽ mắc bệnh nặng hoặc bệnh nan y, gặp tai nạn, tan cửa nát nhà, tự sát — là hung tinh hàng đầu trong Cửu tinh", luuY:"là hung tinh hàng đầu trong Cửu tinh; luôn cần thận trọng dù đang ở trạng thái nào"},
+    6: {ten:"Lục Bạch (Vũ Khúc)", cat:"phát về nghiệp võ, có tiếng tăm và quyền lực giàu có đông người", hung:"sống cô đơn không nơi nương tựa, hình vợ hại con"},
+    7: {ten:"Thất Xích (Phá Quân)", cat:"vượng cả đinh lẫn tài, phát về nghiệp võ", hung:"gây điều tiếng thị phi, kiện tụng", luuY:"Kim tinh mang sát khí; Cửu Tử Hỏa tinh có thể chế phục, nếu vào mùa hè thì Bát Bạch Thổ tinh có thể dung hòa"},
+    8: {ten:"Bát Bạch (Tả Phù)", cat:"giàu sang phú quý, công thành danh toại, ruộng vườn nhà cửa đều phát", hung:"tổn thương tới trẻ nhỏ, tổn thương vùng cột sống, thắt lưng", luuY:"có thể hóa hung thần; cùng Nhất Bạch và Lục Bạch là ba đại cát tinh của Cửu tinh"},
+    9: {ten:"Cửu Tử (Hữu Bật)", cat:"phát khoa danh, lợi cho chi thứ", hung:"khó sinh, kiện tụng, hỏa hoạn", luuY:"bản tính nóng nảy nhất, không chấp nhận những thứ xấu xa nên cát không nên hung; thường được gọi chung với Nhất Bạch Thủy tinh là Tử Bạch"},
+  };
+  window.SAO_Y_NGHIA = SAO_Y_NGHIA;
+
   // Hà Đồ (Tiên Thiên) — khác bảng Lạc Thư/Hậu Thiên ở trên. Dùng riêng cho
   // xetChanKhiHaDo. 1&6=Thủy, 2&7=Hỏa, 3&8=Mộc, 4&9=Kim, 5&10=Thổ.
   var HA_DO_HANH = {1:"Thủy",6:"Thủy",2:"Hỏa",7:"Hỏa",3:"Mộc",8:"Mộc",4:"Kim",9:"Kim",5:"Thổ",10:"Thổ"};

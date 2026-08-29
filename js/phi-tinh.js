@@ -350,17 +350,19 @@ function quanHeNguHanh(saoChu, saoKhach) {
 const VAI_TRO_SAO = {Van:"Nền tảng, trí tuệ, văn chương", Son:"Sức khỏe, nhân đinh", Huong:"Tài lộc, sự nghiệp", Nien:"Quý nhân, pháp lý — cả năm", Nguyet:"Biến động trong tháng", Nhat:"Biến động trong ngày"};
 
 // Ý nghĩa riêng của từng sao (không đổi theo vận) — khác nhau khi sao đó đang Vượng/Sinh so với khi đang Suy/Tử.
-// Ý nghĩa 9 sao lấy từ luan-giai.js (nguồn chung, nội dung chi tiết hơn) — fallback giữ bản cũ nếu chưa load
+// NGUỒN DUY NHẤT là window.SAO_Y_NGHIA (định nghĩa ở luan-giai.js, file này PHẢI load trước —
+// xem index.html). Fallback dưới đây CHỈ để tránh crash nếu lỡ luan-giai.js chưa kịp nạp; không
+// chứa nội dung luận giải thật, tránh lặp lại lỗi "2 nơi cùng giữ 1 bảng, sửa 1 chỗ quên chỗ kia".
 const SAO_Y_NGHIA = window.SAO_Y_NGHIA || {
-    1: {ten:"Nhất Bạch (Tham Lang)", cat:"nhân tài, trí tuệ, khoa cử, quý nhân, tài lộc về đường thủy, sáng tạo, thi cử đỗ đạt", hung:"tiêu tiền không kiểm soát, tình cảm rắc rối, đào hoa sát, trộm cắp, hao tổn trí lực", luuY:"khi suy dễ bị lường gạt; có thể ảnh hưởng thận, tai, huyết áp"},
-    2: {ten:"Nhị Hắc (Cự Môn)", cat:"hưởng phúc tổ tiên, đất đai nhà cửa, sự ổn định lâu dài, bền vững", hung:"bệnh tật (đặc biệt dạ dày, phụ khoa), tai ách, hao tài — sao bệnh tật số 1", luuY:"rất hung khi suy, đặc biệt tại hướng Khôn hoặc Cấn, cần hóa giải mạnh"},
-    3: {ten:"Tam Bích (Lộc Tồn)", cat:"thi cử, công danh, thăng tiến, sự nghiệp phát triển mạnh, sức khỏe tốt", hung:"kiện tụng, cãi vã, tranh chấp, mất mát, trộm cướp, phá sản do tranh tụng", luuY:"rất dữ khi suy, đặc biệt tại hướng Đông — là sao tranh đấu, nội chiến"},
-    4: {ten:"Tứ Lục (Văn Khúc)", cat:"văn tài, học hành, khoa bảng, danh tiếng, tình duyên thắm thiết, thi cử đỗ đạt cao", hung:"tình cảm bê tha, ngoại tình, thị phi, lời nói vô nghĩa, giấy tờ sai sót", luuY:"khi vượng cực lợi cho du học, nghiên cứu; khi suy dễ sinh dâm đãng"},
-    5: {ten:"Ngũ Hoàng (Liêm Trinh)", cat:"uy quyền, sự cai trị, chức tước, lãnh đạo, quyền lực", hung:"đại hung: bệnh nan y, tai họa, tán gia bại sản, mất người thân — sát khí tối thượng", luuY:"không bao giờ thật sự vượng, dù ở đâu cũng nên chủ động hóa giải"},
-    6: {ten:"Lục Bạch (Vũ Khúc)", cat:"quyền lực, tài chính, lộc, phẩm tước, quý nhân, được cấp trên/cha mẹ giúp đỡ", hung:"mất chức, tai nạn vì kim khí, hao tài vì quan hệ, bị lừa dối", luuY:"khi vượng tốt cho chính trị, doanh nhân; khi suy dễ tai nạn giao thông"},
-    7: {ten:"Thất Xích (Phá Quân)", cat:"đột phá mạnh mẽ, chiến thắng, tài chính đột biến, cải cách thành công", hung:"đào hoa sát, trộm cướp, hỏa hoạn, ly tán, mất mát vì chuyện tình cảm/xã hội đen", luuY:"là sao đào hoa nhưng tàn phá; khi suy dễ có án mạng hoặc bệnh về phổi"},
-    8: {ten:"Bát Bạch (Tả Phù)", cat:"đại lộc, phú quý, đinh khí vượng, nhà cửa đất đai, thịnh vượng lâu dài, nhiều con cháu", hung:"tài ứ đọng không sinh lời, đinh suy, bất động sản trì trệ, sức khỏe xương khớp kém", luuY:"là sao tài lộc hàng đầu khi vượng; khi suy chỉ như đất bỏ hoang"},
-    9: {ten:"Cửu Tử (Hữu Bật)", cat:"danh vọng, công danh, rạng danh, thành công nổi bật, văn hóa truyền thông, may mắn đột xuất", hung:"hỏa hoạn, tai nạn về lửa/điện, thị phi do lời nói, bệnh về mắt, tim mạch, huyết áp", luuY:"khi vượng rất sáng danh; khi suy có thể gây họa như sao Ngũ Hoàng"},
+    1: {ten:"Nhất Bạch (Tham Lang)", cat:"(chưa tải được dữ liệu luận giải — kiểm tra luan-giai.js)", hung:"(chưa tải được dữ liệu luận giải — kiểm tra luan-giai.js)"},
+    2: {ten:"Nhị Hắc (Cự Môn)", cat:"(chưa tải được dữ liệu luận giải — kiểm tra luan-giai.js)", hung:"(chưa tải được dữ liệu luận giải — kiểm tra luan-giai.js)"},
+    3: {ten:"Tam Bích (Lộc Tồn)", cat:"(chưa tải được dữ liệu luận giải — kiểm tra luan-giai.js)", hung:"(chưa tải được dữ liệu luận giải — kiểm tra luan-giai.js)"},
+    4: {ten:"Tứ Lục (Văn Khúc)", cat:"(chưa tải được dữ liệu luận giải — kiểm tra luan-giai.js)", hung:"(chưa tải được dữ liệu luận giải — kiểm tra luan-giai.js)"},
+    5: {ten:"Ngũ Hoàng (Liêm Trinh)", cat:"(chưa tải được dữ liệu luận giải — kiểm tra luan-giai.js)", hung:"(chưa tải được dữ liệu luận giải — kiểm tra luan-giai.js)"},
+    6: {ten:"Lục Bạch (Vũ Khúc)", cat:"(chưa tải được dữ liệu luận giải — kiểm tra luan-giai.js)", hung:"(chưa tải được dữ liệu luận giải — kiểm tra luan-giai.js)"},
+    7: {ten:"Thất Xích (Phá Quân)", cat:"(chưa tải được dữ liệu luận giải — kiểm tra luan-giai.js)", hung:"(chưa tải được dữ liệu luận giải — kiểm tra luan-giai.js)"},
+    8: {ten:"Bát Bạch (Tả Phù)", cat:"(chưa tải được dữ liệu luận giải — kiểm tra luan-giai.js)", hung:"(chưa tải được dữ liệu luận giải — kiểm tra luan-giai.js)"},
+    9: {ten:"Cửu Tử (Hữu Bật)", cat:"(chưa tải được dữ liệu luận giải — kiểm tra luan-giai.js)", hung:"(chưa tải được dữ liệu luận giải — kiểm tra luan-giai.js)"},
 };
 // Ghép ý nghĩa riêng của sao với trạng thái vượng-suy hiện tại: cat dùng nghĩa tốt, hung dùng nghĩa xấu,
 // còn binh (Suy khí/Thoái khí) thì nghĩa tốt đã nhạt dần, chưa tới mức xấu hẳn — cần kích hoạt lại.
@@ -1483,12 +1485,7 @@ async function tinhToanPhiTinh() {
     if (!divLuanGiaiToanNha) {
         divLuanGiaiToanNha = document.createElement("div");
         divLuanGiaiToanNha.id = "ketQuaLuanGiaiToanNha";
-        // Không dùng class "luan-giai-container" (nền trắng + bo góc + box-shadow) ở đây vì tạo
-        // khung to gây rối mắt cho cả khối Thành Môn/Địa Vận/Kiêm Hướng/Tổng kết; chỉ giữ lại
-        // khoảng cách như class cũ bằng style riêng cho div này (không đụng CSS global vì class
-        // đó còn dùng ở index.html). Không set max-width (khác class cũ) để chiều rộng khớp với
-        // khối "Lịch nhà" (#duBaoThoiGian) ngay phía trên, vốn không giới hạn max-width.
-        divLuanGiaiToanNha.style.cssText = "margin-top:4px; padding:16px; box-sizing:border-box;";
+        divLuanGiaiToanNha.className = "luan-giai-container";
         divLuanGiaiToanNha.innerHTML = `<div class="luan-giai-title">📋 Luận giải toàn nhà cho Vận (<span id="tieuDeVanLGTN"></span>):</div><div id="ketQuaLuanGiaiToanNhaBody"></div>`;
         duBao.insertAdjacentElement("afterend", divLuanGiaiToanNha);
     }
