@@ -420,7 +420,7 @@
                     html += `<line x1="${x1b.toFixed(1)}" y1="${y1b.toFixed(1)}" x2="${x2b.toFixed(1)}" y2="${y2b.toFixed(1)}" stroke="#3a2a1a" stroke-width="0.8"/>`;
                     let radT24 = (s.goc - 90) * Math.PI / 180;
                     let xS = cx + rText24Son * Math.cos(radT24), yS = cy + rText24Son * Math.sin(radT24);
-                    html += `<g transform="rotate(${s.goc} ${xS.toFixed(1)} ${yS.toFixed(1)})"><text x="${xS.toFixed(1)}" y="${yS.toFixed(1)}" font-size="${(tpFontSize*0.75).toFixed(1)}" font-weight="700" fill="#2a2a2a" stroke="#fff" stroke-width="2" paint-order="stroke" text-anchor="middle" dominant-baseline="middle">${s.ten}</text></g>`;
+                    html += `<g transform="rotate(${s.goc} ${xS.toFixed(1)} ${yS.toFixed(1)})"><text x="${xS.toFixed(1)}" y="${yS.toFixed(1)}" font-size="${(tpFontSize*1.15).toFixed(1)}" font-weight="700" fill="#2a2a2a" stroke="#fff" stroke-width="2" paint-order="stroke" text-anchor="middle" dominant-baseline="middle">${s.ten}</text></g>`;
                 });
 
                 // ---- VÒNG CHIA ĐỘ (ngoài cùng, mỗi 10°) ----
@@ -432,7 +432,7 @@
                     let x2 = cx + rDoSo * Math.cos(rad), y2 = cy + rDoSo * Math.sin(rad);
                     html += `<line x1="${x1.toFixed(1)}" y1="${y1.toFixed(1)}" x2="${x2.toFixed(1)}" y2="${y2.toFixed(1)}" stroke="#5c4a3a" stroke-width="${isMajor?1.5:1}" opacity="0.85"/>`;
                     let xt = cx + rDoText * Math.cos(rad), yt = cy + rDoText * Math.sin(rad);
-                    html += `<text x="${xt.toFixed(1)}" y="${yt.toFixed(1)}" font-size="${(tpFontSize*0.6).toFixed(1)}" font-weight="600" fill="#2a2a2a" stroke="#fff" stroke-width="2" paint-order="stroke" text-anchor="middle" dominant-baseline="middle" transform="rotate(${deg} ${xt.toFixed(1)} ${yt.toFixed(1)})">${deg}</text>`;
+                    html += `<text x="${xt.toFixed(1)}" y="${yt.toFixed(1)}" font-size="${(tpFontSize*1.05).toFixed(1)}" font-weight="600" fill="#2a2a2a" stroke="#fff" stroke-width="2" paint-order="stroke" text-anchor="middle" dominant-baseline="middle" transform="rotate(${deg} ${xt.toFixed(1)} ${yt.toFixed(1)})">${deg}</text>`;
                 }
 
                 // 12 cung THUẦN Địa Chi, mỗi cung đúng 30°, tâm cung tại đúng bội số của 30°
@@ -493,8 +493,8 @@
                     html += `<text x="${cx}" y="${cy+30}" font-size="${tpFontSize}" font-weight="700" fill="#555" stroke="#fff" stroke-width="2.5" paint-order="stroke" text-anchor="middle">${chieuTruongSinh==="nghich"?"Trường Sinh nghịch":"Trường Sinh thuận"}</text>`;
                 } else if (cuc) {
                     html += `<text x="${cx}" y="${cy-30}" font-size="${(tpFontSize*1.4).toFixed(1)}" font-weight="900" fill="#2e7d32" stroke="#fff" stroke-width="3" paint-order="stroke" text-anchor="middle">${cuc} Cục</text>`;
-                    if (diaChiDen) html += `<text x="${cx}" y="${cy}" font-size="${tpFontSize}" font-weight="700" fill="#1565c0" stroke="#fff" stroke-width="2.5" paint-order="stroke" text-anchor="middle">Đến: ${diaChiDen}${gdDen?" — "+gdDen.gd:""}</text>`;
-                    html += `<text x="${cx}" y="${cy+30}" font-size="${tpFontSize}" font-weight="700" fill="#e65100" stroke="#fff" stroke-width="2.5" paint-order="stroke" text-anchor="middle">Đi: ${diaChiDi}${gdDi?" — "+gdDi.gd:""}</text>`;
+                    if (diaChiDen) html += `<text x="${cx}" y="${cy+25}" font-size="${tpFontSize}" font-weight="700" fill="#1565c0" stroke="#fff" stroke-width="2.5" paint-order="stroke" text-anchor="middle">Đến: ${diaChiDen}${gdDen?" — "+gdDen.gd:""}</text>`;
+                    html += `<text x="${cx}" y="${cy+49}" font-size="${tpFontSize}" font-weight="700" fill="#e65100" stroke="#fff" stroke-width="2.5" paint-order="stroke" text-anchor="middle">Đi: ${diaChiDi}${gdDi?" — "+gdDi.gd:""}</text>`;
                 } else {
                     html += `<text x="${cx}" y="${cy-15}" font-size="${(tpFontSize*1.2).toFixed(1)}" font-weight="800" fill="#c62828" stroke="#fff" stroke-width="3" paint-order="stroke" text-anchor="middle">⚠️ Chưa chọn Nước Đi</text>`;
                     html += `<text x="${cx}" y="${cy+15}" font-size="${tpFontSize}" font-weight="600" fill="#666" stroke="#fff" stroke-width="2.5" paint-order="stroke" text-anchor="middle">Chọn Nước Đi để xác định Cục</text>`;
@@ -554,7 +554,7 @@
                 let svg = damBaoSvgBatTrachTonTai(); if (!svg) return;
                 svg.innerHTML = "";
                 const cx = 500, cy = 500;
-                const rOuter = 400, rInner = 200, rTextDuNien = 375, rTextPhuong = 300;
+                const rOuter = 400, rInner = 280, rTextDuNien = 375, rTextPhuong = 340;
                 const rDoTick = rOuter, rDoText = rOuter + 40, rDoSo = rOuter + 20;
                 // Vòng phụ (chỉ vẽ khi batTrachCheDo === "menh"): 1 dải mỏng ngay SÁT VÀNH TRONG
                 // (rInnerMenh -> rInner), tô theo Du Niên tính từ Quái MỆNH gia chủ, để so sánh
@@ -611,7 +611,7 @@
                     let x2 = cx + rDoSo * Math.cos(rad), y2 = cy + rDoSo * Math.sin(rad);
                     html += `<line x1="${x1.toFixed(1)}" y1="${y1.toFixed(1)}" x2="${x2.toFixed(1)}" y2="${y2.toFixed(1)}" stroke="#5c4a3a" stroke-width="${isMajor?1.5:1}" opacity="0.85"/>`;
                     let xt = cx + rDoText * Math.cos(rad), yt = cy + rDoText * Math.sin(rad);
-                    html += `<text x="${xt.toFixed(1)}" y="${yt.toFixed(1)}" font-size="${(tpFontSize*0.6).toFixed(1)}" font-weight="600" fill="#2a2a2a" stroke="#fff" stroke-width="2" paint-order="stroke" text-anchor="middle" dominant-baseline="middle" transform="rotate(${deg} ${xt.toFixed(1)} ${yt.toFixed(1)})">${deg}</text>`;
+                    html += `<text x="${xt.toFixed(1)}" y="${yt.toFixed(1)}" font-size="${(tpFontSize*1.05).toFixed(1)}" font-weight="600" fill="#2a2a2a" stroke="#fff" stroke-width="2" paint-order="stroke" text-anchor="middle" dominant-baseline="middle" transform="rotate(${deg} ${xt.toFixed(1)} ${yt.toFixed(1)})">${deg}</text>`;
                 }
 
                 // 8 cung Du Niên, mỗi cung 45°, tâm cung tại đúng bội số của 45° (Bắc=0°, Đông Bắc=45°...)
@@ -675,7 +675,7 @@
                             // Gộp "(Mệnh)" ngay sau tên Du Niên trên cùng 1 dòng — dải này khá hẹp
                             // nên tách 2 dòng riêng sẽ chật; ghi gọn để phân biệt với vòng Trạch
                             // ở ngoài (đã có nhãn "(Ngoài · Trạch)" riêng).
-                            html += `<g transform="rotate(${gocTam} ${xM.toFixed(1)} ${yM.toFixed(1)})"><text x="${xM.toFixed(1)}" y="${yM.toFixed(1)}" font-size="${(tpFontSize*0.7).toFixed(1)}" font-weight="800" fill="#4a148c" stroke="#fff" stroke-width="2.5" paint-order="stroke" text-anchor="middle" dominant-baseline="middle">${tenDuNienMenh}</text></g>`;
+                            html += `<g transform="rotate(${gocTam} ${xM.toFixed(1)} ${yM.toFixed(1)})"><text x="${xM.toFixed(1)}" y="${yM.toFixed(1)}" font-size="${(tpFontSize*1.1).toFixed(1)}" font-weight="800" fill="#4a148c" stroke="#fff" stroke-width="2.5" paint-order="stroke" text-anchor="middle" dominant-baseline="middle">${tenDuNienMenh}</text></g>`;
                         }
                     }
                 });
@@ -704,12 +704,12 @@
                     if (sonDi) { let dnDi = phuongDi ? duNienTaiPhuong(phuongDi) : null; html += `<text x="${cx}" y="${cy+46}" font-size="${tpFontSize}" font-weight="700" fill="#e65100" stroke="#fff" stroke-width="2.5" paint-order="stroke" text-anchor="middle">Đi: ${sonDi} (${phuongDi})${dnDi?" — "+dnDi:""}</text>`; }
                 } else {
                     // Chữ tâm rút gọn, cỡ chữ nhỏ hơn để vừa trong bán kính 130 (không đè dải phụ).
-                    html += `<text x="${cx}" y="${cy-32}" font-size="${(tpFontSize*0.85).toFixed(1)}" font-weight="900" fill="#2e7d32" stroke="#fff" stroke-width="2.5" paint-order="stroke" text-anchor="middle">Trạch (Ngoài): ${quaiTrachNha.ten}</text>`;
+                    html += `<text x="${cx}" y="${cy-32}" font-size="${(tpFontSize*1.05).toFixed(1)}" font-weight="900" fill="#2e7d32" stroke="#fff" stroke-width="2.5" paint-order="stroke" text-anchor="middle">Trạch (Ngoài): ${quaiTrachNha.ten}</text>`;
                     if (menhGiaChu) {
-                        html += `<text x="${cx}" y="${cy-14}" font-size="${(tpFontSize*0.85).toFixed(1)}" font-weight="900" fill="#4a148c" stroke="#fff" stroke-width="2.5" paint-order="stroke" text-anchor="middle">Nhân (trong): ${menhGiaChu.cung}</text>`;
+                        html += `<text x="${cx}" y="${cy-14}" font-size="${(tpFontSize*1.05).toFixed(1)}" font-weight="900" fill="#4a148c" stroke="#fff" stroke-width="2.5" paint-order="stroke" text-anchor="middle">Nhân (trong): ${menhGiaChu.cung}</text>`;
                         let phamViTrach = nhomTrach.split(" ")[0], phamViMenh = menhGiaChu.nhom.split(" ")[0];
                         let hopNhau = phamViTrach === phamViMenh;
-                        html += `<text x="${cx}" y="${cy+4}" font-size="${(tpFontSize*0.65).toFixed(1)}" font-weight="700" fill="${hopNhau?'#1565c0':'#c62828'}" stroke="#fff" stroke-width="2" paint-order="stroke" text-anchor="middle">${hopNhau?'✅ Cùng '+phamViTrach+' Tứ':'⚠️ Lệch Đông/Tây'}</text>`;
+                        html += `<text x="${cx}" y="${cy+25}" font-size="${(tpFontSize*1.05).toFixed(1)}" font-weight="700" fill="${hopNhau?'#1565c0':'#c62828'}" stroke="#fff" stroke-width="2" paint-order="stroke" text-anchor="middle">${hopNhau?'✅ Cùng '+phamViTrach+' Tứ':'⚠️ Lệch Đông/Tây'}</text>`;
                     } else {
                         html += `<text x="${cx}" y="${cy-10}" font-size="${(tpFontSize*0.7).toFixed(1)}" font-weight="700" fill="#c62828" stroke="#fff" stroke-width="2" paint-order="stroke" text-anchor="middle">Chưa rõ năm sinh</text>`;
                     }
