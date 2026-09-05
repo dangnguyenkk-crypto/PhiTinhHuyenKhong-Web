@@ -1222,7 +1222,7 @@
                 let hopMenh = (phamViMenh !== null && phamViMenh === phamViTrach);
                 document.getElementById("ketQuaThuyKhau").style.display = "block";
                 document.getElementById("ketQuaThuyKhau").innerHTML =
-                    `<b>Đã ghi nhận Thủy Khẩu:</b><br>house_facing = ${houseFacing}° (hướng nhà ≈ sơn <b>${sonHuongNhaTamHop.ten}</b>)<br>water_in_direction (Nước đến, 24 sơn) = ${sonDen}<br>water_out_direction (Nước đi, 24 sơn) = ${sonDi}<br>Nước Đến/Đi theo Địa Chi (Tam Hợp) = ${diaChiDen||"—"} / ${diaChiDi||"—"}<br><br>
+                    `<b>Đã ghi nhận Thủy Khẩu:</b><br>house_facing = ${houseFacing}° (hướng nhà ≈ sơn <b>${sonHuongNhaTamHop.ten}</b>)<br>water_in_direction (Nước đến, 24 sơn Bát trạch) = ${sonDen}<br>water_out_direction (Nước đi, 24 sơn Bát trạch) = ${sonDi}<br>Nước Đến/Đi (Tam Hợp vòng trường sinh) = ${diaChiDen||"—"} / ${diaChiDi||"—"}<br><br>
                      ${menh ? `<b>🏡 Trạch mệnh gia chủ:</b> Năm sinh ${namSinh} (${gioiTinhRaw}) → Quái <b>${menh.cung}</b> (Quái ${menh.quaiSo}, hành ${menh.hanh}, ${nhomMenh})<br>
                      <b style="color:${hopMenh?'#1565c0':'#c62828'}">${hopMenh?'✅ Mệnh gia chủ HỢP với Trạch nhà (cùng nhóm '+nhomMenh+')':'⚠️ Mệnh gia chủ KHÔNG hợp Trạch nhà — phạm "Đông Tây hỗn loạn" (Mệnh '+nhomMenh+', Trạch '+nhomTrach+')'}</b><br><br>`
                      : `<b>🏡 Trạch mệnh gia chủ:</b> <i>Không xác định được (kiểm tra lại năm sinh)</i><br><br>`}

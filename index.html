@@ -286,10 +286,10 @@
                 <div style="flex:1; min-width:70px;"><label style="font-size:10px; display:block; margin-bottom:1px;">Hướng (°)</label>
                     <input type="number" id="houseFacing" value="180" min="0" max="360" style="padding:4px 6px; font-size:12px; width:100%; height:24px;" oninput="capNhatHuongTuThuyPhap()">
                 </div>
-                <div style="flex:1.1; min-width:65px;"><label style="font-size:10px; display:block; margin-bottom:1px;">Nước ĐẾN</label>
+                <div style="flex:1.1; min-width:65px;"><label style="font-size:9px; display:block; margin-bottom:1px;">Nước ĐẾN (Bát trạch)</label>
                     <select id="selSonDen" style="padding:4px 4px; font-size:11px; width:100%; height:24px;"></select>
                 </div>
-                <div style="flex:1.1; min-width:65px;"><label style="font-size:10px; display:block; margin-bottom:1px;">Nước ĐI</label>
+                <div style="flex:1.1; min-width:65px;"><label style="font-size:9px; display:block; margin-bottom:1px;">Nước ĐI (Bát trạch)</label>
                     <select id="selSonDi" style="padding:4px 4px; font-size:11px; width:100%; height:24px;"></select>
                 </div>
                 <div style="flex:1.1; min-width:90px;">
@@ -310,10 +310,10 @@
                         <button id="btnTruongSinhTheoToa" type="button" onclick="chonKhoiTruongSinhCheDo('toa')" style="flex:1; padding:5px 4px; font-size:11px; border-radius:6px; cursor:pointer; border:1.5px solid #999; background:#fff; color:#555; font-weight:600;">⛰️ Tọa nhà</button>
                     </div>
                 </div>
-                <div style="flex:1.1; min-width:65px;"><label style="font-size:10px; display:block; margin-bottom:1px;">Nước ĐẾN (Địa Chi)</label>
+                <div style="flex:1.1; min-width:65px;"><label style="font-size:10px; display:block; margin-bottom:1px;">Nước ĐẾN (vòng Trường Sinh)</label>
                     <select id="selDiaChiDen" style="padding:4px 4px; font-size:11px; width:100%; height:24px;" onchange="veCompassOverlay(parseFloat(document.getElementById('houseFacing').value)||0)"></select>
                 </div>
-                <div style="flex:1.1; min-width:65px;"><label style="font-size:10px; display:block; margin-bottom:1px;">Nước ĐI (Địa Chi)</label>
+                <div style="flex:1.1; min-width:65px;"><label style="font-size:10px; display:block; margin-bottom:1px;">Nước ĐI (vòng Trường Sinh)</label>
                     <select id="selDiaChiDi" style="padding:4px 4px; font-size:11px; width:100%; height:24px;" onchange="veCompassOverlay(parseFloat(document.getElementById('houseFacing').value)||0)"></select>
                 </div>
                 <!-- Ý nghĩa nút Thuận/Nghịch đổi theo chế độ ở trên:
@@ -324,8 +324,8 @@
                 <div style="flex:1 1 100%; min-width:140px; display:flex; gap:6px; align-items:flex-end;">
                     <div style="flex:1;"><label id="lblChieuTruongSinh" style="font-size:10px; display:block; margin-bottom:1px;">🌊 Chiều nước qua Minh Đường</label>
                         <div style="display:flex; gap:4px;">
-                            <button id="btnTruongSinhThuan" type="button" onclick="chonChieuTruongSinh('thuan')" style="flex:1; padding:5px 4px; font-size:11px; border-radius:6px; cursor:pointer; border:1.5px solid #4CAF50; background:#4CAF50; color:#fff; font-weight:600;">↻ Thuận</button>
-                            <button id="btnTruongSinhNghich" type="button" onclick="chonChieuTruongSinh('nghich')" style="flex:1; padding:5px 4px; font-size:11px; border-radius:6px; cursor:pointer; border:1.5px solid #999; background:#fff; color:#555; font-weight:600;">↺ Nghịch</button>
+                            <button id="btnTruongSinhThuan" type="button" onclick="chonChieuTruongSinh('thuan')" style="flex:1; padding:5px 4px; font-size:11px; border-radius:6px; cursor:pointer; border:1.5px solid #4CAF50; background:#4CAF50; color:#fff; font-weight:600;">↻ Thuận kim đồng hồ</button>
+                            <button id="btnTruongSinhNghich" type="button" onclick="chonChieuTruongSinh('nghich')" style="flex:1; padding:5px 4px; font-size:11px; border-radius:6px; cursor:pointer; border:1.5px solid #999; background:#fff; color:#555; font-weight:600;">↺ Nghịch kim đồng hồ</button>
                         </div>
                     </div>
                 </div>
@@ -340,7 +340,7 @@
             <div class="ket-qua-box" id="ketQuaThuyKhau" style="display:none;"></div>
         </div>
         <div class="module-panel legend" style="padding:4px 8px;">
-            <b>Hướng dẫn:</b> Kéo la bàn đặt tâm cửa chính. Mũi tên đỏ = hướng nhà.<br>
+            <b>Hướng dẫn:</b> Kéo la bàn đặt tâm cửa chính. Mũi tên xanh = hướng nhà. nhìn ra ngoài <br>
             🔵 Nước Đến &nbsp; 🟠 Nước Đi &nbsp; 🔴 Hướng Nhà
         </div>
     </div>
