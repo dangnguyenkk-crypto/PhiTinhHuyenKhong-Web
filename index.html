@@ -263,17 +263,23 @@
 
         <div class="module-panel" style="padding:6px 8px;">
             <div style="display:flex; gap:6px; flex-wrap:wrap; margin-bottom:6px; align-items:flex-end;">
-                <div style="flex:2; min-width:100px;"><label style="font-size:10px; display:block; margin-bottom:1px;">🔤 Cỡ chữ</label>
-                    <div style="display:flex; align-items:center; gap:4px;">
-                        <input type="range" id="tpFontSize" min="8" max="28" value="17" style="flex:1; padding:0; height:4px; cursor:pointer;" oninput="capNhatFontSizeThuyPhap(this.value)">
-                        <span id="tpFontSizeLabel" style="font-size:11px; color:#444; min-width:24px; text-align:center; font-weight:bold;">17</span>
+                <div style="flex:1 1 70px; min-width:70px;"><label style="font-size:10px; display:block; margin-bottom:1px;">🔤 Cỡ chữ</label>
+                    <div style="display:flex; align-items:center; gap:3px;">
+                        <input type="range" id="tpFontSize" min="8" max="28" value="17" style="flex:1; min-width:0; padding:0; height:4px; cursor:pointer;" oninput="capNhatFontSizeThuyPhap(this.value)">
+                        <span id="tpFontSizeLabel" style="font-size:10px; color:#444; min-width:20px; text-align:center; font-weight:bold;">17</span>
                     </div>
                 </div>
-                <div style="flex:1; min-width:70px;"><label style="font-size:10px; display:block; margin-bottom:1px;">🎨 Màu tia</label>
-                    <input type="color" id="colorTiaNetDut" value="#e91e63" style="height:26px; padding:2px; cursor:pointer; width:100%; max-width:80px;" oninput="capNhatMauTia()" onchange="capNhatMauTia()">
+                <div style="flex:1 1 70px; min-width:70px;"><label style="font-size:10px; display:block; margin-bottom:1px; white-space:nowrap;">🌫️ Độ mờ</label>
+                    <div style="display:flex; align-items:center; gap:3px;">
+                        <input type="range" id="tpDoMoNen" min="0" max="1" step="0.05" value="0.3" style="flex:1; min-width:0; padding:0; height:4px; cursor:pointer;" oninput="capNhatDoMoNenThuyPhap(this.value)">
+                        <span id="tpDoMoNenLabel" style="font-size:10px; color:#444; min-width:24px; text-align:center; font-weight:bold;">30%</span>
+                    </div>
                 </div>
-                <div style="flex:1; min-width:70px;"><label style="font-size:10px; display:block; margin-bottom:1px;">🎨 Ranh 8</label>
-                    <input type="color" id="colorRanh8Huong" value="#1565c0" style="height:26px; padding:2px; cursor:pointer; width:100%; max-width:80px;" oninput="capNhatMauRanh8()" onchange="capNhatMauRanh8()">
+                <div style="flex:0 0 56px; min-width:56px;"><label style="font-size:10px; display:block; margin-bottom:1px;">🎨 Tia</label>
+                    <input type="color" id="colorTiaNetDut" value="#e91e63" style="height:26px; padding:2px; cursor:pointer; width:100%;" oninput="capNhatMauTia()" onchange="capNhatMauTia()">
+                </div>
+                <div style="flex:0 0 56px; min-width:56px;"><label style="font-size:10px; display:block; margin-bottom:1px;">🎨 Ranh 8</label>
+                    <input type="color" id="colorRanh8Huong" value="#1565c0" style="height:26px; padding:2px; cursor:pointer; width:100%;" oninput="capNhatMauRanh8()" onchange="capNhatMauRanh8()">
                 </div>
             </div>
             <div style="display:flex; gap:6px; flex-wrap:wrap;">
@@ -289,6 +295,47 @@
                 <div style="flex:1.1; min-width:90px;">
                     <button onclick="xacNhanThuyKhau()" style="padding:4px 6px; font-size:12px; width:100%; height:34px; white-space:nowrap;">✅ Xác nhận</button>
                 </div>
+            </div>
+            <!-- Chỉ dùng cho la bàn Trường Sinh (12 cung Địa Chi) — 24 sơn không đủ rõ ràng vì
+                 các sơn Càn/Khôn/Cấn/Tốn nằm vắt ngang ranh giới 2 Địa Chi (vd Càn nửa thuộc
+                 Tuất, nửa thuộc Hợi), nên la bàn Trường Sinh cần chọn thẳng Địa Chi, không suy
+                 ngầm từ sơn 24. Ẩn/hiện hàng này do JS điều khiển theo kiểu la bàn đang chọn. -->
+            <div id="tpDiaChiRow" style="display:none; gap:6px; flex-wrap:wrap; margin-top:6px;">
+                <!-- Chọn khởi Trường Sinh theo Thủy Khẩu (Cục = Nước Đi, mặc định) hay theo Tọa
+                     (Ngũ Hành của Sơn Tọa nhà). Đổi chế độ này đổi hẳn cách xác định Cục/Hành,
+                     không chỉ đổi chiều đếm. -->
+                <div style="flex:1 1 100%; min-width:140px;"><label style="font-size:10px; display:block; margin-bottom:1px;">📍 Khởi Trường Sinh theo</label>
+                    <div style="display:flex; gap:4px;">
+                        <button id="btnTruongSinhTheoThuyKhau" type="button" onclick="chonKhoiTruongSinhCheDo('thuykhau')" style="flex:1; padding:5px 4px; font-size:11px; border-radius:6px; cursor:pointer; border:1.5px solid #1565c0; background:#1565c0; color:#fff; font-weight:600;">💧 Thủy Khẩu</button>
+                        <button id="btnTruongSinhTheoToa" type="button" onclick="chonKhoiTruongSinhCheDo('toa')" style="flex:1; padding:5px 4px; font-size:11px; border-radius:6px; cursor:pointer; border:1.5px solid #999; background:#fff; color:#555; font-weight:600;">⛰️ Tọa nhà</button>
+                    </div>
+                </div>
+                <div style="flex:1.1; min-width:65px;"><label style="font-size:10px; display:block; margin-bottom:1px;">Nước ĐẾN (Địa Chi)</label>
+                    <select id="selDiaChiDen" style="padding:4px 4px; font-size:11px; width:100%; height:24px;" onchange="veCompassOverlay(parseFloat(document.getElementById('houseFacing').value)||0)"></select>
+                </div>
+                <div style="flex:1.1; min-width:65px;"><label style="font-size:10px; display:block; margin-bottom:1px;">Nước ĐI (Địa Chi)</label>
+                    <select id="selDiaChiDi" style="padding:4px 4px; font-size:11px; width:100%; height:24px;" onchange="veCompassOverlay(parseFloat(document.getElementById('houseFacing').value)||0)"></select>
+                </div>
+                <!-- Ý nghĩa nút Thuận/Nghịch đổi theo chế độ ở trên:
+                     - Thủy Khẩu: chiều CHẠY của vòng 12 cung (nước chảy qua Minh Đường thuận hay
+                       nghịch chiều 12 Địa Chi) — cùng 1 điểm khởi, chỉ đảo chiều đếm.
+                     - Tọa nhà: chọn 1 trong 2 ĐIỂM KHỞI cố định khác nhau theo Ngũ Hành Sơn Tọa
+                       (vd Thủy: Thuận khởi tại Thân, Nghịch khởi tại Mão) — theo phái Long/Sơn. -->
+                <div style="flex:1 1 100%; min-width:140px; display:flex; gap:6px; align-items:flex-end;">
+                    <div style="flex:1;"><label id="lblChieuTruongSinh" style="font-size:10px; display:block; margin-bottom:1px;">🌊 Chiều nước qua Minh Đường</label>
+                        <div style="display:flex; gap:4px;">
+                            <button id="btnTruongSinhThuan" type="button" onclick="chonChieuTruongSinh('thuan')" style="flex:1; padding:5px 4px; font-size:11px; border-radius:6px; cursor:pointer; border:1.5px solid #4CAF50; background:#4CAF50; color:#fff; font-weight:600;">↻ Thuận</button>
+                            <button id="btnTruongSinhNghich" type="button" onclick="chonChieuTruongSinh('nghich')" style="flex:1; padding:5px 4px; font-size:11px; border-radius:6px; cursor:pointer; border:1.5px solid #999; background:#fff; color:#555; font-weight:600;">↺ Nghịch</button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <!-- Chỉ dùng cho la bàn Bát Trạch (8 cung) — chọn nền la bàn tra theo Trạch đất
+                 (Quái Trạch suy từ hướng nhà — mặc định) hay Mệnh gia chủ (Quái Mệnh theo năm
+                 sinh/giới tính). Ẩn/hiện hàng này do JS điều khiển theo kiểu la bàn đang chọn. -->
+            <div id="tpBatTrachCheDoRow" style="display:none; gap:6px; margin-top:6px;">
+                <button id="btnBatTrachTheoTrach" type="button" onclick="chonCheDoBatTrach('trach')" style="flex:1; padding:5px 6px; font-size:11px; border-radius:6px; cursor:pointer; border:1.5px solid #999; background:#fff; color:#555; font-weight:600;">🏠 Theo Trạch đất</button>
+                <button id="btnBatTrachTheoMenh" type="button" onclick="chonCheDoBatTrach('menh')" style="flex:1; padding:5px 6px; font-size:11px; border-radius:6px; cursor:pointer; border:1.5px solid #4CAF50; background:#4CAF50; color:#fff; font-weight:600;">🧑 So Mệnh gia chủ</button>
             </div>
             <div class="ket-qua-box" id="ketQuaThuyKhau" style="display:none;"></div>
         </div>
