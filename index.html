@@ -329,6 +329,15 @@
                         </div>
                     </div>
                 </div>
+                <!-- Bật/tắt 2 dải Bát Trạch (Trạch đất / Mệnh gia chủ) tích hợp bên trong vòng
+                     12 Địa Chi của la bàn Trường Sinh — độc lập với la bàn Bát Trạch 8 cung
+                     riêng (kiểu la bàn thứ 4). Mỗi dải bật/tắt riêng, không phụ thuộc nhau. -->
+                <div style="flex:1 1 100%; min-width:140px; margin-top:2px;"><label style="font-size:10px; display:block; margin-bottom:1px;">🀄 Dải Bát Trạch tích hợp (bên trong la bàn)</label>
+                    <div style="display:flex; gap:4px;">
+                        <button id="btnToggleBatTrachTrachTrongTS" type="button" onclick="toggleBatTrachTrachTrongTruongSinh()" style="flex:1; padding:5px 4px; font-size:11px; border-radius:6px; cursor:pointer; border:1.5px solid #4CAF50; background:#4CAF50; color:#fff; font-weight:600;">🏠 Trạch đất</button>
+                        <button id="btnToggleBatTrachMenhTrongTS" type="button" onclick="toggleBatTrachMenhTrongTruongSinh()" style="flex:1; padding:5px 4px; font-size:11px; border-radius:6px; cursor:pointer; border:1.5px solid #4CAF50; background:#4CAF50; color:#fff; font-weight:600;">🧑 Mệnh gia chủ</button>
+                    </div>
+                </div>
             </div>
             <!-- Chỉ dùng cho la bàn Bát Trạch (8 cung) — chọn nền la bàn tra theo Trạch đất
                  (Quái Trạch suy từ hướng nhà — mặc định) hay Mệnh gia chủ (Quái Mệnh theo năm
