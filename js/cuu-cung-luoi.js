@@ -469,62 +469,16 @@
     return { deg: Math.round(absBearing), son: SON24_NAMES[idx] };
   }
 
-  var CUU_TINH_DATA = window.SAO_Y_NGHIA || {
-    1: { ten: "Nhất Bạch", tenKhac: "Tham Lang", nguHanh: "Thủy", cung: "Khảm (+)",
-      mauSac: "Trắng", bieuTuong: "Sông, biển, vùng bùn, khe núi sâu tối",
-      coThe: "☵ Tai, Thận, Bàng quang, hệ thống sinh dục, tiết niệu, tuần hoàn máu, tủy xương và vùng thắt lưng",
-      tinhChat: "Bồng bột, lãng đãng", loaiTinh: "Cát tinh",
-      khiSinhVuong: "Vượng đinh lẫn tài, lợi cả văn lẫn võ, thi cử đỗ đạt, tiếng tăm lừng lẫy, sinh con trai thông minh, thăng quan phát tài. Cát tinh hàng đầu.",
-      khiSuyTu: "Hoạ do tửu sắc, tan cửa nát nhà. Bệnh về tai, suy thận, bàng quang, sinh sản. Nặng thì hình khắc vợ, mù loà, yểu mệnh, sống phiêu bạt." },
-    2: { ten: "Nhị Hắc", tenKhac: "Cự Môn", nguHanh: "Thổ", cung: "Khôn (-)",
-      mauSac: "Đen", bieuTuong: "Mộ phần, nơi hoang vu",
-      coThe: "☷ Bụng, tỳ, cơ bắp và mô mềm",
-      tinhChat: "Nhu mà tĩnh (mềm mỏng, bình tĩnh)", loaiTinh: "Hung tinh",
-      khiSinhVuong: "Có quyền có của, cơ ngơi bề thế, vượng cả đinh lẫn tài. Thường xuất võ quý, phụ nữ cai quản gia đình, đa mưu.",
-      khiSuyTu: "Tai hoạ vì sắc, dễ hoả hoạn, thị phi, hao tiền tốn của. Phụ nữ dễ xảy thai, đau bụng, mụn nhọt, bệnh ngoài da, ở goá, bệnh dai dẳng." },
-    3: { ten: "Tam Bích", tenKhac: "Lộc Tồn", nguHanh: "Mộc", cung: "Chấn (+)",
-      mauSac: "Xanh lá cây", bieuTuong: "Rường, cột nhà, vườn góc, dụng cụ tra tấn",
-      coThe: "☳ Chân, Gan, hệ thần kinh, gân mạch và các bệnh về hệ vận động",
-      tinhChat: "Kình (mạnh mẽ) mà trực (thẳng thắn)", loaiTinh: "Hung tinh",
-      khiSinhVuong: "Hưng gia lập nghiệp, giàu sang phú quý, công thành danh toại, vượng nhất ngành trưởng.",
-      khiSuyTu: "Dễ dính kiện tụng, trộm cướp, bệnh tật, hình khắc vợ con. Bệnh nhiễm trùng máu, bệnh về chân, gan, mật." },
-    4: { ten: "Tứ Lục", tenKhac: "Văn Xương", nguHanh: "Mộc", cung: "Tốn (-)",
-      mauSac: "Xanh dương", bieuTuong: "Miếu, cây mây, dây thừng",
-      coThe: "☴ Đùi, Đởm( túi mật), liên quan đến mạch máu, khí quản, các chứng phong thấp và trúng phong",
-      tinhChat: "Hoà hoãn", loaiTinh: "Cát tinh",
-      khiSinhVuong: "Thi cử đỗ đạt, quân tử thăng quan, tiểu nhân có tiền của, lấy được vợ hiền/chồng giỏi, có tài văn chương.",
-      khiSuyTu: "Dễ mắc bệnh thần kinh, hen suyễn, sống phiêu bạt; đam mê tửu sắc phá tan cơ nghiệp. Dễ xảy thai, bệnh thắt lưng, tai nạn bất ngờ." },
-    5: { ten: "Ngũ Hoàng", tenKhac: "Liêm Trinh", nguHanh: "Thổ", cung: "Trung cung",
-      mauSac: "Vàng", bieuTuong: "Đế quyền, rồng vàng, hoàng bào",
-      coThe: "(Không có mô tả riêng)",
-      tinhChat: "(Không có mô tả riêng)", loaiTinh: "Đại hung tinh",
-      khiSinhVuong: "Khi ở đúng trung cung: vượng cả đinh lẫn tài, sự nghiệp phát triển.",
-      khiSuyTu: "Khi bay ra hướng khác: Ngũ Hoàng đại sát, sát tinh lớn nhất. Gặp Thái Tuế/Tam Sát/Thất Sát thì hại người mất của, bệnh tật, nặng có thể nguy hiểm tính mạng." },
-    6: { ten: "Lục Bạch", tenKhac: "Vũ Khúc", nguHanh: "Kim", cung: "Càn (+)",
-      mauSac: "Trắng, bạc", bieuTuong: "Chuông, đỉnh (vạc), ngọc, đá, vàng",
-      coThe: "☰ Đầu, Đại trường, xương khớp",
-      tinhChat: "Cương mà động", loaiTinh: "Cát tinh",
-      khiSinhVuong: "Lắm của đông người, quyền cao chức trọng, phát lớn về nghiệp võ, uy danh lừng lẫy. Cát tinh thứ ba.",
-      khiSuyTu: "Dễ dính kiện tụng, vất vả chốn quan trường. Đau đầu, đau ngực, thương tích do kim loại. Hình hại vợ con, cô đơn." },
-    7: { ten: "Thất Xích", tenKhac: "Phá Quân", nguHanh: "Kim", cung: "Đoài (-)",
-      mauSac: "Đỏ", bieuTuong: "Đao kiếm, kích, rìu",
-      coThe: "☱ Miệng, Phổi, Liên quan đến hệ hô hấp (phế quản), miệng, lưỡi, họng và răng",
-      tinhChat: "Quyết đoán mà nhanh nhẹn", loaiTinh: "Hung tinh",
-      khiSinhVuong: "Vượng cả đinh lẫn tài, sự nghiệp phát đạt, chi út phát phúc, phát về nghiệp võ, quan vận hanh thông.",
-      khiSuyTu: "Dễ gây rắc rối, sống lưu lạc, trộm cướp. Hoả hoạn, tổn thất nhân khẩu, bệnh hô hấp/phổi/cổ họng, bất lợi cho bé gái." },
-    8: { ten: "Bát Bạch", tenKhac: "Tả Phù", nguHanh: "Thổ", cung: "Cấn (+)",
-      mauSac: "Trắng", bieuTuong: "Vườn cây, gò đống",
-      coThe: "☶ Tay, Vị, Tương ứng với các phần nhô ra trên cơ thể như mũi, vú, gót chân; dùng để điều trị các chứng ứ trệ, bệnh về dạ dày",
-      tinhChat: "Bình an, dừng lại", loaiTinh: "Cát tinh",
-      khiSinhVuong: "Công danh phú quý, hợp lập nghiệp/vượng tài, nghỉ ngơi dưỡng sức. Cát tinh thứ hai, có thể hoá giải hung sát.",
-      khiSuyTu: "Dễ tổn hại trẻ nhỏ, bệnh liên quan tay chân, gân cốt, sống lưng, trướng bụng." },
-    9: { ten: "Cửu Tử", tenKhac: "Hữu Bật", nguHanh: "Hỏa", cung: "Ly (-)",
-      mauSac: "Đỏ tía", bieuTuong: "Bếp lò, đèn, nến",
-      coThe: "☲ Mắt, tim, vùng trung thượng vị (là phần bụng phía trên rốn và ngay dưới xương ức, chứa dạ dày, gan, tụy và tá tràng), ngực, vùng mặt và các chứng bệnh nhiệt, viêm nhiễm",
-      tinhChat: "Nóng nảy hung bạo", loaiTinh: "Cát tinh",
-      khiSinhVuong: "Phát phúc rất nhanh, vượng cả đinh lẫn tài, sự nghiệp ổn định, tài văn chương xuất chúng, phát phúc cho chi thứ.",
-      khiSuyTu: "Tính tình kiên cường, khí khái, dễ bị hoả hoạn. Dễ thổ huyết, bệnh về tim và mạch máu, khó sinh." }
-  };
+  // CUU_TINH_DATA: đọc THẲNG từ window.SAO_Y_NGHIA — nguồn DUY NHẤT do luan-giai.js định nghĩa và
+  // export (luan-giai.js load TRƯỚC file này trong index.html). Trước đây file này có 1 bảng fallback
+  // cục bộ dài (9 mục, đủ field tenKhac/coThe/loaiTinh/khiSinhVuong/khiSuyTu...) đặt sau "||" — nhưng
+  // vì luan-giai.js luôn load trước và đã gán window.SAO_Y_NGHIA (dù bảng của nó lúc đó CHƯA đủ field),
+  // nhánh fallback này không bao giờ được dùng tới trên thực tế, khiến CUU_TINH_DATA âm thầm nhận
+  // bảng THIẾU field của luan-giai.js → truy cập .tenKhac/.loaiTinh/.coThe ra "undefined" ở modal
+  // (lỗi "Niên Tinh: ... - undefined"). Đã bổ sung đủ field cho bảng gốc trong luan-giai.js — giờ chỉ
+  // cần đọc lại window.SAO_Y_NGHIA, không giữ 2 bảng dữ liệu trùng nhau (đúng single source of truth).
+  // Vẫn giữ fallback tối giản (rỗng an toàn) phòng khi luan-giai.js lỡ chưa kịp load.
+  var CUU_TINH_DATA = window.SAO_Y_NGHIA || {};
 
   var KY_NEN_BY_CATEGORY = {
     vuong: { nen: "Đặt phòng ngủ, đầu giường, bàn làm việc/học, bàn thờ, cổng cửa chính. Dùng đèn vàng để tăng cường.",
@@ -544,14 +498,21 @@
 
   // renderCompassOverlay: alias gọi sang CompassModule, truyền ctx (dependency injection)
   // thay cho việc đọc trực tiếp setScaledFontSize/scaledOffset/currentVan/currentNamXem như bản gốc.
-  function renderCompassOverlay(svgSelector, center, housePoints, rotationDeg, centerCellHalfW, centerCellHalfH, khuyetThreshold, showPct) {
+  // gridBounds (tuỳ chọn): { minX, maxX, minY, maxY } bounding box của nhà — khi có, nhãn thông tin
+  // 8 cung bát quái + Trung cung (tên cung/%/S-H-V/Thành Môn/từ khóa/Niên tinh) sẽ đặt vào ĐÚNG TÂM
+  // Ô VUÔNG lưới 3x3 tương ứng thay vì trên biên nhà theo bearing — theo yêu cầu Ka: xem thông tin
+  // trong 9 ô Lạc Thư thay vì trong rẻ quạt tròn. Đường tia 24 sơn/tên 24 sơn vẫn giữ nguyên như cũ.
+  function renderCompassOverlay(svgSelector, center, housePoints, rotationDeg, centerCellHalfW, centerCellHalfH, khuyetThreshold, showPct, gridBounds, showSonRays) {
     return CM.renderCompassOverlay(svgSelector, center, housePoints, rotationDeg, centerCellHalfW, centerCellHalfH, khuyetThreshold, {
       getScaledFontSize: setScaledFontSize,
       scaledOffset: scaledOffset,
       currentVan: currentVan,
       currentNamXem: currentNamXem,
       onHuongClick: openHuongModal,
-      showPct: showPct
+      showPct: showPct,
+      gridMode: !!gridBounds,
+      gridBounds: gridBounds,
+      showSonRays: showSonRays !== false
     });
   }
 
@@ -933,7 +894,10 @@
       window.VePhongModule.render();
     }
 
-    if (document.getElementById("compassToggle").checked) {
+    // Luôn gọi renderCompassOverlay để nhãn thông tin 8 cung/Trung cung (tên cung/%/S-H-V/Thành Môn/
+    // từ khóa/Niên tinh) hiện thường trực trong 9 ô — checkbox #compassToggle giờ CHỈ bật/tắt riêng
+    // phần tia 24 sơn + tên 24 sơn (showSonRays), không còn ẩn toàn bộ la bàn như trước.
+    {
       var xs = currentPoints.map(function (p) { return p.x; });
       var ys = currentPoints.map(function (p) { return p.y; });
       var minXc = Math.min.apply(null, xs), maxXc = Math.max.apply(null, xs);
@@ -944,7 +908,9 @@
       // Đồng bộ Hướng nhà với các tab khác (Tâm Nhà, Phi Tinh) — dùng chung 1 input #doSoTay
       // thay vì input riêng #compassRotInput trước đây (2 input tách biệt gây lệch hướng giữa các tab).
       var rotationDeg = parseInt(document.getElementById("doSoTay").value, 10) || 0;
-      renderCompassOverlay("#cuuCungSvg2", center, currentPoints, rotationDeg, centerCellHalfW, centerCellHalfH, threshold, showPctLabel);
+      var gridBounds = { minX: minXc, maxX: maxXc, minY: minYc, maxY: maxYc };
+      var showSonRays = document.getElementById("compassToggle").checked;
+      renderCompassOverlay("#cuuCungSvg2", center, currentPoints, rotationDeg, centerCellHalfW, centerCellHalfH, threshold, showPctLabel, gridBounds, showSonRays);
     }
 
     drawHandles();

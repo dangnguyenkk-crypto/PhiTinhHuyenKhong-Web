@@ -389,58 +389,121 @@
     var currentNamXem = ctx.currentNamXem || new Date().getFullYear();
     var showPct = ctx.showPct !== false; // mặc định true nếu không truyền — giữ tương thích ngược
 
+    // ==================================================================
+    // CHẾ ĐỘ LƯỚI (gridMode): thay vì đặt nhãn thông tin (tên cung/%/S-H-V/
+    // Thành Môn/từ khóa/Niên tinh) tại điểm trên biên nhà theo bearing hình
+    // quạt tròn, ta đặt nhãn đó vào ĐÚNG TÂM Ô VUÔNG lưới 3x3 (Lạc Thư) tương
+    // ứng với hướng đó. Đường tia 24 sơn + tên 24 sơn VẪN vẽ như cũ (không đổi)
+    // — chỉ nhãn thông tin 8 cung bát quái + Trung cung là "nhảy" vào ô vuông.
+    // ctx.gridMode = true, ctx.gridBounds = { minX, maxX, minY, maxY } của
+    // bounding box nhà (giống hệt bounding box mà CuuCungGrid.render dùng).
+    // ==================================================================
+    var gridMode = !!ctx.gridMode;
+    var gridBounds = ctx.gridBounds || null;
+    var cellW = 0, cellH = 0;
+    if (gridMode && gridBounds) {
+      cellW = (gridBounds.maxX - gridBounds.minX) / 3;
+      cellH = (gridBounds.maxY - gridBounds.minY) / 3;
+    } else {
+      gridMode = false; // không đủ dữ liệu bounding box thì tự tắt, dùng lại kiểu cũ
+    }
+    // showSonRays: bật/tắt RIÊNG phần tia 24 sơn + tên 24 sơn (+ nhãn phụ T/Đ/N) — KHÔNG ảnh hưởng
+    // tới nhãn thông tin 8 cung bát quái/Trung cung (tên cung/%/S-H-V/Thành Môn/từ khóa/Niên tinh),
+    // vốn luôn hiện bất kể tắt/bật la bàn 24 sơn (theo yêu cầu Ka: bỏ tick chỉ ẩn tia, không ẩn thông tin).
+    var showSonRays = ctx.showSonRays !== false;
+    // Tâm + nửa cạnh của bounding box lưới 9 ô — dùng làm biên "hộp chữ nhật" cho tia 24 sơn chạy
+    // tới, THAY CHO biên đa giác nhà thực tế (có thể méo/lõm) — theo yêu cầu Ka: 24 sơn chạy trên
+    // biên của 9 cung (hình chữ nhật bao lưới) thay vì biên nhà.
+    var gridBoxCenter = null, gridBoxHalfW = 0, gridBoxHalfH = 0;
+    if (gridMode) {
+      gridBoxCenter = { x: (gridBounds.minX + gridBounds.maxX) / 2, y: (gridBounds.minY + gridBounds.maxY) / 2 };
+      gridBoxHalfW = (gridBounds.maxX - gridBounds.minX) / 2;
+      gridBoxHalfH = (gridBounds.maxY - gridBounds.minY) / 2;
+    }
+    // Trả về điểm mà 1 bearing màn hình chạm tới — biên hộp lưới 9 ô nếu gridMode, ngược lại biên
+    // đa giác nhà thực tế như trước (tương thích ngược cho tab Thủy Pháp chưa truyền gridBounds).
+    function sonRayHitPoint(bearingDeg) {
+      if (gridMode) return rectExitPoint(gridBoxCenter, bearingDeg, gridBoxHalfW, gridBoxHalfH);
+      return rayHouseIntersection(center, bearingDeg, housePoints);
+    }
+    // Trả về tâm ô vuông (row/col 0..2) tương ứng với 1 bearing MÀN HÌNH (đã cộng/trừ rotationDeg
+    // rồi) — dir.x/dir.y luôn là bội số của 0/±1/±0.7071 vì bearing luôn là bội của 45°, nên làm
+    // tròn là đủ chính xác để xác định đúng ô (không bị lệch do sai số dấu phẩy động).
+    // Bảng ánh xạ "sector" (0..7, đi theo chiều kim đồng hồ bắt đầu từ hướng "lên" màn hình, mỗi
+    // sector rộng đúng 45°) sang toạ độ ô (row,col) trong lưới 3x3 — CỐ ĐỊNH, không phụ thuộc rotationDeg.
+    var SON_SECTOR_TO_CELL = [
+      { row: 0, col: 1 }, { row: 0, col: 2 }, { row: 1, col: 2 }, { row: 2, col: 2 },
+      { row: 2, col: 1 }, { row: 2, col: 0 }, { row: 1, col: 0 }, { row: 0, col: 0 }
+    ];
+    // Trả về tâm ô vuông ứng với 1 bearing MÀN HÌNH (đã cộng/trừ rotationDeg rồi). Dùng round(bearing/45)
+    // rồi mod 8 — KHÔNG dùng round riêng lẻ trên dir.x/dir.y như trước, vì cách đó có thể khiến 2 hướng
+    // liền kề (VD Khảm/Cấn) cùng làm tròn về 1 ô khi rotationDeg lệch khỏi bội số 45° (VD nhà xoay 15°),
+    // gây đè nhãn lên nhau và bỏ trống ô kia. Công thức sector đảm bảo 8 hướng LUÔN cho 8 sector khác
+    // nhau (0..7) với MỌI rotationDeg, nên không bao giờ trùng ô.
+    function gridCellCenterForBearing(bearingDeg) {
+      var norm = ((bearingDeg % 360) + 360) % 360;
+      var sector = Math.round(norm / 45) % 8;
+      var cell = SON_SECTOR_TO_CELL[sector];
+      return {
+        x: gridBounds.minX + (cell.col + 0.5) * cellW,
+        y: gridBounds.minY + (cell.row + 0.5) * cellH
+      };
+    }
+
     var svg = document.querySelector(svgSelector);
     if (!svg) return;
     var g = document.createElementNS("http://www.w3.org/2000/svg", "g");
     g.setAttribute("id", "compassOverlay");
 
-    for (var i = 0; i < 24; i++) {
-      var boundaryBearing = i * 15 + 7.5 - rotationDeg;
-      var isHuongBoundary = (i % 3 === 1);
-      var hit = rayHouseIntersection(center, boundaryBearing, housePoints);
-      if (!hit) continue;
-      var line = document.createElementNS("http://www.w3.org/2000/svg", "line");
-      line.setAttribute("class", isHuongBoundary ? "huong-ray" : "son-ray");
-      var startPt = (centerCellHalfW && centerCellHalfH)
-        ? rectExitPoint(center, boundaryBearing, centerCellHalfW, centerCellHalfH)
-        : center;
-      line.setAttribute("x1", startPt.x.toFixed(2)); line.setAttribute("y1", startPt.y.toFixed(2));
-      line.setAttribute("x2", hit.x.toFixed(2)); line.setAttribute("y2", hit.y.toFixed(2));
-      g.appendChild(line);
-    }
-
-    for (var j = 0; j < 24; j++) {
-      var sonBearing = j * 15 - rotationDeg;
-      var hit2 = rayHouseIntersection(center, sonBearing, housePoints);
-      if (!hit2) continue;
-      var dx = hit2.x - center.x, dy = hit2.y - center.y;
-      var len = Math.sqrt(dx * dx + dy * dy) || 1;
-      var ux = dx / len, uy = dy / len;
-      var lx = hit2.x + ux * 14;
-      var ly = hit2.y + uy * 14;
-      var text = document.createElementNS("http://www.w3.org/2000/svg", "text");
-      text.setAttribute("class", "son-label");
-      text.setAttribute("x", lx.toFixed(2)); text.setAttribute("y", ly.toFixed(2));
-      text.textContent = SON24_NAMES[j];
-      getScaledFontSizeFn(text, 10);
-      g.appendChild(text);
-
-      // Nhãn phụ Thiên/Địa/Nhân (viết tắt T/Đ/N) xuống dòng nhỏ ngay dưới tên sơn —
-      // đỏ = Dương, xanh = Âm (đúng quy ước Âm Dương của la bàn hiện có).
-      var sonInfo = laySon24Info(SON24_NAMES[j]);
-      if (sonInfo) {
-        var nlText = document.createElementNS("http://www.w3.org/2000/svg", "text");
-        nlText.setAttribute("class", "son-nguyenlong-label");
-        nlText.setAttribute("x", lx.toFixed(2));
-        nlText.setAttribute("y", (ly + scaledOffsetFn(9)).toFixed(2));
-        nlText.setAttribute("text-anchor", "middle");
-        nlText.setAttribute("fill", sonInfo.mau);
-        nlText.setAttribute("font-weight", "bold");
-        nlText.textContent = sonInfo.tat;
-        getScaledFontSizeFn(nlText, 7);
-        g.appendChild(nlText);
+    if (showSonRays) {
+      for (var i = 0; i < 24; i++) {
+        var boundaryBearing = i * 15 + 7.5 - rotationDeg;
+        var isHuongBoundary = (i % 3 === 1);
+        var hit = sonRayHitPoint(boundaryBearing);
+        if (!hit) continue;
+        var line = document.createElementNS("http://www.w3.org/2000/svg", "line");
+        line.setAttribute("class", isHuongBoundary ? "huong-ray" : "son-ray");
+        var startPt = (centerCellHalfW && centerCellHalfH)
+          ? rectExitPoint(center, boundaryBearing, centerCellHalfW, centerCellHalfH)
+          : center;
+        line.setAttribute("x1", startPt.x.toFixed(2)); line.setAttribute("y1", startPt.y.toFixed(2));
+        line.setAttribute("x2", hit.x.toFixed(2)); line.setAttribute("y2", hit.y.toFixed(2));
+        g.appendChild(line);
       }
-    }
+
+      for (var j = 0; j < 24; j++) {
+        var sonBearing = j * 15 - rotationDeg;
+        var hit2 = sonRayHitPoint(sonBearing);
+        if (!hit2) continue;
+        var dx = hit2.x - center.x, dy = hit2.y - center.y;
+        var len = Math.sqrt(dx * dx + dy * dy) || 1;
+        var ux = dx / len, uy = dy / len;
+        var lx = hit2.x + ux * 14;
+        var ly = hit2.y + uy * 14;
+        var text = document.createElementNS("http://www.w3.org/2000/svg", "text");
+        text.setAttribute("class", "son-label");
+        text.setAttribute("x", lx.toFixed(2)); text.setAttribute("y", ly.toFixed(2));
+        text.textContent = SON24_NAMES[j];
+        getScaledFontSizeFn(text, 10);
+        g.appendChild(text);
+
+        // Nhãn phụ Thiên/Địa/Nhân (viết tắt T/Đ/N) xuống dòng nhỏ ngay dưới tên sơn —
+        // đỏ = Dương, xanh = Âm (đúng quy ước Âm Dương của la bàn hiện có).
+        var sonInfo = laySon24Info(SON24_NAMES[j]);
+        if (sonInfo) {
+          var nlText = document.createElementNS("http://www.w3.org/2000/svg", "text");
+          nlText.setAttribute("class", "son-nguyenlong-label");
+          nlText.setAttribute("x", lx.toFixed(2));
+          nlText.setAttribute("y", (ly + scaledOffsetFn(9)).toFixed(2));
+          nlText.setAttribute("text-anchor", "middle");
+          nlText.setAttribute("fill", sonInfo.mau);
+          nlText.setAttribute("font-weight", "bold");
+          nlText.textContent = sonInfo.tat;
+          getScaledFontSizeFn(nlText, 7);
+          g.appendChild(nlText);
+        }
+      }
+    } // end if (showSonRays)
 
     var stats = computeHuongStats(center, housePoints, rotationDeg, centerCellHalfW || 1, centerCellHalfH || 1);
     var nienTrungCurrent = nienTinhTrungCung(currentNamXem);
@@ -450,7 +513,12 @@
       if (!hit3) continue;
       var isKhuyetHuong = stats.huong[k].ratioVsIdeal < khuyetThreshold;
       var hx, hy;
-      if (isKhuyetHuong) {
+      if (gridMode) {
+        // Nhãn thông tin nhảy vào đúng tâm ô vuông Lạc Thư tương ứng — không còn phụ thuộc
+        // biên nhà (hit3) hay khuyết/không khuyết nữa, vì ô vuông luôn cố định theo bounding box.
+        var cellPt = gridCellCenterForBearing(huongBearing);
+        hx = cellPt.x; hy = cellPt.y;
+      } else if (isKhuyetHuong) {
         var dxk = hit3.x - center.x, dyk = hit3.y - center.y;
         var lenk = Math.sqrt(dxk * dxk + dyk * dyk) || 1;
         hx = hit3.x + (dxk / lenk) * 32;
@@ -460,6 +528,32 @@
         hy = center.y + (hit3.y - center.y) * 0.55;
       }
       var vshHuong = (window.phiTinhVSH && window.phiTinhVSH[BATQUAI_NAMES[k]]) ? window.phiTinhVSH[BATQUAI_NAMES[k]] : null;
+
+      // Vùng bấm (hit area) cho popup thông tin cung — một rect trong suốt phủ TRỌN cả ô vuông
+      // (khi gridMode) hoặc một vùng tròn quanh nhãn (kiểu cũ), đặt TRƯỚC mọi nhãn chữ của cung này
+      // để nằm dưới cùng z-order — nhờ đó click trúng bất kỳ đâu trong ô (kể cả trúng chữ S/H/từ khóa
+      // vốn không có sự kiện riêng) vẫn mở được popup, thay vì phải bấm trúng đúng dòng chữ tên cung
+      // rất nhỏ như trước (đây là nguyên nhân "thỉnh thoảng bấm không được" khi nhãn bị các chữ khác đè).
+      if (typeof ctx.onHuongClick === 'function') {
+        var hitRect = document.createElementNS("http://www.w3.org/2000/svg", "rect");
+        hitRect.setAttribute("class", "huong-hit-area");
+        hitRect.setAttribute("fill", "transparent");
+        hitRect.setAttribute("style", "cursor:pointer;");
+        if (gridMode) {
+          hitRect.setAttribute("x", (hx - cellW / 2).toFixed(2));
+          hitRect.setAttribute("y", (hy - cellH / 2).toFixed(2));
+          hitRect.setAttribute("width", cellW.toFixed(2));
+          hitRect.setAttribute("height", cellH.toFixed(2));
+        } else {
+          hitRect.setAttribute("x", (hx - 30).toFixed(2));
+          hitRect.setAttribute("y", (hy - 24).toFixed(2));
+          hitRect.setAttribute("width", 60);
+          hitRect.setAttribute("height", 48);
+        }
+        hitRect.addEventListener("click", (function (idx) { return function () { ctx.onHuongClick(idx); }; })(k));
+        g.appendChild(hitRect);
+      }
+
       // Sao Thế (kiêm hướng thế quái) — đọc từ window.banSaoTheSonHienTai/banSaoTheHuongHienTai do
       // phi-tinh.js export sau khi tính (null nếu công tắc Kiêm Hướng tắt hoặc độ hướng không cần kiêm).
       // LƯU Ý: window.phiTinhVSH đã được phi-tinh.js xuất theo bàn HIỆU LỰC (tức đã là số Thế nếu có
@@ -552,8 +646,11 @@
       if (vshHuong) {
         // Sao V (Vận tinh) to bằng S/H (8px) — chỉ N giữ nguyên cỡ nhỏ (6.3px).
         // Dùng tspan riêng vì 2 phần cần font-size khác nhau trong cùng 1 dòng text.
+        // fill riêng cho từng tspan (khác với fill="#8b0000" của thẻ text cha dùng cho N) —
+        // trước đây thiếu dòng này nên V bị "ăn theo" màu đỏ đậm của N, gây trùng màu.
         var vTspan = document.createElementNS("http://www.w3.org/2000/svg", "tspan");
         vTspan.textContent = "V" + vshHuong.V + " ";
+        vTspan.setAttribute("fill", "#b702ba");
         getScaledFontSizeFn(vTspan, 8);
         ntText.appendChild(vTspan);
         var nTspan = document.createElementNS("http://www.w3.org/2000/svg", "tspan");
@@ -571,7 +668,7 @@
 
     var dot = document.createElementNS("http://www.w3.org/2000/svg", "circle");
     dot.setAttribute("class", "center-dot");
-    dot.setAttribute("cx", center.x); dot.setAttribute("cy", center.y); dot.setAttribute("r", 3);
+    dot.setAttribute("cx", center.x); dot.setAttribute("cy", center.y); dot.setAttribute("r", 2);
     g.appendChild(dot);
 
     var centerPctText = document.createElementNS("http://www.w3.org/2000/svg", "text");
@@ -640,8 +737,11 @@
     centerNienText.setAttribute("font-weight", "bold");
     if (centerVSHT) {
       // Sao V (Vận tinh) to bằng S/H (8px) — chỉ N giữ nguyên cỡ nhỏ (6.3px).
+      // fill riêng (khác màu đỏ đậm #8b0000 của N) để tránh trùng màu — xem giải thích ở nhánh
+      // 8 hướng bên trên.
       var centerVTspan = document.createElementNS("http://www.w3.org/2000/svg", "tspan");
       centerVTspan.textContent = "V" + centerVSHT.V + " ";
+      centerVTspan.setAttribute("fill", "#1565c0");
       getScaledFontSizeFn(centerVTspan, 8);
       centerNienText.appendChild(centerVTspan);
       var centerNTspan = document.createElementNS("http://www.w3.org/2000/svg", "tspan");

@@ -220,7 +220,7 @@
   #tab-cuucungluoi input[type=range] { width:100%; }
   #tab-cuucungluoi select { width:100%; padding:6px; font-size:14px; margin-top:4px; }
   .house { fill:#2a3a2a; stroke:#8fce8f; stroke-width:2; }
-  .grid { fill:none; stroke:#555; stroke-width:1; }
+  .grid { fill:none; stroke:#3aa0e0; stroke-width:1.3; }
   .cell-label { font-size:12px; text-anchor:middle; dominant-baseline:middle; fill:#eee; }
   .cell-pct { font-size:9px; text-anchor:middle; dominant-baseline:middle; fill:#ff6b6b; }
   .khuyet-fill { fill:#552222; opacity:0.55; }

@@ -160,7 +160,8 @@
                 damBaoSvgDaGiacTonTai();
                 damBaoSvgTruongSinhTonTai();
                 damBaoSvgBatTrachTonTai();
-                const thuTu = ["tron24son", "truongSinh", "batTrach", "daGiacNha"];
+                damBaoSvgKhamDuTonTai();
+                const thuTu = ["tron24son", "truongSinh", "batTrach", "daGiacNha", "khamDu"];
                 let hienTai = window.layKieuLaBanHienTai("compassOverlay");
                 let idxMoi = (thuTu.indexOf(hienTai) + 1) % thuTu.length;
                 let kieuMoi = window.setKieuLaBan("compassOverlay", thuTu[idxMoi]);
@@ -169,12 +170,16 @@
                 let svgDaGiac = document.getElementById("compassSvgDaGiac");
                 let svgTruongSinh = document.getElementById("compassSvgTruongSinh");
                 let svgBatTrach = document.getElementById("compassSvgBatTrach");
+                let svgKhamDu = document.getElementById("compassSvgKhamDu");
                 if (svgTron) svgTron.style.display = (kieuMoi === "tron24son") ? "block" : "none";
                 if (svgDaGiac) svgDaGiac.style.display = (kieuMoi === "daGiacNha") ? "block" : "none";
                 if (svgTruongSinh) svgTruongSinh.style.display = (kieuMoi === "truongSinh") ? "block" : "none";
                 if (svgBatTrach) svgBatTrach.style.display = (kieuMoi === "batTrach") ? "block" : "none";
+                if (svgKhamDu) svgKhamDu.style.display = (kieuMoi === "khamDu") ? "block" : "none";
                 let panelDaGiac = document.getElementById("thuyPhapDaGiacPanel");
                 if (panelDaGiac) panelDaGiac.style.display = (kieuMoi === "daGiacNha") ? "flex" : "none";
+                let panelKhamDu = document.getElementById("thuyPhapKhamDuPanel");
+                if (panelKhamDu) panelKhamDu.style.display = (kieuMoi === "khamDu") ? "flex" : "none";
                 // Hàng chọn Nước Đến/Đi theo Địa Chi (12 cung) chỉ cần hiện khi đang ở la bàn
                 // Trường Sinh — la bàn Bát Trạch vẫn dùng #selSonDen/#selSonDi (24 sơn) như
                 // Tròn 24 sơn/Đa giác nhà, vì Bát Trạch quy đổi sơn → phương vị (8 cung), không
@@ -188,7 +193,7 @@
                 veCompassOverlay(parseFloat(document.getElementById('houseFacing').value) || 0);
 
                 let btn = document.getElementById("btnKieuLaBan");
-                if (btn) btn.textContent = kieuMoi === "daGiacNha" ? "📐" : (kieuMoi === "truongSinh" ? "♻️" : (kieuMoi === "batTrach" ? "🀄" : "🧭"));
+                if (btn) btn.textContent = kieuMoi === "daGiacNha" ? "📐" : (kieuMoi === "truongSinh" ? "♻️" : (kieuMoi === "batTrach" ? "🀄" : (kieuMoi === "khamDu" ? "🗺️" : "🧭")));
             };
             // Tự tạo nút chuyển kiểu la bàn nếu HTML chưa có sẵn #btnKieuLaBan — đặt cạnh btnToggleCompass
             // (thừa hưởng cùng style .btn-compass-tool nếu có trong CSS) để không phải sửa tay index.html.
@@ -203,7 +208,7 @@
                 btn.className = anchor.className;
                 btn.style.cssText = anchor.style.cssText;
                 btn.textContent = "🧭";
-                btn.title = "Chuyển kiểu la bàn: Tròn 24 sơn ↔ Trường Sinh 12 cung ↔ Bát Trạch 8 cung ↔ Đa giác nhà";
+                btn.title = "Chuyển kiểu la bàn: Tròn 24 sơn ↔ Trường Sinh 12 cung ↔ Bát Trạch 8 cung ↔ Đa giác nhà ↔ Kham Dư";
                 btn.addEventListener("click", function(e) { e.preventDefault(); window.chuyenKieuLaBanThuyPhap(); });
                 anchor.parentElement.insertBefore(btn, anchor.nextSibling);
 
@@ -823,6 +828,298 @@
             }
             window.veLaBanBatTrach = veLaBanBatTrach;
 
+            // ====================================================================
+            // LA BÀN KHAM DƯ — kiểu la bàn thứ 5 (cuối cùng) cho tab Thủy Pháp.
+            // La bàn tổng hợp nhiều vòng đồng tâm kiểu Dương Công / Tam Hợp phái cổ điển,
+            // dùng để đối chiếu Tọa/Hướng qua nhiều hệ quy chiếu cùng lúc (24 Sơn, Tam Nguyên
+            // Long, Bát Quái, Tam Bàn Quái, Thiên Bàn Song Sơn) — KHÔNG dùng để tính điểm
+            // cát/hung như Bát Trạch/Trường Sinh, chỉ để TRA CỨU/ĐỐI CHIẾU trực quan.
+            // Vẽ RIÊNG, không dùng chung engine với veCompassChung()/CompassModule, theo
+            // đúng pattern của veLaBanTruongSinh()/veLaBanBatTrach() ở trên.
+            //
+            // GHI CHÚ QUAN TRỌNG VỀ VÒNG 72 LONG:
+            // Vòng 72 Long (60 Long Lục Thập Giáp Tý + 12 ô Không Vong) đòi hỏi 1 bảng tra
+            // chính xác gán TỪNG LONG cụ thể vào TỪNG Ô 5° cụ thể theo quy luật "Điên Điên
+            // Đảo" của Tam Hợp phái (không tuyến tính, không thể tự suy ra từ vài ví dụ mẫu).
+            // Nguồn tài liệu hiện có KHÔNG đủ để dựng đúng — vẽ SAI dữ liệu này còn nguy hiểm
+            // hơn không vẽ, vì dùng để học nên đánh số 1-72 làm placeholder theo đúng 72 ô
+            // (mỗi sơn 15° chia 3 ô 5°: thứ tự Địa→Thiên→Nhân theo góc tăng dần, ô đầu tiên
+            // (Long số 1) bắt đầu từ đầu sơn Nhâm ở 337.5°). Khi có bảng tra 72 Long chính xác
+            // (từ sách giấy/la kinh thật), CHỈ CẦN điền vào biang BANG_72_LONG bên dưới, đổi
+            // placeholder "1".."72" thành tên Long thật — không cần sửa gì khác trong hàm vẽ.
+            // ====================================================================
+            function damBaoSvgKhamDuTonTai() {
+                let svg = document.getElementById("compassSvgKhamDu");
+                if (svg) return svg;
+                let overlay = document.getElementById("compassOverlay");
+                if (!overlay) return null;
+                svg = document.createElementNS("http://www.w3.org/2000/svg", "svg");
+                svg.setAttribute("id", "compassSvgKhamDu");
+                svg.setAttribute("viewBox", "0 0 1000 1000");
+                svg.style.position = "absolute"; svg.style.top = "0"; svg.style.left = "0";
+                svg.style.width = "100%"; svg.style.height = "100%";
+                svg.style.display = "none";
+                overlay.appendChild(svg);
+                return svg;
+            }
+
+            // ---- BẢNG 72 LONG (placeholder số 1-72) — xem ghi chú ở trên. Mảng theo đúng thứ
+            // tự 72 ô liên tục quanh vòng tròn, bắt đầu từ ô đầu tiên (337.5°-342.5°, đầu sơn
+            // Nhâm), đi theo chiều kim đồng hồ. index 0 = Long số 1 ... index 71 = Long số 72.
+            const BANG_72_LONG = Array.from({length: 72}, function(_, i) { return String(i + 1); });
+
+            // ---- BẢNG TAM BÀN QUÁI (Giang Đông / Giang Tây / Nam Bắc) — theo đúng tài liệu
+            // thế_quẻ.md / tài liệu Kham Dư đã cung cấp, dữ liệu chắc chắn không suy đoán.
+            const TAM_BAN_QUAI = {
+                "Sửu":"Giang Đông","Cấn":"Giang Đông","Dần":"Giang Đông","Giáp":"Giang Đông",
+                "Mão":"Giang Đông","Ất":"Giang Đông","Thìn":"Giang Đông","Tốn":"Giang Đông",
+                "Mùi":"Giang Tây","Khôn":"Giang Tây","Thân":"Giang Tây","Canh":"Giang Tây",
+                "Dậu":"Giang Tây","Tân":"Giang Tây","Tuất":"Giang Tây","Càn":"Giang Tây",
+                "Hợi":"Nam Bắc","Nhâm":"Nam Bắc","Tý":"Nam Bắc","Quý":"Nam Bắc",
+                "Tị":"Nam Bắc","Tỵ":"Nam Bắc","Bính":"Nam Bắc","Ngọ":"Nam Bắc","Đinh":"Nam Bắc"
+            };
+            const MAU_TAM_BAN_QUAI = { "Giang Đông":"#2e7d32", "Giang Tây":"#c62828", "Nam Bắc":"#1565c0" };
+
+            // ---- 8 sơn Thiên Bàn (Thiên bàn xoay lệch +7.5° so với Địa bàn, gồm 12 cặp Song
+            // Sơn mỗi cặp 30°) — dùng riêng để đo Thủy (Nước Đến/Đi), không dùng để đo Tọa/Hướng.
+            const SONG_SON_12 = [
+                {ten:"Nhâm-Tý", goc:0},{ten:"Quý-Sửu", goc:30},{ten:"Cấn-Dần", goc:60},{ten:"Giáp-Mão", goc:90},
+                {ten:"Ất-Thìn", goc:120},{ten:"Tốn-Tị", goc:150},{ten:"Bính-Ngọ", goc:180},{ten:"Đinh-Mùi", goc:210},
+                {ten:"Khôn-Thân", goc:240},{ten:"Canh-Dậu", goc:270},{ten:"Tân-Tuất", goc:300},{ten:"Kiền-Hợi", goc:330}
+            ];
+            const LECH_THIEN_BAN = 7.5; // Thiên bàn xoay lệch 7.5° theo chiều kim đồng hồ so với Địa bàn
+
+            // Toggle bật/tắt vòng Thiên Bàn (mặc định BẬT) — vòng này khá dày thông tin nên cho
+            // phép ẩn để đỡ rối khi chỉ cần xem Địa bàn (Tọa/Hướng).
+            let hienThiThienBanKhamDu = true;
+            window.toggleThienBanKhamDu = function() {
+                hienThiThienBanKhamDu = !hienThiThienBanKhamDu;
+                let btn = document.getElementById("btnToggleThienBanKhamDu");
+                if (btn) {
+                    btn.style.background = hienThiThienBanKhamDu ? "#4CAF50" : "#fff";
+                    btn.style.color = hienThiThienBanKhamDu ? "#fff" : "#555";
+                    btn.style.borderColor = hienThiThienBanKhamDu ? "#4CAF50" : "#999";
+                }
+                if (typeof veLaBanKhamDu === "function") veLaBanKhamDu();
+            };
+
+            // Panel nút điều khiển riêng cho Kham Dư (toggle Thiên Bàn) — tự tạo nếu chưa có,
+            // đặt cạnh panel đa giác nhà theo đúng pattern damBaoPanelDaGiacTonTai().
+            function damBaoPanelKhamDuTonTai() {
+                let panel = document.getElementById("thuyPhapKhamDuPanel");
+                if (panel) return panel;
+                let stage = document.getElementById("mapStage");
+                if (!stage || !stage.parentElement) return null;
+                panel = document.createElement("div");
+                panel.id = "thuyPhapKhamDuPanel";
+                panel.style.cssText = "display:none;padding:6px 8px;flex-wrap:nowrap;align-items:center;gap:6px;background:#f5f5f5;border-radius:8px;margin:4px 0;justify-content:flex-start;";
+                panel.innerHTML = `
+                    <span style="font-size:12px;font-weight:600;color:#444;white-space:nowrap;flex:0 0 auto;">🗺️ Kham Dư:</span>
+                    <button id="btnToggleThienBanKhamDu" onclick="toggleThienBanKhamDu()" style="padding:2px 10px;border-radius:6px;border:1px solid #4CAF50;background:#4CAF50;color:#fff;font-size:12px;cursor:pointer;flex:0 0 auto;white-space:nowrap;">Thiên Bàn</button>
+                `;
+                stage.parentElement.insertBefore(panel, stage);
+                return panel;
+            }
+            damBaoPanelKhamDuTonTai();
+
+            function veLaBanKhamDu() {
+                let svg = damBaoSvgKhamDuTonTai(); if (!svg) return;
+                svg.innerHTML = "";
+                const cx = 500, cy = 500;
+                // Bán kính các vòng, từ trong ra ngoài:
+                // Tâm -> Bát Quái (8, to) -> 24 Sơn (Địa bàn) -> Tam Nguyên Long (T/Đ/N) ->
+                // Tam Bàn Quái (Giang Đông/Tây/Nam Bắc) -> 72 Long -> Thiên Bàn (Song Sơn) -> chia độ
+                const rBatQuai = 160;
+                const rSon24 = 260;
+                const rNguyenLong = 290;
+                const rTamBanQuai = 330;
+                const rLong72Trong = 330, rLong72Ngoai = hienThiThienBanKhamDu ? 385 : 400;
+                const rThienBanTrong = 385, rThienBanNgoai = 400;
+                const rOuter = hienThiThienBanKhamDu ? rThienBanNgoai : rLong72Ngoai;
+                const rDoTick = rOuter, rDoText = rOuter + 40, rDoSo = rOuter + 20;
+
+                let houseFacing = parseFloat(document.getElementById("houseFacing")?.value) || 0;
+
+                let html = "";
+                // Viền mỏng đánh dấu ranh giới các vòng
+                [rBatQuai, rSon24, rNguyenLong, rTamBanQuai, rLong72Ngoai].forEach(function(r) {
+                    html += `<circle cx="${cx}" cy="${cy}" r="${r}" fill="none" stroke="#3a2a1a" stroke-width="1" opacity="0.6"/>`;
+                });
+                if (hienThiThienBanKhamDu) {
+                    html += `<circle cx="${cx}" cy="${cy}" r="${rThienBanNgoai}" fill="none" stroke="#3a2a1a" stroke-width="1.5" opacity="0.8"/>`;
+                }
+
+                // ---- VÒNG CHIA ĐỘ (ngoài cùng, mỗi 10°) ----
+                for (let deg = 0; deg < 360; deg += 10) {
+                    let rad = (deg - 90) * Math.PI / 180;
+                    let isMajor = deg % 45 === 0;
+                    let rIn = isMajor ? rDoTick - 8 : rDoTick - 4;
+                    let x1 = cx + rIn * Math.cos(rad), y1 = cy + rIn * Math.sin(rad);
+                    let x2 = cx + rDoSo * Math.cos(rad), y2 = cy + rDoSo * Math.sin(rad);
+                    html += `<line x1="${x1.toFixed(1)}" y1="${y1.toFixed(1)}" x2="${x2.toFixed(1)}" y2="${y2.toFixed(1)}" stroke="#5c4a3a" stroke-width="${isMajor?1.5:1}" opacity="0.85"/>`;
+                    let xt = cx + rDoText * Math.cos(rad), yt = cy + rDoText * Math.sin(rad);
+                    html += `<text x="${xt.toFixed(1)}" y="${yt.toFixed(1)}" font-size="${(tpFontSize*1.0).toFixed(1)}" font-weight="600" fill="#2a2a2a" stroke="#fff" stroke-width="2" paint-order="stroke" text-anchor="middle" dominant-baseline="middle" transform="rotate(${deg} ${xt.toFixed(1)} ${yt.toFixed(1)})">${deg}</text>`;
+                }
+
+                // ---- VÒNG THIÊN BÀN (Song Sơn, lệch +7.5° so với Địa bàn) — chỉ vẽ khi bật ----
+                if (hienThiThienBanKhamDu) {
+                    SONG_SON_12.forEach(function(ss) {
+                        let gocTam = ((ss.goc + LECH_THIEN_BAN) % 360 + 360) % 360;
+                        let gocStart = gocTam - 15, gocEnd = gocTam + 15;
+                        let rs = (gocStart - 90) * Math.PI / 180, re = (gocEnd - 90) * Math.PI / 180;
+                        let xsO = cx + rThienBanNgoai * Math.cos(rs), ysO = cy + rThienBanNgoai * Math.sin(rs);
+                        let xeO = cx + rThienBanNgoai * Math.cos(re), yeO = cy + rThienBanNgoai * Math.sin(re);
+                        let xsI = cx + rThienBanTrong * Math.cos(re), ysI = cy + rThienBanTrong * Math.sin(re);
+                        let xeI = cx + rThienBanTrong * Math.cos(rs), yeI = cy + rThienBanTrong * Math.sin(rs);
+                        html += `<path d="M${xsO.toFixed(1)},${ysO.toFixed(1)} A${rThienBanNgoai},${rThienBanNgoai} 0 0,1 ${xeO.toFixed(1)},${yeO.toFixed(1)} L${xsI.toFixed(1)},${ysI.toFixed(1)} A${rThienBanTrong},${rThienBanTrong} 0 0,0 ${xeI.toFixed(1)},${yeI.toFixed(1)} Z" fill="#fff3cd" fill-opacity="0.55" stroke="#8a6d1a" stroke-width="0.8"/>`;
+                        let x1b = cx + rThienBanTrong * Math.cos(rs), y1b = cy + rThienBanTrong * Math.sin(rs);
+                        let x2b = cx + rThienBanNgoai * Math.cos(rs), y2b = cy + rThienBanNgoai * Math.sin(rs);
+                        html += `<line x1="${x1b.toFixed(1)}" y1="${y1b.toFixed(1)}" x2="${x2b.toFixed(1)}" y2="${y2b.toFixed(1)}" stroke="#8a6d1a" stroke-width="0.8"/>`;
+                        let radT = (gocTam - 90) * Math.PI / 180;
+                        let rTextTB = (rThienBanTrong + rThienBanNgoai) / 2;
+                        let xT = cx + rTextTB * Math.cos(radT), yT = cy + rTextTB * Math.sin(radT);
+                        html += `<g transform="rotate(${gocTam} ${xT.toFixed(1)} ${yT.toFixed(1)})"><text x="${xT.toFixed(1)}" y="${yT.toFixed(1)}" font-size="${(tpFontSize*0.72).toFixed(1)}" font-weight="700" fill="#6d4c00" stroke="#fff" stroke-width="2" paint-order="stroke" text-anchor="middle" dominant-baseline="middle">${ss.ten}</text></g>`;
+                    });
+                }
+
+                // ---- VÒNG 72 LONG (placeholder 1-72) — mỗi sơn 15° chia 3 ô 5°, thứ tự liên
+                // tục bắt đầu từ đầu sơn Nhâm (337.5°) theo chiều kim đồng hồ ----
+                for (let i = 0; i < 72; i++) {
+                    let gocStart = 337.5 + i * 5;
+                    let gocEnd = gocStart + 5;
+                    let rs = (gocStart - 90) * Math.PI / 180, re = (gocEnd - 90) * Math.PI / 180;
+                    let xsO = cx + rLong72Ngoai * Math.cos(rs), ysO = cy + rLong72Ngoai * Math.sin(rs);
+                    let xeO = cx + rLong72Ngoai * Math.cos(re), yeO = cy + rLong72Ngoai * Math.sin(re);
+                    let xsI = cx + rLong72Trong * Math.cos(re), ysI = cy + rLong72Trong * Math.sin(re);
+                    let xeI = cx + rLong72Trong * Math.cos(rs), yeI = cy + rLong72Trong * Math.sin(rs);
+                    // Xen kẽ màu nhạt để phân biệt ô, không mang ý nghĩa cát/hung (chưa có dữ liệu).
+                    let mauNen = (i % 2 === 0) ? "#f0ede4" : "#e4dfd0";
+                    html += `<path d="M${xsO.toFixed(1)},${ysO.toFixed(1)} A${rLong72Ngoai},${rLong72Ngoai} 0 0,1 ${xeO.toFixed(1)},${yeO.toFixed(1)} L${xsI.toFixed(1)},${ysI.toFixed(1)} A${rLong72Trong},${rLong72Trong} 0 0,0 ${xeI.toFixed(1)},${yeI.toFixed(1)} Z" fill="${mauNen}" fill-opacity="${Math.max(doMoNenLaBan,0.4)}" stroke="#8a7a5c" stroke-width="0.5"/>`;
+                    let gocTam = gocStart + 2.5;
+                    let radT = (gocTam - 90) * Math.PI / 180;
+                    let rTextL72 = (rLong72Trong + rLong72Ngoai) / 2;
+                    let xL = cx + rTextL72 * Math.cos(radT), yL = cy + rTextL72 * Math.sin(radT);
+                    html += `<g transform="rotate(${gocTam} ${xL.toFixed(1)} ${yL.toFixed(1)})"><text x="${xL.toFixed(1)}" y="${yL.toFixed(1)}" font-size="${(tpFontSize*0.62).toFixed(1)}" font-weight="600" fill="#5c4a2a" stroke="#fff" stroke-width="1.5" paint-order="stroke" text-anchor="middle" dominant-baseline="middle">${BANG_72_LONG[i]}</text></g>`;
+                }
+
+                // ---- VÒNG TAM BÀN QUÁI (Giang Đông / Giang Tây / Nam Bắc) — theo 24 Sơn ----
+                DS24_SON.forEach(function(s) {
+                    let gocStart = s.goc - 7.5, gocEnd = s.goc + 7.5;
+                    let rs = (gocStart - 90) * Math.PI / 180, re = (gocEnd - 90) * Math.PI / 180;
+                    let xsO = cx + rTamBanQuai * Math.cos(rs), ysO = cy + rTamBanQuai * Math.sin(rs);
+                    let xeO = cx + rTamBanQuai * Math.cos(re), yeO = cy + rTamBanQuai * Math.sin(re);
+                    let xsI = cx + rNguyenLong * Math.cos(re), ysI = cy + rNguyenLong * Math.sin(re);
+                    let xeI = cx + rNguyenLong * Math.cos(rs), yeI = cy + rNguyenLong * Math.sin(rs);
+                    let tenNhom = TAM_BAN_QUAI[s.ten] || "";
+                    let mauNen = MAU_TAM_BAN_QUAI[tenNhom] || "#cfcfcf";
+                    html += `<path d="M${xsO.toFixed(1)},${ysO.toFixed(1)} A${rTamBanQuai},${rTamBanQuai} 0 0,1 ${xeO.toFixed(1)},${yeO.toFixed(1)} L${xsI.toFixed(1)},${ysI.toFixed(1)} A${rNguyenLong},${rNguyenLong} 0 0,0 ${xeI.toFixed(1)},${yeI.toFixed(1)} Z" fill="${mauNen}" fill-opacity="0.28" stroke="#3a2a1a" stroke-width="0.4"/>`;
+                });
+                // Chú thích 3 nhãn Tam Bàn Quái tại vị trí đại diện (giữa mỗi cụm 8 sơn)
+                [{ten:"Giang Đông", gocGiua: (30+120)/2}, {ten:"Giang Tây", gocGiua: (210+300)/2}, {ten:"Nam Bắc", gocGiua: 0}].forEach(function(nb) {
+                    // Nam Bắc gồm 2 cụm (quanh 0° và quanh 180°) nên ghi nhãn riêng cho từng cụm.
+                });
+                let radGD = ((30+120)/2 - 90) * Math.PI / 180;
+                let xGD = cx + rTamBanQuai * Math.cos(radGD) - 14, yGD = cy + rTamBanQuai * Math.sin(radGD) + 16;
+                let radGT = ((210+300)/2 - 90) * Math.PI / 180;
+                let xGT = cx + rTamBanQuai * Math.cos(radGT) - 14, yGT = cy + rTamBanQuai * Math.sin(radGT) + 16;
+                let radNB1 = (345 - 90) * Math.PI / 180;
+                let xNB1 = cx + rTamBanQuai * Math.cos(radNB1) + 6, yNB1 = cy + rTamBanQuai * Math.sin(radNB1) - 6;
+                let radNB2 = (165 - 90) * Math.PI / 180;
+                let xNB2 = cx + rTamBanQuai * Math.cos(radNB2) + 6, yNB2 = cy + rTamBanQuai * Math.sin(radNB2) - 6;
+
+                // ---- VÒNG TAM NGUYÊN LONG (T/Đ/N) — theo đúng DS24_SON.nguyenLong đã có sẵn ----
+                const NGUYEN_LONG_TAT = { "Thien":"T", "Dia":"Đ", "Nhan":"N" };
+                const NGUYEN_LONG_MAU = { "Thien":"#c62828", "Dia":"#1565c0", "Nhan":"#2e7d32" };
+                DS24_SON.forEach(function(s) {
+                    let gocStart = s.goc - 7.5, gocEnd = s.goc + 7.5;
+                    let rs = (gocStart - 90) * Math.PI / 180, re = (gocEnd - 90) * Math.PI / 180;
+                    let xsO = cx + rNguyenLong * Math.cos(rs), ysO = cy + rNguyenLong * Math.sin(rs);
+                    let xeO = cx + rNguyenLong * Math.cos(re), yeO = cy + rNguyenLong * Math.sin(re);
+                    let xsI = cx + rSon24 * Math.cos(re), ysI = cy + rSon24 * Math.sin(re);
+                    let xeI = cx + rSon24 * Math.cos(rs), yeI = cy + rSon24 * Math.sin(rs);
+                    html += `<path d="M${xsO.toFixed(1)},${ysO.toFixed(1)} A${rNguyenLong},${rNguyenLong} 0 0,1 ${xeO.toFixed(1)},${yeO.toFixed(1)} L${xsI.toFixed(1)},${ysI.toFixed(1)} A${rSon24},${rSon24} 0 0,0 ${xeI.toFixed(1)},${yeI.toFixed(1)} Z" fill="#fff" fill-opacity="${doMoNenLaBan*0.5}" stroke="#8a7a5c" stroke-width="0.5"/>`;
+                    let tat = NGUYEN_LONG_TAT[s.nguyenLong] || "?";
+                    let mauTat = NGUYEN_LONG_MAU[s.nguyenLong] || "#555";
+                    let radT = (s.goc - 90) * Math.PI / 180;
+                    let rTextNL = (rSon24 + rNguyenLong) / 2;
+                    let xT = cx + rTextNL * Math.cos(radT), yT = cy + rTextNL * Math.sin(radT);
+                    html += `<g transform="rotate(${s.goc} ${xT.toFixed(1)} ${yT.toFixed(1)})"><text x="${xT.toFixed(1)}" y="${yT.toFixed(1)}" font-size="${(tpFontSize*0.85).toFixed(1)}" font-weight="800" fill="${mauTat}" stroke="#fff" stroke-width="2" paint-order="stroke" text-anchor="middle" dominant-baseline="middle">${tat}</text></g>`;
+                });
+
+                // ---- VÒNG 24 SƠN (Địa bàn) ----
+                let sonHienTai = timSonTheoGocCucBo((houseFacing % 360 + 360) % 360);
+                DS24_SON.forEach(function(s) {
+                    let gocStart = s.goc - 7.5, gocEnd = s.goc + 7.5;
+                    let rs = (gocStart - 90) * Math.PI / 180, re = (gocEnd - 90) * Math.PI / 180;
+                    let xsO = cx + rSon24 * Math.cos(rs), ysO = cy + rSon24 * Math.sin(rs);
+                    let xeO = cx + rSon24 * Math.cos(re), yeO = cy + rSon24 * Math.sin(re);
+                    let xsI = cx + rBatQuai * Math.cos(re), ysI = cy + rBatQuai * Math.sin(re);
+                    let xeI = cx + rBatQuai * Math.cos(rs), yeI = cy + rBatQuai * Math.sin(rs);
+                    let laToa = false, laHuong = sonHienTai && sonHienTai.ten === s.ten;
+                    let laToaSon = laySonToa ? laySonToa(houseFacing) : null;
+                    laToa = laToaSon && laToaSon.ten === s.ten;
+                    let mauNen = s.amDuong === "Duong" ? "#fdf6e3" : "#eef1f7";
+                    let vien = laHuong ? "#c62828" : (laToa ? "#6a1b9a" : "#3a2a1a");
+                    let dayVien = (laHuong || laToa) ? 3.5 : 0.8;
+                    html += `<path d="M${xsO.toFixed(1)},${ysO.toFixed(1)} A${rSon24},${rSon24} 0 0,1 ${xeO.toFixed(1)},${yeO.toFixed(1)} L${xsI.toFixed(1)},${ysI.toFixed(1)} A${rBatQuai},${rBatQuai} 0 0,0 ${xeI.toFixed(1)},${yeI.toFixed(1)} Z" fill="${mauNen}" fill-opacity="${Math.max(doMoNenLaBan,0.5)}" stroke="${vien}" stroke-width="${dayVien}"/>`;
+                    let x1b = cx + rBatQuai * Math.cos(rs), y1b = cy + rBatQuai * Math.sin(rs);
+                    let x2b = cx + rSon24 * Math.cos(rs), y2b = cy + rSon24 * Math.sin(rs);
+                    html += `<line x1="${x1b.toFixed(1)}" y1="${y1b.toFixed(1)}" x2="${x2b.toFixed(1)}" y2="${y2b.toFixed(1)}" stroke="#3a2a1a" stroke-width="0.8"/>`;
+                    let radT = (s.goc - 90) * Math.PI / 180;
+                    let rTextS24 = (rBatQuai + rSon24) / 2;
+                    let xS = cx + rTextS24 * Math.cos(radT), yS = cy + rTextS24 * Math.sin(radT);
+                    html += `<g transform="rotate(${s.goc} ${xS.toFixed(1)} ${yS.toFixed(1)})"><text x="${xS.toFixed(1)}" y="${yS.toFixed(1)}" font-size="${(tpFontSize*1.15).toFixed(1)}" font-weight="800" fill="#1a1a1a" stroke="#fff" stroke-width="2.5" paint-order="stroke" text-anchor="middle" dominant-baseline="middle">${s.ten}</text></g>`;
+                });
+
+                // ---- VÒNG BÁT QUÁI (8 cung, mỗi 45°, trong cùng) ----
+                const BATQUAI_8 = [
+                    {ten:"Khảm", goc:0},{ten:"Cấn", goc:45},{ten:"Chấn", goc:90},{ten:"Tốn", goc:135},
+                    {ten:"Ly", goc:180},{ten:"Khôn", goc:225},{ten:"Đoài", goc:270},{ten:"Càn", goc:315}
+                ];
+                BATQUAI_8.forEach(function(bq, idx) {
+                    let gocStart = bq.goc - 22.5, gocEnd = bq.goc + 22.5;
+                    let rs = (gocStart - 90) * Math.PI / 180, re = (gocEnd - 90) * Math.PI / 180;
+                    let xsO = cx + rBatQuai * Math.cos(rs), ysO = cy + rBatQuai * Math.sin(rs);
+                    let xeO = cx + rBatQuai * Math.cos(re), yeO = cy + rBatQuai * Math.sin(re);
+                    let mauNen = MAU_BAT_QUAI ? MAU_BAT_QUAI[idx] : "#8a7a5c";
+                    html += `<path d="M${xsO.toFixed(1)},${ysO.toFixed(1)} A${rBatQuai},${rBatQuai} 0 0,1 ${xeO.toFixed(1)},${yeO.toFixed(1)} L${cx},${cy} Z" fill="${mauNen}" fill-opacity="${Math.max(doMoNenLaBan*0.6,0.22)}" stroke="#3a2a1a" stroke-width="0.8"/>`;
+                    let radT = (bq.goc - 90) * Math.PI / 180;
+                    let rTextBQ = rBatQuai * 0.65;
+                    let xB = cx + rTextBQ * Math.cos(radT), yB = cy + rTextBQ * Math.sin(radT);
+                    html += `<g transform="rotate(${bq.goc} ${xB.toFixed(1)} ${yB.toFixed(1)})"><text x="${xB.toFixed(1)}" y="${yB.toFixed(1)}" font-size="${(tpFontSize*1.3).toFixed(1)}" font-weight="900" fill="#fff" stroke="#2a2a2a" stroke-width="3" paint-order="stroke" text-anchor="middle" dominant-baseline="middle">${bq.ten}</text></g>`;
+                });
+
+                // Nhãn Tam Bàn Quái (vẽ SAU BátQuái để không bị đè, đặt lên trên viền vòng đó)
+                html += `<text x="${xGD.toFixed(1)}" y="${yGD.toFixed(1)}" font-size="${(tpFontSize*0.68).toFixed(1)}" font-weight="800" fill="${MAU_TAM_BAN_QUAI["Giang Đông"]}" stroke="#fff" stroke-width="2.5" paint-order="stroke" text-anchor="middle">Giang Đông</text>`;
+                html += `<text x="${xGT.toFixed(1)}" y="${yGT.toFixed(1)}" font-size="${(tpFontSize*0.68).toFixed(1)}" font-weight="800" fill="${MAU_TAM_BAN_QUAI["Giang Tây"]}" stroke="#fff" stroke-width="2.5" paint-order="stroke" text-anchor="middle">Giang Tây</text>`;
+                html += `<text x="${xNB1.toFixed(1)}" y="${yNB1.toFixed(1)}" font-size="${(tpFontSize*0.68).toFixed(1)}" font-weight="800" fill="${MAU_TAM_BAN_QUAI["Nam Bắc"]}" stroke="#fff" stroke-width="2.5" paint-order="stroke" text-anchor="middle">Nam Bắc</text>`;
+                html += `<text x="${xNB2.toFixed(1)}" y="${yNB2.toFixed(1)}" font-size="${(tpFontSize*0.68).toFixed(1)}" font-weight="800" fill="${MAU_TAM_BAN_QUAI["Nam Bắc"]}" stroke="#fff" stroke-width="2.5" paint-order="stroke" text-anchor="middle">Nam Bắc</text>`;
+
+                // Kim chỉ hướng nhà — đặt ra ngoài vòng chia độ, giống các la bàn khác
+                let radMui = (houseFacing - 90) * Math.PI / 180;
+                let rKimHuong = rDoSo + 25;
+                let xHF = cx + rKimHuong * Math.cos(radMui), yHF = cy + rKimHuong * Math.sin(radMui);
+                let xHB = cx - rKimHuong * Math.cos(radMui), yHB = cy - rKimHuong * Math.sin(radMui);
+                html += `<line x1="${xHB.toFixed(1)}" y1="${yHB.toFixed(1)}" x2="${xHF.toFixed(1)}" y2="${yHF.toFixed(1)}" stroke="#00c8c8" stroke-width="2.5"/>`;
+                let tl=20, ta=0.3;
+                let x1a = xHF-tl*Math.cos(radMui-ta), y1a = yHF-tl*Math.sin(radMui-ta);
+                let x2a = xHF-tl*Math.cos(radMui+ta), y2a = yHF-tl*Math.sin(radMui+ta);
+                html += `<polygon points="${xHF.toFixed(1)},${yHF.toFixed(1)} ${x1a.toFixed(1)},${y1a.toFixed(1)} ${x2a.toFixed(1)},${y2a.toFixed(1)}" fill="#00c8c8"/>`;
+                let xLH = cx+(rKimHuong+35)*Math.cos(radMui), yLH = cy+(rKimHuong+35)*Math.sin(radMui);
+                html += `<text x="${xLH.toFixed(1)}" y="${yLH.toFixed(1)}" font-size="${tpFontSize+3}" font-weight="800" fill="#ff0000" stroke="#fff" stroke-width="1.5" paint-order="stroke" text-anchor="middle" transform="rotate(${houseFacing} ${xLH.toFixed(1)} ${yLH.toFixed(1)})">▲ HƯỚNG NHÀ</text>`;
+
+                // Tâm: nhãn "Kham Dư" + góc hướng nhà hiện tại
+                html += `<circle cx="${cx}" cy="${cy}" r="6" fill="#ff1a1a" stroke="#fff" stroke-width="2"/>`;
+                html += `<text x="${cx}" y="${cy-18}" font-size="${(tpFontSize*1.1).toFixed(1)}" font-weight="900" fill="#2e7d32" stroke="#fff" stroke-width="3" paint-order="stroke" text-anchor="middle">KHAM DƯ</text>`;
+                html += `<text x="${cx}" y="${cy+4}" font-size="${(tpFontSize*0.9).toFixed(1)}" font-weight="700" fill="#555" stroke="#fff" stroke-width="2.5" paint-order="stroke" text-anchor="middle">${houseFacing.toFixed(1)}°</text>`;
+                if (sonHienTai) {
+                    html += `<text x="${cx}" y="${cy+22}" font-size="${(tpFontSize*0.85).toFixed(1)}" font-weight="700" fill="#c62828" stroke="#fff" stroke-width="2.5" paint-order="stroke" text-anchor="middle">Hướng: ${sonHienTai.ten}</text>`;
+                }
+
+                svg.innerHTML = html;
+            }
+            window.veLaBanKhamDu = veLaBanKhamDu;
+
             // ==== LƯU / MỞ đa giác nhà (chỉ lưu toạ độ điểm — KHÔNG kèm ảnh, để nhẹ) ====
             const LS_KEY_DA_GIAC = "thuyPhap_daGiacNha_v1";
             window.luuDaGiacNhaThuyPhap = function() {
@@ -876,6 +1173,7 @@
                 if (kieu === "daGiacNha") { veLaiDaGiacNha(); return; }
                 if (kieu === "truongSinh") { veLaBanTruongSinh(); return; }
                 if (kieu === "batTrach") { veLaBanBatTrach(); return; }
+                if (kieu === "khamDu") { veLaBanKhamDu(); return; }
 
                 const svg = document.getElementById("compassSvg"); if (!svg) return;
                 // La bàn luôn cố định ở giữa khung (500,500 trong viewBox 1000x1000) — không di chuyển theo tamPercent nữa.

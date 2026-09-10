@@ -37,17 +37,85 @@
   // Câu đầu tiên (trước dấu phẩy đầu) của "cat" phải tự đọc trọn nghĩa vì
   // cơ chế hiển thị lúc Suy khí/Thoái khí (xem yNghiaSaoTheoVan trong
   // phi-tinh.js) cắt lấy đúng phần đó để tránh câu cụt ý.
+  //
+  // BỔ SUNG (trước đây chỉ có ở bản dữ liệu cục bộ của cuu-cung-luoi.js, gây
+  // ra 2 bản SAO_Y_NGHIA khác cấu trúc cùng tồn tại — vi phạm single source
+  // of truth và gây lỗi "undefined" ở modal Niên Tinh vì luan-giai.js load
+  // trước nên window.SAO_Y_NGHIA đã "chốt" theo bản thiếu field trước khi
+  // cuu-cung-luoi.js kịp chạy nhánh fallback đầy đủ của nó):
+  //   tenKhac, nguHanh, cung, mauSac, bieuTuong, coThe, tinhChat, loaiTinh,
+  //   khiSinhVuong, khiSuyTu — lấy nguyên nội dung từ bản đầy đủ cũ của
+  // cuu-cung-luoi.js (nội dung chi tiết hơn), CHỈ thêm chứ không đổi cat/
+  // hung/luuY hiện có (đang được phi-tinh.js dùng, giữ nguyên để không ảnh
+  // hưởng logic luận giải theo vận đang chạy đúng).
+  // "ten" giữ TÁCH RIÊNG (không gộp "(tenKhac)") — yNghiaSaoTheoVan() trong
+  // phi-tinh.js đã có sẵn nhánh tự ghép `${ten} (${tenKhac})` khi tenKhac
+  // tồn tại, nên kết quả hiển thị ở phi-tinh.js không đổi.
   // ==================================================================
   var SAO_Y_NGHIA = window.SAO_Y_NGHIA || {
-    1: {ten:"Nhất Bạch (Tham Lang)", cat:"thăng quan tiến chức, tiếng tăm vang xa, đỗ trạng nguyên, quan vận và tài vận đều vượng", hung:"gặp kiếp đào hoa, nhà tan cửa mất, thậm chí còn mắc bệnh lậu, bệnh nan y, phải sống lưu vong nơi xứ người"},
-    2: {ten:"Nhị Hắc (Cự Môn)", cat:"phát về ruộng đất, đông người lắm của, xuất anh hùng hào kiệt", hung:"phụ nữ mang thai dễ sảy thai, quả phụ cai quản gia đình, hoặc do phụ nữ mà kiện tụng hoặc gây điều tiếng thị phi"},
-    3: {ten:"Tam Bích (Lộc Tồn)", cat:"thành gia lập nghiệp, giàu sang phú quý, công thành danh toại, thăng quan tiến chức", hung:"là \"Quan Phủ tinh\", chủ gây rắc rối, bị tiểu nhân cản trở, thường gặp kiện tụng, bệnh tật triền miên, hình khắc vợ"},
-    4: {ten:"Tứ Lục (Văn Khúc)", cat:"thi cử đỗ đạt, thăng quan tiến chức, đất đai nhiều, được vợ hoặc chồng giúp đỡ", hung:"dễ mắc bệnh phong, hen suyễn, viêm gan, đau vùng dưới thắt lưng, thậm chí còn phải treo cổ tự tử, hoặc uống thuốc tự sát"},
-    5: {ten:"Ngũ Hoàng (Liêm Trinh)", cat:"sức mạnh vô song, giống như hoàng đế, uy danh bốn phương", hung:"là Ngũ Hoàng sát, sao xấu nhất trong Cửu tinh, nếu gặp Nhị Hắc hay Tam Bích sẽ mắc bệnh nặng hoặc bệnh nan y, gặp tai nạn, tan cửa nát nhà, tự sát — là hung tinh hàng đầu trong Cửu tinh", luuY:"là hung tinh hàng đầu trong Cửu tinh; luôn cần thận trọng dù đang ở trạng thái nào"},
-    6: {ten:"Lục Bạch (Vũ Khúc)", cat:"phát về nghiệp võ, có tiếng tăm và quyền lực giàu có đông người", hung:"sống cô đơn không nơi nương tựa, hình vợ hại con"},
-    7: {ten:"Thất Xích (Phá Quân)", cat:"vượng cả đinh lẫn tài, phát về nghiệp võ", hung:"gây điều tiếng thị phi, kiện tụng", luuY:"Kim tinh mang sát khí; Cửu Tử Hỏa tinh có thể chế phục, nếu vào mùa hè thì Bát Bạch Thổ tinh có thể dung hòa"},
-    8: {ten:"Bát Bạch (Tả Phù)", cat:"giàu sang phú quý, công thành danh toại, ruộng vườn nhà cửa đều phát", hung:"tổn thương tới trẻ nhỏ, tổn thương vùng cột sống, thắt lưng", luuY:"có thể hóa hung thần; cùng Nhất Bạch và Lục Bạch là ba đại cát tinh của Cửu tinh"},
-    9: {ten:"Cửu Tử (Hữu Bật)", cat:"phát khoa danh, lợi cho chi thứ", hung:"khó sinh, kiện tụng, hỏa hoạn", luuY:"bản tính nóng nảy nhất, không chấp nhận những thứ xấu xa nên cát không nên hung; thường được gọi chung với Nhất Bạch Thủy tinh là Tử Bạch"},
+    1: {ten:"Nhất Bạch", tenKhac:"Tham Lang", nguHanh:"Thủy", cung:"Khảm (+)",
+      mauSac:"Trắng", bieuTuong:"Sông, biển, vùng bùn, khe núi sâu tối",
+      coThe:"☵ Tai, Thận, Bàng quang, hệ thống sinh dục, tiết niệu, tuần hoàn máu, tủy xương và vùng thắt lưng",
+      tinhChat:"Bồng bột, lãng đãng", loaiTinh:"Cát tinh",
+      khiSinhVuong:"Vượng đinh lẫn tài, lợi cả văn lẫn võ, thi cử đỗ đạt, tiếng tăm lừng lẫy, sinh con trai thông minh, thăng quan phát tài. Cát tinh hàng đầu.",
+      khiSuyTu:"Hoạ do tửu sắc, tan cửa nát nhà. Bệnh về tai, suy thận, bàng quang, sinh sản. Nặng thì hình khắc vợ, mù loà, yểu mệnh, sống phiêu bạt.",
+      cat:"thăng quan tiến chức, tiếng tăm vang xa, đỗ trạng nguyên, quan vận và tài vận đều vượng", hung:"gặp kiếp đào hoa, nhà tan cửa mất, thậm chí còn mắc bệnh lậu, bệnh nan y, phải sống lưu vong nơi xứ người"},
+    2: {ten:"Nhị Hắc", tenKhac:"Cự Môn", nguHanh:"Thổ", cung:"Khôn (-)",
+      mauSac:"Đen", bieuTuong:"Mộ phần, nơi hoang vu",
+      coThe:"☷ Bụng, tỳ, cơ bắp và mô mềm",
+      tinhChat:"Nhu mà tĩnh (mềm mỏng, bình tĩnh)", loaiTinh:"Hung tinh",
+      khiSinhVuong:"Có quyền có của, cơ ngơi bề thế, vượng cả đinh lẫn tài. Thường xuất võ quý, phụ nữ cai quản gia đình, đa mưu.",
+      khiSuyTu:"Tai hoạ vì sắc, dễ hoả hoạn, thị phi, hao tiền tốn của. Phụ nữ dễ xảy thai, đau bụng, mụn nhọt, bệnh ngoài da, ở goá, bệnh dai dẳng.",
+      cat:"phát về ruộng đất, đông người lắm của, xuất anh hùng hào kiệt", hung:"phụ nữ mang thai dễ sảy thai, quả phụ cai quản gia đình, hoặc do phụ nữ mà kiện tụng hoặc gây điều tiếng thị phi"},
+    3: {ten:"Tam Bích", tenKhac:"Lộc Tồn", nguHanh:"Mộc", cung:"Chấn (+)",
+      mauSac:"Xanh lá cây", bieuTuong:"Rường, cột nhà, vườn góc, dụng cụ tra tấn",
+      coThe:"☳ Chân, Gan, hệ thần kinh, gân mạch và các bệnh về hệ vận động",
+      tinhChat:"Kình (mạnh mẽ) mà trực (thẳng thắn)", loaiTinh:"Hung tinh",
+      khiSinhVuong:"Hưng gia lập nghiệp, giàu sang phú quý, công thành danh toại, vượng nhất ngành trưởng.",
+      khiSuyTu:"Dễ dính kiện tụng, trộm cướp, bệnh tật, hình khắc vợ con. Bệnh nhiễm trùng máu, bệnh về chân, gan, mật.",
+      cat:"thành gia lập nghiệp, giàu sang phú quý, công thành danh toại, thăng quan tiến chức", hung:"là \"Quan Phủ tinh\", chủ gây rắc rối, bị tiểu nhân cản trở, thường gặp kiện tụng, bệnh tật triền miên, hình khắc vợ"},
+    4: {ten:"Tứ Lục", tenKhac:"Văn Xương", nguHanh:"Mộc", cung:"Tốn (-)",
+      mauSac:"Xanh dương", bieuTuong:"Miếu, cây mây, dây thừng",
+      coThe:"☴ Đùi, Đởm( túi mật), liên quan đến mạch máu, khí quản, các chứng phong thấp và trúng phong",
+      tinhChat:"Hoà hoãn", loaiTinh:"Cát tinh",
+      khiSinhVuong:"Thi cử đỗ đạt, quân tử thăng quan, tiểu nhân có tiền của, lấy được vợ hiền/chồng giỏi, có tài văn chương.",
+      khiSuyTu:"Dễ mắc bệnh thần kinh, hen suyễn, sống phiêu bạt; đam mê tửu sắc phá tan cơ nghiệp. Dễ xảy thai, bệnh thắt lưng, tai nạn bất ngờ.",
+      cat:"thi cử đỗ đạt, thăng quan tiến chức, đất đai nhiều, được vợ hoặc chồng giúp đỡ", hung:"dễ mắc bệnh phong, hen suyễn, viêm gan, đau vùng dưới thắt lưng, thậm chí còn phải treo cổ tự tử, hoặc uống thuốc tự sát"},
+    5: {ten:"Ngũ Hoàng", tenKhac:"Liêm Trinh", nguHanh:"Thổ", cung:"Trung cung",
+      mauSac:"Vàng", bieuTuong:"Đế quyền, rồng vàng, hoàng bào",
+      coThe:"(Không có mô tả riêng)",
+      tinhChat:"(Không có mô tả riêng)", loaiTinh:"Đại hung tinh",
+      khiSinhVuong:"Khi ở đúng trung cung: vượng cả đinh lẫn tài, sự nghiệp phát triển.",
+      khiSuyTu:"Khi bay ra hướng khác: Ngũ Hoàng đại sát, sát tinh lớn nhất. Gặp Thái Tuế/Tam Sát/Thất Sát thì hại người mất của, bệnh tật, nặng có thể nguy hiểm tính mạng.",
+      cat:"sức mạnh vô song, giống như hoàng đế, uy danh bốn phương", hung:"là Ngũ Hoàng sát, sao xấu nhất trong Cửu tinh, nếu gặp Nhị Hắc hay Tam Bích sẽ mắc bệnh nặng hoặc bệnh nan y, gặp tai nạn, tan cửa nát nhà, tự sát — là hung tinh hàng đầu trong Cửu tinh", luuY:"là hung tinh hàng đầu trong Cửu tinh; luôn cần thận trọng dù đang ở trạng thái nào"},
+    6: {ten:"Lục Bạch", tenKhac:"Vũ Khúc", nguHanh:"Kim", cung:"Càn (+)",
+      mauSac:"Trắng, bạc", bieuTuong:"Chuông, đỉnh (vạc), ngọc, đá, vàng",
+      coThe:"☰ Đầu, Đại trường, xương khớp",
+      tinhChat:"Cương mà động", loaiTinh:"Cát tinh",
+      khiSinhVuong:"Lắm của đông người, quyền cao chức trọng, phát lớn về nghiệp võ, uy danh lừng lẫy. Cát tinh thứ ba.",
+      khiSuyTu:"Dễ dính kiện tụng, vất vả chốn quan trường. Đau đầu, đau ngực, thương tích do kim loại. Hình hại vợ con, cô đơn.",
+      cat:"phát về nghiệp võ, có tiếng tăm và quyền lực giàu có đông người", hung:"sống cô đơn không nơi nương tựa, hình vợ hại con"},
+    7: {ten:"Thất Xích", tenKhac:"Phá Quân", nguHanh:"Kim", cung:"Đoài (-)",
+      mauSac:"Đỏ", bieuTuong:"Đao kiếm, kích, rìu",
+      coThe:"☱ Miệng, Phổi, Liên quan đến hệ hô hấp (phế quản), miệng, lưỡi, họng và răng",
+      tinhChat:"Quyết đoán mà nhanh nhẹn", loaiTinh:"Hung tinh",
+      khiSinhVuong:"Vượng cả đinh lẫn tài, sự nghiệp phát đạt, chi út phát phúc, phát về nghiệp võ, quan vận hanh thông.",
+      khiSuyTu:"Dễ gây rắc rối, sống lưu lạc, trộm cướp. Hoả hoạn, tổn thất nhân khẩu, bệnh hô hấp/phổi/cổ họng, bất lợi cho bé gái.",
+      cat:"vượng cả đinh lẫn tài, phát về nghiệp võ", hung:"gây điều tiếng thị phi, kiện tụng", luuY:"Kim tinh mang sát khí; Cửu Tử Hỏa tinh có thể chế phục, nếu vào mùa hè thì Bát Bạch Thổ tinh có thể dung hòa"},
+    8: {ten:"Bát Bạch", tenKhac:"Tả Phù", nguHanh:"Thổ", cung:"Cấn (+)",
+      mauSac:"Trắng", bieuTuong:"Vườn cây, gò đống",
+      coThe:"☶ Tay, Vị, Tương ứng với các phần nhô ra trên cơ thể như mũi, vú, gót chân; dùng để điều trị các chứng ứ trệ, bệnh về dạ dày",
+      tinhChat:"Bình an, dừng lại", loaiTinh:"Cát tinh",
+      khiSinhVuong:"Công danh phú quý, hợp lập nghiệp/vượng tài, nghỉ ngơi dưỡng sức. Cát tinh thứ hai, có thể hoá giải hung sát.",
+      khiSuyTu:"Dễ tổn hại trẻ nhỏ, bệnh liên quan tay chân, gân cốt, sống lưng, trướng bụng.",
+      cat:"giàu sang phú quý, công thành danh toại, ruộng vườn nhà cửa đều phát", hung:"tổn thương tới trẻ nhỏ, tổn thương vùng cột sống, thắt lưng", luuY:"có thể hóa hung thần; cùng Nhất Bạch và Lục Bạch là ba đại cát tinh của Cửu tinh"},
+    9: {ten:"Cửu Tử", tenKhac:"Hữu Bật", nguHanh:"Hỏa", cung:"Ly (-)",
+      mauSac:"Đỏ tía", bieuTuong:"Bếp lò, đèn, nến",
+      coThe:"☲ Mắt, tim, vùng trung thượng vị (là phần bụng phía trên rốn và ngay dưới xương ức, chứa dạ dày, gan, tụy và tá tràng), ngực, vùng mặt và các chứng bệnh nhiệt, viêm nhiễm",
+      tinhChat:"Nóng nảy hung bạo", loaiTinh:"Cát tinh",
+      khiSinhVuong:"Phát phúc rất nhanh, vượng cả đinh lẫn tài, sự nghiệp ổn định, tài văn chương xuất chúng, phát phúc cho chi thứ.",
+      khiSuyTu:"Tính tình kiên cường, khí khái, dễ bị hoả hoạn. Dễ thổ huyết, bệnh về tim và mạch máu, khó sinh.",
+      cat:"phát khoa danh, lợi cho chi thứ", hung:"khó sinh, kiện tụng, hỏa hoạn", luuY:"bản tính nóng nảy nhất, không chấp nhận những thứ xấu xa nên cát không nên hung; thường được gọi chung với Nhất Bạch Thủy tinh là Tử Bạch"},
   };
   window.SAO_Y_NGHIA = SAO_Y_NGHIA;
 
