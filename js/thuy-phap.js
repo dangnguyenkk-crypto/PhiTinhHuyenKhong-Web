@@ -831,22 +831,11 @@
             // ====================================================================
             // LA BÀN KHAM DƯ — kiểu la bàn thứ 5 (cuối cùng) cho tab Thủy Pháp.
             // La bàn tổng hợp nhiều vòng đồng tâm kiểu Dương Công / Tam Hợp phái cổ điển,
-            // dùng để đối chiếu Tọa/Hướng qua nhiều hệ quy chiếu cùng lúc (24 Sơn, Tam Nguyên
-            // Long, Bát Quái, Tam Bàn Quái, Thiên Bàn Song Sơn) — KHÔNG dùng để tính điểm
-            // cát/hung như Bát Trạch/Trường Sinh, chỉ để TRA CỨU/ĐỐI CHIẾU trực quan.
+            // dùng để đối chiếu Tọa/Hướng qua nhiều hệ quy chiếu cùng lúc (24 Sơn, 72 Long,
+            // Tam Nguyên Long, Bát Quái, Tam Bàn Quái, Thiên Bàn Song Sơn) — KHÔNG dùng để
+            // tính điểm cát/hung như Bát Trạch/Trường Sinh, chỉ để TRA CỨU/ĐỐI CHIẾU trực quan.
             // Vẽ RIÊNG, không dùng chung engine với veCompassChung()/CompassModule, theo
             // đúng pattern của veLaBanTruongSinh()/veLaBanBatTrach() ở trên.
-            //
-            // GHI CHÚ QUAN TRỌNG VỀ VÒNG 72 LONG:
-            // Vòng 72 Long (60 Long Lục Thập Giáp Tý + 12 ô Không Vong) đòi hỏi 1 bảng tra
-            // chính xác gán TỪNG LONG cụ thể vào TỪNG Ô 5° cụ thể theo quy luật "Điên Điên
-            // Đảo" của Tam Hợp phái (không tuyến tính, không thể tự suy ra từ vài ví dụ mẫu).
-            // Nguồn tài liệu hiện có KHÔNG đủ để dựng đúng — vẽ SAI dữ liệu này còn nguy hiểm
-            // hơn không vẽ, vì dùng để học nên đánh số 1-72 làm placeholder theo đúng 72 ô
-            // (mỗi sơn 15° chia 3 ô 5°: thứ tự Địa→Thiên→Nhân theo góc tăng dần, ô đầu tiên
-            // (Long số 1) bắt đầu từ đầu sơn Nhâm ở 337.5°). Khi có bảng tra 72 Long chính xác
-            // (từ sách giấy/la kinh thật), CHỈ CẦN điền vào biang BANG_72_LONG bên dưới, đổi
-            // placeholder "1".."72" thành tên Long thật — không cần sửa gì khác trong hàm vẽ.
             // ====================================================================
             function damBaoSvgKhamDuTonTai() {
                 let svg = document.getElementById("compassSvgKhamDu");
@@ -863,10 +852,42 @@
                 return svg;
             }
 
-            // ---- BẢNG 72 LONG (placeholder số 1-72) — xem ghi chú ở trên. Mảng theo đúng thứ
-            // tự 72 ô liên tục quanh vòng tròn, bắt đầu từ ô đầu tiên (337.5°-342.5°, đầu sơn
-            // Nhâm), đi theo chiều kim đồng hồ. index 0 = Long số 1 ... index 71 = Long số 72.
-            const BANG_72_LONG = Array.from({length: 72}, function(_, i) { return String(i + 1); });
+            // ---- BẢNG 72 LONG (60 Long Lục Thập Giáp Tý + 12 ô Không Vong = null) ----
+            // Nguồn: bảng tra La Kinh do Ka cung cấp (đã đối chiếu khớp 100% với danh sách 12 ô
+            // Không Vong công bố kèm bảng gốc: 2,8,14,20,26,32,38,44,50,56,62,68).
+            // Mảng theo đúng thứ tự 72 ô liên tục quanh vòng tròn, bắt đầu từ ô đầu tiên (ô 1,
+            // góc 337.5°-342.5°, đầu sơn Nhâm) đi theo chiều kim đồng hồ. index 0 = ô số 1.
+            // Đã xác minh: ô 1-3 = 3 ô của sơn Nhâm (Quý Hợi / Không Vong-Chính Nhâm / Giáp Tý);
+            // ô 4-6 = 3 ô của sơn Tý (Bính Tý, Mậu Tý, Canh Tý, không có Không Vong vì Tý là Địa Chi).
+            const BANG_72_LONG = [
+                "Quý Hợi", null, "Giáp Tý", "Bính Tý", "Mậu Tý", "Canh Tý",
+                "Nhâm Tý", null, "Ất Sửu", "Đinh Sửu", "Kỷ Sửu", "Tân Sửu",
+                "Quý Sửu", null, "Bính Dần", "Mậu Dần", "Canh Dần", "Nhâm Dần",
+                "Giáp Dần", null, "Đinh Mão", "Kỷ Mão", "Tân Mão", "Quý Mão",
+                "Ất Mão", null, "Mậu Thìn", "Canh Thìn", "Nhâm Thìn", "Giáp Thìn",
+                "Bính Thìn", null, "Kỷ Tị", "Tân Tị", "Quý Tị", "Ất Tị",
+                "Đinh Tị", null, "Canh Ngọ", "Nhâm Ngọ", "Giáp Ngọ", "Bính Ngọ",
+                "Mậu Ngọ", null, "Tân Mùi", "Quý Mùi", "Ất Mùi", "Đinh Mùi",
+                "Kỷ Mùi", null, "Nhâm Thân", "Giáp Thân", "Bính Thân", "Mậu Thân",
+                "Canh Thân", null, "Quý Dậu", "Ất Dậu", "Đinh Dậu", "Kỷ Dậu",
+                "Tân Dậu", null, "Giáp Tuất", "Bính Tuất", "Mậu Tuất", "Canh Tuất",
+                "Nhâm Tuất", null, "Ất Hợi", "Đinh Hợi", "Kỷ Hợi", "Tân Hợi"
+            ];
+            // Nạp Âm Ngũ Hành cho 60 Hoa Giáp — dùng để tô màu vòng 72 Long theo Ngũ Hành.
+            // Bảng chuẩn (Kim/Mộc/Thủy/Hỏa/Thổ), mỗi cặp Can Chi liền kề chia sẻ 1 Nạp Âm.
+            const NAPAM_60 = {
+                "Giáp Tý":"Kim","Ất Sửu":"Kim","Bính Dần":"Hỏa","Đinh Mão":"Hỏa","Mậu Thìn":"Mộc","Kỷ Tị":"Mộc",
+                "Canh Ngọ":"Thổ","Tân Mùi":"Thổ","Nhâm Thân":"Kim","Quý Dậu":"Kim","Giáp Tuất":"Hỏa","Ất Hợi":"Hỏa",
+                "Bính Tý":"Thủy","Đinh Sửu":"Thủy","Mậu Dần":"Thổ","Kỷ Mão":"Thổ","Canh Thìn":"Kim","Tân Tị":"Kim",
+                "Nhâm Ngọ":"Mộc","Quý Mùi":"Mộc","Giáp Thân":"Thủy","Ất Dậu":"Thủy","Bính Tuất":"Thổ","Đinh Hợi":"Thổ",
+                "Mậu Tý":"Hỏa","Kỷ Sửu":"Hỏa","Canh Dần":"Mộc","Tân Mão":"Mộc","Nhâm Thìn":"Thủy","Quý Tị":"Thủy",
+                "Giáp Ngọ":"Kim","Ất Mùi":"Kim","Bính Thân":"Hỏa","Đinh Dậu":"Hỏa","Mậu Tuất":"Mộc","Kỷ Hợi":"Mộc",
+                "Canh Tý":"Thổ","Tân Sửu":"Thổ","Nhâm Dần":"Kim","Quý Mão":"Kim","Giáp Thìn":"Hỏa","Ất Tị":"Hỏa",
+                "Bính Ngọ":"Thủy","Đinh Mùi":"Thủy","Mậu Thân":"Thổ","Kỷ Dậu":"Thổ","Canh Tuất":"Kim","Tân Hợi":"Kim",
+                "Nhâm Tý":"Mộc","Quý Sửu":"Mộc","Giáp Dần":"Thủy","Ất Mão":"Thủy","Bính Thìn":"Thổ","Đinh Tị":"Thổ",
+                "Mậu Ngọ":"Hỏa","Kỷ Mùi":"Hỏa","Canh Thân":"Mộc","Tân Dậu":"Mộc","Nhâm Tuất":"Thủy","Quý Hợi":"Thủy"
+            };
+            const MAU_NGU_HANH = { "Kim":"#d4b106", "Mộc":"#2e7d32", "Thủy":"#1565c0", "Hỏa":"#c62828", "Thổ":"#8d6e34" };
 
             // ---- BẢNG TAM BÀN QUÁI (Giang Đông / Giang Tây / Nam Bắc) — theo đúng tài liệu
             // thế_quẻ.md / tài liệu Kham Dư đã cung cấp, dữ liệu chắc chắn không suy đoán.
@@ -880,8 +901,8 @@
             };
             const MAU_TAM_BAN_QUAI = { "Giang Đông":"#2e7d32", "Giang Tây":"#c62828", "Nam Bắc":"#1565c0" };
 
-            // ---- 8 sơn Thiên Bàn (Thiên bàn xoay lệch +7.5° so với Địa bàn, gồm 12 cặp Song
-            // Sơn mỗi cặp 30°) — dùng riêng để đo Thủy (Nước Đến/Đi), không dùng để đo Tọa/Hướng.
+            // ---- 12 Song Sơn của Thiên Bàn (lệch +7.5° so với Địa bàn), dùng riêng để đo
+            // Thủy (Nước Đến/Đi), không dùng để đo Tọa/Hướng.
             const SONG_SON_12 = [
                 {ten:"Nhâm-Tý", goc:0},{ten:"Quý-Sửu", goc:30},{ten:"Cấn-Dần", goc:60},{ten:"Giáp-Mão", goc:90},
                 {ten:"Ất-Thìn", goc:120},{ten:"Tốn-Tị", goc:150},{ten:"Bính-Ngọ", goc:180},{ten:"Đinh-Mùi", goc:210},
@@ -889,8 +910,8 @@
             ];
             const LECH_THIEN_BAN = 7.5; // Thiên bàn xoay lệch 7.5° theo chiều kim đồng hồ so với Địa bàn
 
-            // Toggle bật/tắt vòng Thiên Bàn (mặc định BẬT) — vòng này khá dày thông tin nên cho
-            // phép ẩn để đỡ rối khi chỉ cần xem Địa bàn (Tọa/Hướng).
+            // Toggle bật/tắt vòng Thiên Bàn (mặc định BẬT) — vòng khá dày thông tin nên cho phép
+            // ẩn để đỡ rối khi chỉ cần xem Địa bàn (Tọa/Hướng).
             let hienThiThienBanKhamDu = true;
             window.toggleThienBanKhamDu = function() {
                 hienThiThienBanKhamDu = !hienThiThienBanKhamDu;
@@ -982,8 +1003,8 @@
                     });
                 }
 
-                // ---- VÒNG 72 LONG (placeholder 1-72) — mỗi sơn 15° chia 3 ô 5°, thứ tự liên
-                // tục bắt đầu từ đầu sơn Nhâm (337.5°) theo chiều kim đồng hồ ----
+                // ---- VÒNG 72 LONG (60 Long Giáp Tý + 12 Không Vong) — mỗi sơn 15° chia 3 ô
+                // 5°, thứ tự liên tục bắt đầu từ đầu sơn Nhâm (337.5°) theo chiều kim đồng hồ ----
                 for (let i = 0; i < 72; i++) {
                     let gocStart = 337.5 + i * 5;
                     let gocEnd = gocStart + 5;
@@ -992,14 +1013,23 @@
                     let xeO = cx + rLong72Ngoai * Math.cos(re), yeO = cy + rLong72Ngoai * Math.sin(re);
                     let xsI = cx + rLong72Trong * Math.cos(re), ysI = cy + rLong72Trong * Math.sin(re);
                     let xeI = cx + rLong72Trong * Math.cos(rs), yeI = cy + rLong72Trong * Math.sin(rs);
-                    // Xen kẽ màu nhạt để phân biệt ô, không mang ý nghĩa cát/hung (chưa có dữ liệu).
-                    let mauNen = (i % 2 === 0) ? "#f0ede4" : "#e4dfd0";
-                    html += `<path d="M${xsO.toFixed(1)},${ysO.toFixed(1)} A${rLong72Ngoai},${rLong72Ngoai} 0 0,1 ${xeO.toFixed(1)},${yeO.toFixed(1)} L${xsI.toFixed(1)},${ysI.toFixed(1)} A${rLong72Trong},${rLong72Trong} 0 0,0 ${xeI.toFixed(1)},${yeI.toFixed(1)} Z" fill="${mauNen}" fill-opacity="${Math.max(doMoNenLaBan,0.4)}" stroke="#8a7a5c" stroke-width="0.5"/>`;
+                    let tenLong = BANG_72_LONG[i];
+                    let laKhongVong = (tenLong === null);
+                    let hanhLong = laKhongVong ? null : NAPAM_60[tenLong];
+                    let mauNen = laKhongVong ? "#3a3a3a" : (MAU_NGU_HANH[hanhLong] || "#cccccc");
+                    let doMoNen = laKhongVong ? 0.75 : Math.max(doMoNenLaBan * 0.55, 0.22);
+                    html += `<path d="M${xsO.toFixed(1)},${ysO.toFixed(1)} A${rLong72Ngoai},${rLong72Ngoai} 0 0,1 ${xeO.toFixed(1)},${yeO.toFixed(1)} L${xsI.toFixed(1)},${ysI.toFixed(1)} A${rLong72Trong},${rLong72Trong} 0 0,0 ${xeI.toFixed(1)},${yeI.toFixed(1)} Z" fill="${mauNen}" fill-opacity="${doMoNen}" stroke="#8a7a5c" stroke-width="0.5"/>`;
                     let gocTam = gocStart + 2.5;
                     let radT = (gocTam - 90) * Math.PI / 180;
                     let rTextL72 = (rLong72Trong + rLong72Ngoai) / 2;
                     let xL = cx + rTextL72 * Math.cos(radT), yL = cy + rTextL72 * Math.sin(radT);
-                    html += `<g transform="rotate(${gocTam} ${xL.toFixed(1)} ${yL.toFixed(1)})"><text x="${xL.toFixed(1)}" y="${yL.toFixed(1)}" font-size="${(tpFontSize*0.62).toFixed(1)}" font-weight="600" fill="#5c4a2a" stroke="#fff" stroke-width="1.5" paint-order="stroke" text-anchor="middle" dominant-baseline="middle">${BANG_72_LONG[i]}</text></g>`;
+                    let nhanLong = laKhongVong ? "KV" : tenLong;
+                    let mauChu = laKhongVong ? "#fff" : "#2a1a0a";
+                    // Xoay thêm 90° so với hướng tiếp tuyến để chữ nằm dọc theo bán kính (từ trong
+                    // ra ngoài) — vì tên Long 2 từ (Can+Chi) dài hơn bề rộng cung 5°/ô, nằm dọc theo
+                    // bán kính tận dụng được chiều dài dải vòng thay vì bị tràn theo chiều cung hẹp.
+                    let gocChuL72 = gocTam + 90;
+                    html += `<g transform="rotate(${gocChuL72} ${xL.toFixed(1)} ${yL.toFixed(1)})"><text x="${xL.toFixed(1)}" y="${yL.toFixed(1)}" font-size="${(tpFontSize*0.5).toFixed(1)}" font-weight="700" fill="${mauChu}" stroke="${laKhongVong?'none':'#fff'}" stroke-width="1.2" paint-order="stroke" text-anchor="middle" dominant-baseline="middle">${nhanLong}</text></g>`;
                 }
 
                 // ---- VÒNG TAM BÀN QUÁI (Giang Đông / Giang Tây / Nam Bắc) — theo 24 Sơn ----
@@ -1013,10 +1043,6 @@
                     let tenNhom = TAM_BAN_QUAI[s.ten] || "";
                     let mauNen = MAU_TAM_BAN_QUAI[tenNhom] || "#cfcfcf";
                     html += `<path d="M${xsO.toFixed(1)},${ysO.toFixed(1)} A${rTamBanQuai},${rTamBanQuai} 0 0,1 ${xeO.toFixed(1)},${yeO.toFixed(1)} L${xsI.toFixed(1)},${ysI.toFixed(1)} A${rNguyenLong},${rNguyenLong} 0 0,0 ${xeI.toFixed(1)},${yeI.toFixed(1)} Z" fill="${mauNen}" fill-opacity="0.28" stroke="#3a2a1a" stroke-width="0.4"/>`;
-                });
-                // Chú thích 3 nhãn Tam Bàn Quái tại vị trí đại diện (giữa mỗi cụm 8 sơn)
-                [{ten:"Giang Đông", gocGiua: (30+120)/2}, {ten:"Giang Tây", gocGiua: (210+300)/2}, {ten:"Nam Bắc", gocGiua: 0}].forEach(function(nb) {
-                    // Nam Bắc gồm 2 cụm (quanh 0° và quanh 180°) nên ghi nhãn riêng cho từng cụm.
                 });
                 let radGD = ((30+120)/2 - 90) * Math.PI / 180;
                 let xGD = cx + rTamBanQuai * Math.cos(radGD) - 14, yGD = cy + rTamBanQuai * Math.sin(radGD) + 16;
@@ -1055,9 +1081,9 @@
                     let xeO = cx + rSon24 * Math.cos(re), yeO = cy + rSon24 * Math.sin(re);
                     let xsI = cx + rBatQuai * Math.cos(re), ysI = cy + rBatQuai * Math.sin(re);
                     let xeI = cx + rBatQuai * Math.cos(rs), yeI = cy + rBatQuai * Math.sin(rs);
-                    let laToa = false, laHuong = sonHienTai && sonHienTai.ten === s.ten;
                     let laToaSon = laySonToa ? laySonToa(houseFacing) : null;
-                    laToa = laToaSon && laToaSon.ten === s.ten;
+                    let laToa = laToaSon && laToaSon.ten === s.ten;
+                    let laHuong = sonHienTai && sonHienTai.ten === s.ten;
                     let mauNen = s.amDuong === "Duong" ? "#fdf6e3" : "#eef1f7";
                     let vien = laHuong ? "#c62828" : (laToa ? "#6a1b9a" : "#3a2a1a");
                     let dayVien = (laHuong || laToa) ? 3.5 : 0.8;
@@ -1089,7 +1115,7 @@
                     html += `<g transform="rotate(${bq.goc} ${xB.toFixed(1)} ${yB.toFixed(1)})"><text x="${xB.toFixed(1)}" y="${yB.toFixed(1)}" font-size="${(tpFontSize*1.3).toFixed(1)}" font-weight="900" fill="#fff" stroke="#2a2a2a" stroke-width="3" paint-order="stroke" text-anchor="middle" dominant-baseline="middle">${bq.ten}</text></g>`;
                 });
 
-                // Nhãn Tam Bàn Quái (vẽ SAU BátQuái để không bị đè, đặt lên trên viền vòng đó)
+                // Nhãn Tam Bàn Quái (vẽ SAU Bát Quái để không bị đè)
                 html += `<text x="${xGD.toFixed(1)}" y="${yGD.toFixed(1)}" font-size="${(tpFontSize*0.68).toFixed(1)}" font-weight="800" fill="${MAU_TAM_BAN_QUAI["Giang Đông"]}" stroke="#fff" stroke-width="2.5" paint-order="stroke" text-anchor="middle">Giang Đông</text>`;
                 html += `<text x="${xGT.toFixed(1)}" y="${yGT.toFixed(1)}" font-size="${(tpFontSize*0.68).toFixed(1)}" font-weight="800" fill="${MAU_TAM_BAN_QUAI["Giang Tây"]}" stroke="#fff" stroke-width="2.5" paint-order="stroke" text-anchor="middle">Giang Tây</text>`;
                 html += `<text x="${xNB1.toFixed(1)}" y="${yNB1.toFixed(1)}" font-size="${(tpFontSize*0.68).toFixed(1)}" font-weight="800" fill="${MAU_TAM_BAN_QUAI["Nam Bắc"]}" stroke="#fff" stroke-width="2.5" paint-order="stroke" text-anchor="middle">Nam Bắc</text>`;
@@ -1108,12 +1134,21 @@
                 let xLH = cx+(rKimHuong+35)*Math.cos(radMui), yLH = cy+(rKimHuong+35)*Math.sin(radMui);
                 html += `<text x="${xLH.toFixed(1)}" y="${yLH.toFixed(1)}" font-size="${tpFontSize+3}" font-weight="800" fill="#ff0000" stroke="#fff" stroke-width="1.5" paint-order="stroke" text-anchor="middle" transform="rotate(${houseFacing} ${xLH.toFixed(1)} ${yLH.toFixed(1)})">▲ HƯỚNG NHÀ</text>`;
 
-                // Tâm: nhãn "Kham Dư" + góc hướng nhà hiện tại
+                // Tâm: nhãn "Kham Dư" + góc hướng nhà hiện tại + Long tại Hướng
                 html += `<circle cx="${cx}" cy="${cy}" r="6" fill="#ff1a1a" stroke="#fff" stroke-width="2"/>`;
-                html += `<text x="${cx}" y="${cy-18}" font-size="${(tpFontSize*1.1).toFixed(1)}" font-weight="900" fill="#2e7d32" stroke="#fff" stroke-width="3" paint-order="stroke" text-anchor="middle">KHAM DƯ</text>`;
-                html += `<text x="${cx}" y="${cy+4}" font-size="${(tpFontSize*0.9).toFixed(1)}" font-weight="700" fill="#555" stroke="#fff" stroke-width="2.5" paint-order="stroke" text-anchor="middle">${houseFacing.toFixed(1)}°</text>`;
+                html += `<text x="${cx}" y="${cy-30}" font-size="${(tpFontSize*1.1).toFixed(1)}" font-weight="900" fill="#2e7d32" stroke="#fff" stroke-width="3" paint-order="stroke" text-anchor="middle">KHAM DƯ</text>`;
+                html += `<text x="${cx}" y="${cy-8}" font-size="${(tpFontSize*0.9).toFixed(1)}" font-weight="700" fill="#555" stroke="#fff" stroke-width="2.5" paint-order="stroke" text-anchor="middle">${houseFacing.toFixed(1)}°</text>`;
                 if (sonHienTai) {
-                    html += `<text x="${cx}" y="${cy+22}" font-size="${(tpFontSize*0.85).toFixed(1)}" font-weight="700" fill="#c62828" stroke="#fff" stroke-width="2.5" paint-order="stroke" text-anchor="middle">Hướng: ${sonHienTai.ten}</text>`;
+                    html += `<text x="${cx}" y="${cy+10}" font-size="${(tpFontSize*0.85).toFixed(1)}" font-weight="700" fill="#c62828" stroke="#fff" stroke-width="2.5" paint-order="stroke" text-anchor="middle">Hướng: ${sonHienTai.ten}</text>`;
+                }
+                // Long tại Hướng (tra theo góc houseFacing trong BANG_72_LONG)
+                let idxLong = Math.floor((((houseFacing - 337.5) % 360 + 360) % 360) / 5);
+                let tenLongHuong = BANG_72_LONG[idxLong];
+                if (tenLongHuong) {
+                    let hanhLongHuong = NAPAM_60[tenLongHuong] || "";
+                    html += `<text x="${cx}" y="${cy+28}" font-size="${(tpFontSize*0.8).toFixed(1)}" font-weight="700" fill="${MAU_NGU_HANH[hanhLongHuong]||'#333'}" stroke="#fff" stroke-width="2.5" paint-order="stroke" text-anchor="middle">Long: ${tenLongHuong} (${hanhLongHuong})</text>`;
+                } else {
+                    html += `<text x="${cx}" y="${cy+28}" font-size="${(tpFontSize*0.8).toFixed(1)}" font-weight="700" fill="#3a3a3a" stroke="#fff" stroke-width="2.5" paint-order="stroke" text-anchor="middle">Long: Không Vong</text>`;
                 }
 
                 svg.innerHTML = html;
