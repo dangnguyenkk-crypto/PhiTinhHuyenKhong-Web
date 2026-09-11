@@ -1187,10 +1187,13 @@
                     let gocTamKD = gocStart + 15;
                     let radTKD = (gocTamKD - 90) * Math.PI / 180;
                     // Tên cung Song Sơn (ví dụ "Nhâm-Tý") nằm ở nửa ngoài của dải, tên giai đoạn
-                    // (ví dụ "Trường Sinh") nằm ở nửa trong — cả 2 đều xoay theo hướng bán kính và
-                    // áp dụng lật 180° ở nửa trên vòng tròn giống vòng 72 Long, để luôn đọc xuôi.
+                    // (ví dụ "Trường Sinh") nằm ở nửa trong — mỗi ô rộng 30° (rộng hơn nhiều so
+                    // với bề dày dải 50px) nên chữ nằm NGANG theo hướng tiếp tuyến (xoay -90° so
+                    // với hướng bán kính) để gọn trong ô, thay vì dọc theo bán kính như vòng 72
+                    // Long (vốn có ô hẹp 5° cần chữ dọc). Lật thêm 180° ở nửa dưới vòng tròn để
+                    // chữ luôn đọc xuôi.
                     let gocChuanKD = ((gocTamKD % 360) + 360) % 360;
-                    let gocChuKD = (gocChuanKD > 180) ? gocTamKD + 90 : gocTamKD - 90;
+                    let gocChuKD = (gocChuanKD > 90 && gocChuanKD < 270) ? gocTamKD + 180 : gocTamKD;
                     let rTenCungKD = rTruongSinhKDTrong + (rTruongSinhKDNgoai - rTruongSinhKDTrong) * 0.72;
                     let rTenGiaiDoanKD = rTruongSinhKDTrong + (rTruongSinhKDNgoai - rTruongSinhKDTrong) * 0.28;
                     let xTenCung = cx + rTenCungKD * Math.cos(radTKD), yTenCung = cy + rTenCungKD * Math.sin(radTKD);
