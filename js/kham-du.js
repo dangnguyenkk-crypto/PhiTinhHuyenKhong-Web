@@ -556,7 +556,7 @@
         container.innerHTML = `
             <div style="display:flex;flex-direction:column;align-items:center;padding:12px;gap:10px;width:100%;max-width:520px;margin:0 auto;">
                 <div style="display:flex;flex-wrap:wrap;gap:8px;align-items:center;justify-content:center;width:100%;">
-                <div style="display:flex;flex-wrap:nowrap;gap:6px;align-items:center;width:100%;overflow-x:auto;padding-bottom:2px;">
+                <div style="display:flex;flex-wrap:wrap;gap:6px;align-items:center;justify-content:center;width:100%;">
                     <button id="kdBtnChooseFile" style="flex:0 0 auto;padding:6px 10px;border-radius:6px;border:1px solid #4CAF50;background:#4CAF50;color:#fff;font-size:12px;cursor:pointer;white-space:nowrap;">🖼️ Chọn ảnh</button>
                     <input type="file" id="kdMapImageInput" accept="image/*" style="display:none;">
                     <button id="kdBtnKhoaLaBan" onclick="kdToggleKhoaLaBan()" title="Khóa/mở khóa di chuyển ảnh nền" style="flex:0 0 auto;padding:4px 8px;border-radius:6px;border:1px solid #999;background:#fff;font-size:14px;cursor:pointer;">🔓</button>
