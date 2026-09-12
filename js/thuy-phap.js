@@ -156,76 +156,84 @@
                 capNhatViTriAnhNen();
             };
 
-            window.chuyenKieuLaBanThuyPhap = function() {
+            // Danh sách 4 kiểu la bàn của tab Thủy Pháp, đúng thứ tự hiển thị trong dropdown.
+            // (Đã bỏ "batTrach" khỏi danh sách chọn — hàm veLaBanBatTrach()/dữ liệu duNienBatTrach
+            // vẫn giữ nguyên trong file vì traBatTrach() ở phần Thủy Khẩu bên dưới còn dùng tới,
+            // chỉ là người dùng không còn chọn được "la bàn Bát Trạch" như 1 kiểu la bàn riêng nữa.)
+            const THU_TU_KIEU_LA_BAN = ["tron24son", "truongSinh", "khamDu", "daGiacNha"];
+            const NHAN_KIEU_LA_BAN = { tron24son: "24 Sơn", truongSinh: "Trường Sinh", khamDu: "Kham Dư", daGiacNha: "Đa Giác Nhà" };
+            const ICON_KIEU_LA_BAN = { tron24son: "🧭", truongSinh: "♻️", khamDu: "🗺️", daGiacNha: "📐" };
+
+            window.chonKieuLaBanThuyPhap = function(kieuMoiRaw) {
                 damBaoSvgDaGiacTonTai();
                 damBaoSvgTruongSinhTonTai();
                 damBaoSvgBatTrachTonTai();
                 damBaoSvgKhamDuTonTai();
-                const thuTu = ["tron24son", "truongSinh", "batTrach", "daGiacNha", "khamDu"];
-                let hienTai = window.layKieuLaBanHienTai("compassOverlay");
-                let idxMoi = (thuTu.indexOf(hienTai) + 1) % thuTu.length;
-                let kieuMoi = window.setKieuLaBan("compassOverlay", thuTu[idxMoi]);
+                let kieuMoi = window.setKieuLaBan("compassOverlay",
+                    THU_TU_KIEU_LA_BAN.includes(kieuMoiRaw) ? kieuMoiRaw : THU_TU_KIEU_LA_BAN[0]);
 
                 let svgTron = document.getElementById("compassSvg");
                 let svgDaGiac = document.getElementById("compassSvgDaGiac");
                 let svgTruongSinh = document.getElementById("compassSvgTruongSinh");
-                let svgBatTrach = document.getElementById("compassSvgBatTrach");
                 let svgKhamDu = document.getElementById("compassSvgKhamDu");
                 if (svgTron) svgTron.style.display = (kieuMoi === "tron24son") ? "block" : "none";
                 if (svgDaGiac) svgDaGiac.style.display = (kieuMoi === "daGiacNha") ? "block" : "none";
                 if (svgTruongSinh) svgTruongSinh.style.display = (kieuMoi === "truongSinh") ? "block" : "none";
-                if (svgBatTrach) svgBatTrach.style.display = (kieuMoi === "batTrach") ? "block" : "none";
                 if (svgKhamDu) svgKhamDu.style.display = (kieuMoi === "khamDu") ? "block" : "none";
                 let panelDaGiac = document.getElementById("thuyPhapDaGiacPanel");
                 if (panelDaGiac) panelDaGiac.style.display = (kieuMoi === "daGiacNha") ? "flex" : "none";
-                let panelKhamDu = document.getElementById("thuyPhapKhamDuPanel");
-                if (panelKhamDu) panelKhamDu.style.display = (kieuMoi === "khamDu") ? "flex" : "none";
-                // Hàng chọn Nước Đến/Đi theo Địa Chi (12 cung) chỉ cần hiện khi đang ở la bàn
-                // Trường Sinh — la bàn Bát Trạch vẫn dùng #selSonDen/#selSonDi (24 sơn) như
-                // Tròn 24 sơn/Đa giác nhà, vì Bát Trạch quy đổi sơn → phương vị (8 cung), không
-                // cần Địa Chi 12 cung.
+                // Hàng chọn Nước Đến/Đi theo Địa Chi (12 cung) chỉ cần hiện khi đang ở la bàn Trường Sinh.
                 let rowDiaChi = document.getElementById("tpDiaChiRow");
                 if (rowDiaChi) rowDiaChi.style.display = (kieuMoi === "truongSinh") ? "flex" : "none";
-                // Hàng chọn chế độ Bát Trạch (Trạch đất / So Mệnh gia chủ) chỉ hiện khi ở la bàn Bát Trạch.
-                let rowBatTrachCheDo = document.getElementById("tpBatTrachCheDoRow");
-                if (rowBatTrachCheDo) rowBatTrachCheDo.style.display = (kieuMoi === "batTrach") ? "flex" : "none";
 
                 veCompassOverlay(parseFloat(document.getElementById('houseFacing').value) || 0);
 
-                let btn = document.getElementById("btnKieuLaBan");
-                if (btn) btn.textContent = kieuMoi === "daGiacNha" ? "📐" : (kieuMoi === "truongSinh" ? "♻️" : (kieuMoi === "batTrach" ? "🀄" : (kieuMoi === "khamDu" ? "🗺️" : "🧭")));
+                let sel = document.getElementById("selKieuLaBan");
+                if (sel && sel.value !== kieuMoi) sel.value = kieuMoi;
             };
-            // Tự tạo nút chuyển kiểu la bàn nếu HTML chưa có sẵn #btnKieuLaBan — đặt cạnh btnToggleCompass
-            // (thừa hưởng cùng style .btn-compass-tool nếu có trong CSS) để không phải sửa tay index.html.
-            function damBaoNutKieuLaBanTonTai() {
-                let btn = document.getElementById("btnKieuLaBan");
-                if (btn) return btn;
+            // Giữ tên hàm cũ để tương thích ngược với bất kỳ chỗ nào khác còn gọi
+            // window.chuyenKieuLaBanThuyPhap() — nay chuyển sang chọn kế tiếp trong danh sách 4 kiểu.
+            window.chuyenKieuLaBanThuyPhap = function() {
+                let hienTai = window.layKieuLaBanHienTai("compassOverlay");
+                let idxMoi = (THU_TU_KIEU_LA_BAN.indexOf(hienTai) + 1) % THU_TU_KIEU_LA_BAN.length;
+                window.chonKieuLaBanThuyPhap(THU_TU_KIEU_LA_BAN[idxMoi]);
+            };
+            // Tự tạo dropdown chọn kiểu la bàn nếu HTML chưa có sẵn #selKieuLaBan — đặt cạnh
+            // btnToggleCompass (thừa hưởng vị trí của nút 🧭 cũ) để không phải sửa tay index.html.
+            function damBaoDropdownKieuLaBanTonTai() {
+                let sel = document.getElementById("selKieuLaBan");
+                if (sel) return sel;
                 let anchor = document.getElementById("btnToggleCompass");
                 if (!anchor || !anchor.parentElement) return null;
-                btn = document.createElement("button");
-                btn.id = "btnKieuLaBan";
-                btn.type = "button";
-                btn.className = anchor.className;
-                btn.style.cssText = anchor.style.cssText;
-                btn.textContent = "🧭";
-                btn.title = "Chuyển kiểu la bàn: Tròn 24 sơn ↔ Trường Sinh 12 cung ↔ Bát Trạch 8 cung ↔ Đa giác nhà ↔ Kham Dư";
-                btn.addEventListener("click", function(e) { e.preventDefault(); window.chuyenKieuLaBanThuyPhap(); });
-                anchor.parentElement.insertBefore(btn, anchor.nextSibling);
+                sel = document.createElement("select");
+                sel.id = "selKieuLaBan";
+                sel.title = "Chọn kiểu la bàn";
+                // .map-stage là position:relative + overflow:hidden, và các nút anh em
+                // (btnKhoaLaBan/btnResetGoc/btnToggleCompass) đều position:absolute (xem .btn-toggle-compass
+                // trong style.css) — dropdown PHẢI absolute tương tự, nếu không sẽ nằm ở vị trí static
+                // và bị overflow:hidden của .map-stage cắt mất (ẩn hoàn toàn dù không có display:none).
+                sel.style.cssText = "position:absolute;top:8px;left:50%;transform:translateX(78px);z-index:30;padding:3px 20px 3px 6px;border-radius:14px;border:1px solid rgba(255,255,255,0.4);font-size:11px;font-weight:700;background:rgba(25,118,210,0.9);color:#fff;display:none;max-width:118px;";
+                THU_TU_KIEU_LA_BAN.forEach(function(kieu) {
+                    let opt = document.createElement("option");
+                    opt.value = kieu;
+                    opt.textContent = ICON_KIEU_LA_BAN[kieu] + " " + NHAN_KIEU_LA_BAN[kieu];
+                    sel.appendChild(opt);
+                });
+                sel.addEventListener("change", function() { window.chonKieuLaBanThuyPhap(this.value); });
+                anchor.parentElement.insertBefore(sel, anchor.nextSibling);
 
                 // ==== ĐỒNG BỘ HIỂN THỊ với btnToggleCompass mọi lúc (bám theo, không cần sửa từng
                 // chỗ code cũ set display='block'/'none' cho btnToggleCompass — tránh sót chỗ). ====
-                // btnToggleCompass ẩn/hiện qua thuộc tính style.display trực tiếp (không phải class),
-                // nên dùng MutationObserver theo dõi attribute "style" là đủ, không cần theo dõi class.
                 let dongBoHienThi = function() {
-                    btn.style.display = anchor.style.display;
+                    sel.style.display = anchor.style.display === "none" ? "none" : "block";
                 };
                 dongBoHienThi(); // đồng bộ ngay lần đầu (lúc này anchor thường đang display:none)
                 let mo = new MutationObserver(dongBoHienThi);
                 mo.observe(anchor, { attributes: true, attributeFilter: ["style"] });
 
-                return btn;
+                return sel;
             }
-            damBaoNutKieuLaBanTonTai();
+            damBaoDropdownKieuLaBanTonTai();
 
 
             // ====================================================================
@@ -910,38 +918,9 @@
             ];
             const LECH_THIEN_BAN = 7.5; // Thiên bàn xoay lệch 7.5° theo chiều kim đồng hồ so với Địa bàn
 
-            // Toggle bật/tắt vòng Thiên Bàn (mặc định BẬT) — vòng khá dày thông tin nên cho phép
-            // ẩn để đỡ rối khi chỉ cần xem Địa bàn (Tọa/Hướng).
-            let hienThiThienBanKhamDu = true;
-            window.toggleThienBanKhamDu = function() {
-                hienThiThienBanKhamDu = !hienThiThienBanKhamDu;
-                let btn = document.getElementById("btnToggleThienBanKhamDu");
-                if (btn) {
-                    btn.style.background = hienThiThienBanKhamDu ? "#4CAF50" : "#fff";
-                    btn.style.color = hienThiThienBanKhamDu ? "#fff" : "#555";
-                    btn.style.borderColor = hienThiThienBanKhamDu ? "#4CAF50" : "#999";
-                }
-                if (typeof veLaBanKhamDu === "function") veLaBanKhamDu();
-            };
-
-            // Panel nút điều khiển riêng cho Kham Dư (toggle Thiên Bàn) — tự tạo nếu chưa có,
-            // đặt cạnh panel đa giác nhà theo đúng pattern damBaoPanelDaGiacTonTai().
-            function damBaoPanelKhamDuTonTai() {
-                let panel = document.getElementById("thuyPhapKhamDuPanel");
-                if (panel) return panel;
-                let stage = document.getElementById("mapStage");
-                if (!stage || !stage.parentElement) return null;
-                panel = document.createElement("div");
-                panel.id = "thuyPhapKhamDuPanel";
-                panel.style.cssText = "display:none;padding:6px 8px;flex-wrap:nowrap;align-items:center;gap:6px;background:#f5f5f5;border-radius:8px;margin:4px 0;justify-content:flex-start;";
-                panel.innerHTML = `
-                    <span style="font-size:12px;font-weight:600;color:#444;white-space:nowrap;flex:0 0 auto;">🗺️ Kham Dư:</span>
-                    <button id="btnToggleThienBanKhamDu" onclick="toggleThienBanKhamDu()" style="padding:2px 10px;border-radius:6px;border:1px solid #4CAF50;background:#4CAF50;color:#fff;font-size:12px;cursor:pointer;flex:0 0 auto;white-space:nowrap;">Thiên Bàn</button>
-                `;
-                stage.parentElement.insertBefore(panel, stage);
-                return panel;
-            }
-            damBaoPanelKhamDuTonTai();
+            // Thiên Bàn luôn hiển thị mặc định trong la bàn Kham Dư (đã bỏ toggle bật/tắt,
+            // giữ tên biến hienThiThienBanKhamDu để không phải sửa các chỗ dùng bên dưới).
+            const hienThiThienBanKhamDu = true;
 
             function veLaBanKhamDu() {
                 let svg = damBaoSvgKhamDuTonTai(); if (!svg) return;
