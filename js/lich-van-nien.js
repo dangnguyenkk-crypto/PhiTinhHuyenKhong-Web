@@ -658,14 +658,18 @@ function capNhatLichVanNien() {
 // AUTO-INIT: Tự động khởi tạo khi tab Lịch VN được kích hoạt
 // ====================================================================
 
+// ==== HOOK vào chuyenTab() — CHỈ 1 LẦN DUY NHẤT, không lặp lại bằng setTimeout. ====
+// SỬA LỖI (2026): bản cũ chạy lại hook này sau 500ms/1000ms để "phòng trường hợp
+// chuyenTab chưa tồn tại lúc file load". Nhưng nếu MỘT FILE KHÁC (vd kham-du.js)
+// load SAU và cũng wrap window.chuyenTab, thì ở lượt hook lặp lại này điều kiện
+// "chuyenTab !== _lichVanNienWrapped" sẽ đúng (vì chuyenTab giờ là wrapper của
+// file kia) → lich-van-nien.js wrap ĐÈ LÊN LẦN NỮA, lưu "bản gốc" là wrapper của
+// file kia — trong khi wrapper của file kia lại đang giữ tham chiếu tới bản
+// _lichVanNienWrapped CŨ (trước khi bị ghi đè) làm "bản gốc" của nó. Hai bên trỏ
+// vòng vào nhau → gọi 1 tab bất kỳ sinh đệ quy vô hạn → "Maximum call stack size
+// exceeded" → toàn bộ chuyển tab bị treo. Vì lich-van-nien.js được nạp sớm và
+// chuyenTab() luôn được định nghĩa trước nó trong index.html, hook 1 lần là đủ.
 let _originalChuyenTab = null;
-function _lichVanNienHook() {
-    if (typeof chuyenTab === 'function' && chuyenTab !== _lichVanNienWrapped) {
-        _originalChuyenTab = chuyenTab;
-        window.chuyenTab = _lichVanNienWrapped;
-    }
-}
-
 function _lichVanNienWrapped(tabName) {
     if (_originalChuyenTab) {
         _originalChuyenTab(tabName);
@@ -679,7 +683,9 @@ function _lichVanNienWrapped(tabName) {
         }, 50);
     }
 }
-
-_lichVanNienHook();
-setTimeout(_lichVanNienHook, 500);
-setTimeout(_lichVanNienHook, 1000);
+if (typeof chuyenTab === 'function') {
+    _originalChuyenTab = chuyenTab;
+    window.chuyenTab = _lichVanNienWrapped;
+} else {
+    console.error("lich-van-nien.js: chuyenTab() chưa tồn tại lúc file này load — kiểm tra lại thứ tự <script> trong index.html.");
+}
