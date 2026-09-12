@@ -957,9 +957,12 @@
                 const rNguyenLong = 290;
                 const rTamBanQuai = 330;
                 const rLong72Trong = 330, rLong72Ngoai = hienThiThienBanKhamDu ? 385 : 400;
-                const rThienBanTrong = 385, rThienBanNgoai = 400;
+                // Dải Thiên Bàn được nới rộng từ 15px lên 35px bằng cách rút ngắn khoảng cách của
+                // vạch chia độ ra ngoài rìa la bàn (rDoSo/rDoText bên dưới đổi từ +20/+40 xuống
+                // +10/+22), nhường không gian cho dải Thiên Bàn dày hơn, dễ đọc chữ + màu hơn.
+                const rThienBanTrong = 385, rThienBanNgoai = 420;
                 const rOuter = hienThiThienBanKhamDu ? rThienBanNgoai : rLong72Ngoai;
-                const rDoTick = rOuter, rDoText = rOuter + 40, rDoSo = rOuter + 20;
+                const rDoTick = rOuter, rDoText = rOuter + 22, rDoSo = rOuter + 10;
 
                 let houseFacing = parseFloat(document.getElementById("houseFacing")?.value) || 0;
 
@@ -985,8 +988,20 @@
                 }
 
                 // ---- VÒNG THIÊN BÀN (Song Sơn, lệch +7.5° so với Địa bàn) — chỉ vẽ khi bật ----
+                // Mỗi cung Song Sơn được tô 1 màu riêng biệt (bảng 12 màu xoay vòng, đủ tương
+                // phản giữa các cung liền kề) để dễ phân biệt bằng mắt, thay vì đồng nhất 1 màu
+                // như trước. Dải cũng đã được nới rộng (rThienBanNgoai-rThienBanTrong = 35px thay
+                // vì 15px) nên chữ có thể tăng cỡ và vẫn nằm gọn.
+                const MAU_THIEN_BAN_12 = [
+                    "#ffcdd2","#f8bbd0","#e1bee7","#d1c4e9","#c5cae9","#bbdefb",
+                    "#b2ebf2","#b2dfdb","#c8e6c9","#dcedc8","#fff9c4","#ffe0b2"
+                ];
+                const VIEN_THIEN_BAN_12 = [
+                    "#c62828","#ad1457","#6a1b9a","#4527a0","#283593","#1565c0",
+                    "#00838f","#00695c","#2e7d32","#558b2f","#f9a825","#ef6c00"
+                ];
                 if (hienThiThienBanKhamDu) {
-                    SONG_SON_12.forEach(function(ss) {
+                    SONG_SON_12.forEach(function(ss, idxTB) {
                         let gocTam = ((ss.goc + LECH_THIEN_BAN) % 360 + 360) % 360;
                         let gocStart = gocTam - 15, gocEnd = gocTam + 15;
                         let rs = (gocStart - 90) * Math.PI / 180, re = (gocEnd - 90) * Math.PI / 180;
@@ -994,14 +1009,23 @@
                         let xeO = cx + rThienBanNgoai * Math.cos(re), yeO = cy + rThienBanNgoai * Math.sin(re);
                         let xsI = cx + rThienBanTrong * Math.cos(re), ysI = cy + rThienBanTrong * Math.sin(re);
                         let xeI = cx + rThienBanTrong * Math.cos(rs), yeI = cy + rThienBanTrong * Math.sin(rs);
-                        html += `<path d="M${xsO.toFixed(1)},${ysO.toFixed(1)} A${rThienBanNgoai},${rThienBanNgoai} 0 0,1 ${xeO.toFixed(1)},${yeO.toFixed(1)} L${xsI.toFixed(1)},${ysI.toFixed(1)} A${rThienBanTrong},${rThienBanTrong} 0 0,0 ${xeI.toFixed(1)},${yeI.toFixed(1)} Z" fill="#fff3cd" fill-opacity="0.55" stroke="#8a6d1a" stroke-width="0.8"/>`;
+                        let mauNenTB = MAU_THIEN_BAN_12[idxTB % MAU_THIEN_BAN_12.length];
+                        let mauVienTB = VIEN_THIEN_BAN_12[idxTB % VIEN_THIEN_BAN_12.length];
+                        html += `<path d="M${xsO.toFixed(1)},${ysO.toFixed(1)} A${rThienBanNgoai},${rThienBanNgoai} 0 0,1 ${xeO.toFixed(1)},${yeO.toFixed(1)} L${xsI.toFixed(1)},${ysI.toFixed(1)} A${rThienBanTrong},${rThienBanTrong} 0 0,0 ${xeI.toFixed(1)},${yeI.toFixed(1)} Z" fill="${mauNenTB}" fill-opacity="0.75" stroke="${mauVienTB}" stroke-width="1"/>`;
                         let x1b = cx + rThienBanTrong * Math.cos(rs), y1b = cy + rThienBanTrong * Math.sin(rs);
                         let x2b = cx + rThienBanNgoai * Math.cos(rs), y2b = cy + rThienBanNgoai * Math.sin(rs);
-                        html += `<line x1="${x1b.toFixed(1)}" y1="${y1b.toFixed(1)}" x2="${x2b.toFixed(1)}" y2="${y2b.toFixed(1)}" stroke="#8a6d1a" stroke-width="0.8"/>`;
+                        html += `<line x1="${x1b.toFixed(1)}" y1="${y1b.toFixed(1)}" x2="${x2b.toFixed(1)}" y2="${y2b.toFixed(1)}" stroke="#5c4a3a" stroke-width="0.8"/>`;
                         let radT = (gocTam - 90) * Math.PI / 180;
                         let rTextTB = (rThienBanTrong + rThienBanNgoai) / 2;
                         let xT = cx + rTextTB * Math.cos(radT), yT = cy + rTextTB * Math.sin(radT);
-                        html += `<g transform="rotate(${gocTam} ${xT.toFixed(1)} ${yT.toFixed(1)})"><text x="${xT.toFixed(1)}" y="${yT.toFixed(1)}" font-size="${(tpFontSize*0.72).toFixed(1)}" font-weight="700" fill="#6d4c00" stroke="#fff" stroke-width="2" paint-order="stroke" text-anchor="middle" dominant-baseline="middle">${ss.ten}</text></g>`;
+                        // Chữ nằm NGANG theo hướng tiếp tuyến của cung (không xoay thêm -90° như
+                        // vòng 72 Long) — mỗi cung Song Sơn rộng 30° nên chiều ngang theo cung dư
+                        // dả hơn nhiều so với bề dày dải 35px; xoay dọc theo bán kính sẽ bị tràn vì
+                        // tên Song Sơn 2 phần (VD "Nhâm-Tý") dài hơn 35px. Lật 180° ở nửa dưới vòng
+                        // tròn để chữ luôn đọc xuôi, giống cách xử lý nhãn Tam Bàn Quái/Trường Sinh.
+                        let gocChuanTB = ((gocTam % 360) + 360) % 360;
+                        let gocChuTB = (gocChuanTB > 90 && gocChuanTB < 270) ? gocTam + 180 : gocTam;
+                        html += `<g transform="rotate(${gocChuTB} ${xT.toFixed(1)} ${yT.toFixed(1)})"><text x="${xT.toFixed(1)}" y="${yT.toFixed(1)}" font-size="${(tpFontSize*0.85).toFixed(1)}" font-weight="800" fill="${mauVienTB}" stroke="#fff" stroke-width="${(tpFontSize*0.85*0.3).toFixed(1)}" paint-order="stroke" text-anchor="middle" dominant-baseline="middle">${ss.ten}</text></g>`;
                     });
                 }
 
@@ -1037,8 +1061,12 @@
                     let gocChuan72 = ((gocTam % 360) + 360) % 360;
                     let gocChuL72 = (gocChuan72 > 180) ? gocTam + 90 : gocTam - 90;
                     let vienChuL72 = laKhongVong ? "none" : "#fff";
-                    let dayVienChuL72 = (tpFontSize*0.5*0.32).toFixed(1);
-                    html += `<g transform="rotate(${gocChuL72} ${xL.toFixed(1)} ${yL.toFixed(1)})"><text x="${xL.toFixed(1)}" y="${yL.toFixed(1)}" font-size="${(tpFontSize*0.5).toFixed(1)}" font-weight="700" fill="${mauChu}" stroke="${vienChuL72}" stroke-width="${dayVienChuL72}" paint-order="stroke" text-anchor="middle" dominant-baseline="middle">${nhanLong}</text></g>`;
+                    // Font-size vòng 72 Long dùng hệ số RIÊNG (0.85 thay vì theo tpFontSize*0.5
+                    // trước đây) — độc lập tương đối với vòng 24 Sơn (hệ số 1.15) để có thể đọc
+                    // rõ tên Long 2 từ trong ô hẹp 5° mà không cần kéo thanh trượt tổng thể lên
+                    // mức làm chữ 24 Sơn quá to. Dải rộng 55px (khi Thiên Bàn bật) vẫn đủ chỗ.
+                    let dayVienChuL72 = (tpFontSize*0.85*0.28).toFixed(1);
+                    html += `<g transform="rotate(${gocChuL72} ${xL.toFixed(1)} ${yL.toFixed(1)})"><text x="${xL.toFixed(1)}" y="${yL.toFixed(1)}" font-size="${(tpFontSize*0.85).toFixed(1)}" font-weight="700" fill="${mauChu}" stroke="${vienChuL72}" stroke-width="${dayVienChuL72}" paint-order="stroke" text-anchor="middle" dominant-baseline="middle">${nhanLong}</text></g>`;
                 }
 
                 // ---- VÒNG TAM BÀN QUÁI (Giang Đông / Giang Tây / Nam Bắc) — theo 24 Sơn ----
@@ -1198,9 +1226,13 @@
                     let rTenGiaiDoanKD = rTruongSinhKDTrong + (rTruongSinhKDNgoai - rTruongSinhKDTrong) * 0.28;
                     let xTenCung = cx + rTenCungKD * Math.cos(radTKD), yTenCung = cy + rTenCungKD * Math.sin(radTKD);
                     let xTenGD = cx + rTenGiaiDoanKD * Math.cos(radTKD), yTenGD = cy + rTenGiaiDoanKD * Math.sin(radTKD);
-                    html += `<g transform="rotate(${gocChuKD} ${xTenCung.toFixed(1)} ${yTenCung.toFixed(1)})"><text x="${xTenCung.toFixed(1)}" y="${yTenCung.toFixed(1)}" font-size="${(tpFontSize*0.55).toFixed(1)}" font-weight="700" fill="#1a1a1a" stroke="#fff" stroke-width="${(tpFontSize*0.55*0.32).toFixed(1)}" paint-order="stroke" text-anchor="middle" dominant-baseline="middle">${tenCungKD}</text></g>`;
+                    // Font-size vòng Trường Sinh Kham Dư dùng hệ số RIÊNG (0.9 cho tên cung, 0.95
+                    // cho tên giai đoạn — thay vì 0.55/0.6 trước đây), độc lập tương đối với vòng
+                    // 24 Sơn (hệ số 1.15). Mỗi ô rộng 30° (~97px chiều dài chữ khả dụng) nên đủ
+                    // chỗ cho tên giai đoạn dài nhất ("Trường Sinh", "Quan Đới"...) ở cỡ lớn hơn.
+                    html += `<g transform="rotate(${gocChuKD} ${xTenCung.toFixed(1)} ${yTenCung.toFixed(1)})"><text x="${xTenCung.toFixed(1)}" y="${yTenCung.toFixed(1)}" font-size="${(tpFontSize*0.9).toFixed(1)}" font-weight="700" fill="#1a1a1a" stroke="#fff" stroke-width="${(tpFontSize*0.9*0.28).toFixed(1)}" paint-order="stroke" text-anchor="middle" dominant-baseline="middle">${tenCungKD}</text></g>`;
                     if (giaiDoanKD) {
-                        html += `<g transform="rotate(${gocChuKD} ${xTenGD.toFixed(1)} ${yTenGD.toFixed(1)})"><text x="${xTenGD.toFixed(1)}" y="${yTenGD.toFixed(1)}" font-size="${(tpFontSize*0.6).toFixed(1)}" font-weight="800" fill="#fff" stroke="${mauNenKD}" stroke-width="${(tpFontSize*0.6*0.4).toFixed(1)}" paint-order="stroke" text-anchor="middle" dominant-baseline="middle">${giaiDoanKD}</text></g>`;
+                        html += `<g transform="rotate(${gocChuKD} ${xTenGD.toFixed(1)} ${yTenGD.toFixed(1)})"><text x="${xTenGD.toFixed(1)}" y="${yTenGD.toFixed(1)}" font-size="${(tpFontSize*0.95).toFixed(1)}" font-weight="800" fill="#fff" stroke="${mauNenKD}" stroke-width="${(tpFontSize*0.95*0.35).toFixed(1)}" paint-order="stroke" text-anchor="middle" dominant-baseline="middle">${giaiDoanKD}</text></g>`;
                     }
                 }
 
