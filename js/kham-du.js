@@ -555,29 +555,26 @@
         container.dataset.kdInit = "1";
         container.innerHTML = `
             <div style="display:flex;flex-direction:column;align-items:center;padding:12px;gap:10px;width:100%;max-width:520px;margin:0 auto;">
-                <div style="display:flex;flex-wrap:wrap;gap:8px;align-items:center;justify-content:center;width:100%;">
                 <div style="display:flex;flex-wrap:wrap;gap:6px;align-items:center;justify-content:center;width:100%;">
                     <button id="kdBtnChooseFile" style="flex:0 0 auto;padding:6px 10px;border-radius:6px;border:1px solid #4CAF50;background:#4CAF50;color:#fff;font-size:12px;cursor:pointer;white-space:nowrap;">🖼️ Chọn ảnh</button>
                     <input type="file" id="kdMapImageInput" accept="image/*" style="display:none;">
                     <button id="kdBtnKhoaLaBan" onclick="kdToggleKhoaLaBan()" title="Khóa/mở khóa di chuyển ảnh nền" style="flex:0 0 auto;padding:4px 8px;border-radius:6px;border:1px solid #999;background:#fff;font-size:14px;cursor:pointer;">🔓</button>
                     <button onclick="kdResetViTriAnh()" title="Reset vị trí/zoom/xoay ảnh" style="flex:0 0 auto;padding:4px 8px;border-radius:6px;border:1px solid #999;background:#fff;font-size:12px;cursor:pointer;white-space:nowrap;">↺ Reset</button>
-                    <label style="flex:0 0 auto;font-size:12px;white-space:nowrap;">Xoay ảnh (°):
-                        <input type="number" id="kdBgRotation" value="0" step="1" style="width:55px;padding:3px 5px;font-size:12px;"
+                    <label style="flex:0 0 auto;font-size:12px;white-space:nowrap;">Xoay (°):
+                        <input type="number" id="kdBgRotation" value="0" step="1" style="width:48px;padding:3px 4px;font-size:12px;"
                             oninput="kdCapNhatXoayAnh(this.value)">
                     </label>
-                    <span id="kdFileNameDisplay" style="flex:0 0 auto;font-size:11px;color:#888;max-width:100px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;">Chưa chọn ảnh</span>
-                </div>
-                <div style="display:flex;flex-wrap:wrap;gap:10px;align-items:center;justify-content:center;width:100%;">
-                    <label style="font-size:13px;">Hướng nhà (°):
+                    <label style="flex:0 0 auto;font-size:12px;white-space:nowrap;">Hướng nhà (°):
                         <input type="number" id="kdHouseFacing" value="180" min="0" max="360" step="0.1"
-                            style="width:70px;padding:4px 6px;font-size:13px;">
+                            style="width:56px;padding:3px 4px;font-size:12px;">
                     </label>
-                    <label style="font-size:13px;">Cỡ chữ:
-                        <input type="range" id="kdFontSizeSlider" min="6" max="16" step="0.5" value="10" style="vertical-align:middle;">
+                    <label style="flex:0 0 auto;font-size:12px;white-space:nowrap;">Cỡ chữ:
+                        <input type="range" id="kdFontSizeSlider" min="6" max="16" step="0.5" value="10" style="vertical-align:middle;width:70px;">
                     </label>
-                    <label style="font-size:13px;">Độ mờ nền:
-                        <input type="range" id="kdDoMoNenSlider" min="0" max="1" step="0.05" value="0.5" style="vertical-align:middle;">
+                    <label style="flex:0 0 auto;font-size:12px;white-space:nowrap;">Độ mờ:
+                        <input type="range" id="kdDoMoNenSlider" min="0" max="1" step="0.05" value="0.5" style="vertical-align:middle;width:70px;">
                     </label>
+                    <span id="kdFileNameDisplay" style="flex:0 0 auto;font-size:11px;color:#888;max-width:90px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;">Chưa chọn ảnh</span>
                 </div>
                 <div style="position:relative;width:100%;max-width:500px;aspect-ratio:1/1;overflow:hidden;border:1px solid #ddd;border-radius:8px;background:#f5f5f5;" id="kdMapStage">
                     <div id="kdMapPlaceholder" style="position:absolute;inset:0;display:flex;align-items:center;justify-content:center;color:#aaa;font-size:13px;">Chưa có ảnh nền — bấm "🖼️ Chọn ảnh"</div>
