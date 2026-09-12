@@ -499,7 +499,10 @@
             kdImgScale = Math.max(0.2, Math.min(6, kdImgScale * factor));
             kdCapNhatViTriAnhNen();
         }, {passive:false});
-        // Phím mũi tên chỉ hoạt động khi tab Kham Dư đang mở, tránh xung đột phím
+        // Phím mũi tên (bàn phím vật lý, chủ yếu hữu ích khi debug trên desktop Chrome —
+        // điện thoại không có bàn phím vật lý nên xem thêm 4 nút mũi tên chạm được trong
+        // khung ảnh, do khoiTaoGiaoDienKhamDu() tạo, mới là cách chính để dùng trên mobile)
+        // chỉ hoạt động khi tab Kham Dư đang mở, tránh xung đột phím
         // mũi tên của tab Thủy Pháp hay tab khác.
         document.addEventListener('keydown', function(e) {
             let tab = document.getElementById('tab-khamdu');
@@ -553,11 +556,16 @@
         container.innerHTML = `
             <div style="display:flex;flex-direction:column;align-items:center;padding:12px;gap:10px;width:100%;max-width:520px;margin:0 auto;">
                 <div style="display:flex;flex-wrap:wrap;gap:8px;align-items:center;justify-content:center;width:100%;">
-                    <button id="kdBtnChooseFile" style="padding:6px 12px;border-radius:6px;border:1px solid #4CAF50;background:#4CAF50;color:#fff;font-size:12px;cursor:pointer;">🖼️ Chọn ảnh</button>
+                <div style="display:flex;flex-wrap:nowrap;gap:6px;align-items:center;width:100%;overflow-x:auto;padding-bottom:2px;">
+                    <button id="kdBtnChooseFile" style="flex:0 0 auto;padding:6px 10px;border-radius:6px;border:1px solid #4CAF50;background:#4CAF50;color:#fff;font-size:12px;cursor:pointer;white-space:nowrap;">🖼️ Chọn ảnh</button>
                     <input type="file" id="kdMapImageInput" accept="image/*" style="display:none;">
-                    <span id="kdFileNameDisplay" style="font-size:11px;color:#888;max-width:120px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;">Chưa chọn ảnh</span>
-                    <button id="kdBtnKhoaLaBan" onclick="kdToggleKhoaLaBan()" title="Khóa/mở khóa di chuyển ảnh nền" style="padding:4px 8px;border-radius:6px;border:1px solid #999;background:#fff;font-size:14px;cursor:pointer;">🔓</button>
-                    <button onclick="kdResetViTriAnh()" title="Reset vị trí/zoom/xoay ảnh" style="padding:4px 8px;border-radius:6px;border:1px solid #999;background:#fff;font-size:12px;cursor:pointer;">↺ Reset</button>
+                    <button id="kdBtnKhoaLaBan" onclick="kdToggleKhoaLaBan()" title="Khóa/mở khóa di chuyển ảnh nền" style="flex:0 0 auto;padding:4px 8px;border-radius:6px;border:1px solid #999;background:#fff;font-size:14px;cursor:pointer;">🔓</button>
+                    <button onclick="kdResetViTriAnh()" title="Reset vị trí/zoom/xoay ảnh" style="flex:0 0 auto;padding:4px 8px;border-radius:6px;border:1px solid #999;background:#fff;font-size:12px;cursor:pointer;white-space:nowrap;">↺ Reset</button>
+                    <label style="flex:0 0 auto;font-size:12px;white-space:nowrap;">Xoay ảnh (°):
+                        <input type="number" id="kdBgRotation" value="0" step="1" style="width:55px;padding:3px 5px;font-size:12px;"
+                            oninput="kdCapNhatXoayAnh(this.value)">
+                    </label>
+                    <span id="kdFileNameDisplay" style="flex:0 0 auto;font-size:11px;color:#888;max-width:100px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;">Chưa chọn ảnh</span>
                 </div>
                 <div style="display:flex;flex-wrap:wrap;gap:10px;align-items:center;justify-content:center;width:100%;">
                     <label style="font-size:13px;">Hướng nhà (°):
@@ -571,17 +579,24 @@
                         <input type="range" id="kdDoMoNenSlider" min="0" max="1" step="0.05" value="0.5" style="vertical-align:middle;">
                     </label>
                 </div>
-                <div style="display:flex;flex-wrap:wrap;gap:10px;align-items:center;justify-content:center;width:100%;">
-                    <label style="font-size:12px;">Xoay ảnh nền (°):
-                        <input type="number" id="kdBgRotation" value="0" step="1" style="width:60px;padding:3px 5px;font-size:12px;"
-                            oninput="kdCapNhatXoayAnh(this.value)">
-                    </label>
-                    <span style="font-size:11px;color:#888;">Kéo/pinch/lăn chuột để di chuyển & zoom ảnh. Phím mũi tên căn chỉnh tinh.</span>
-                </div>
                 <div style="position:relative;width:100%;max-width:500px;aspect-ratio:1/1;overflow:hidden;border:1px solid #ddd;border-radius:8px;background:#f5f5f5;" id="kdMapStage">
                     <div id="kdMapPlaceholder" style="position:absolute;inset:0;display:flex;align-items:center;justify-content:center;color:#aaa;font-size:13px;">Chưa có ảnh nền — bấm "🖼️ Chọn ảnh"</div>
                     <img id="kdMapImage" style="position:absolute;top:50%;left:50%;max-width:none;width:100%;transform-origin:center center;display:none;transform:translate(-50%,-50%);pointer-events:none;">
                     <div style="position:absolute;top:0;left:0;width:100%;height:100%;pointer-events:none;" id="kdCompassOverlay"></div>
+                    <!-- 4 nút mũi tên chạm được — thay cho phím mũi tên bàn phím (vô dụng trên
+                         điện thoại/Android WebView vì không có bàn phím vật lý luôn hiện diện).
+                         Đặt góc dưới-phải khung ảnh, mỗi nút gọi kdPanAnhNen() bước nhỏ 4px. -->
+                    <div style="position:absolute;bottom:8px;right:8px;display:grid;grid-template-columns:repeat(3,26px);grid-template-rows:repeat(3,26px);gap:2px;z-index:20;">
+                        <span></span>
+                        <button onclick="kdPanAnhNen(0,-1)" title="Dịch ảnh lên" style="grid-column:2;grid-row:1;border-radius:4px;border:1px solid #999;background:rgba(255,255,255,0.85);font-size:12px;cursor:pointer;padding:0;">▲</button>
+                        <span></span>
+                        <button onclick="kdPanAnhNen(-1,0)" title="Dịch ảnh sang trái" style="grid-column:1;grid-row:2;border-radius:4px;border:1px solid #999;background:rgba(255,255,255,0.85);font-size:12px;cursor:pointer;padding:0;">◀</button>
+                        <span></span>
+                        <button onclick="kdPanAnhNen(1,0)" title="Dịch ảnh sang phải" style="grid-column:3;grid-row:2;border-radius:4px;border:1px solid #999;background:rgba(255,255,255,0.85);font-size:12px;cursor:pointer;padding:0;">▶</button>
+                        <span></span>
+                        <button onclick="kdPanAnhNen(0,1)" title="Dịch ảnh xuống" style="grid-column:2;grid-row:3;border-radius:4px;border:1px solid #999;background:rgba(255,255,255,0.85);font-size:12px;cursor:pointer;padding:0;">▼</button>
+                        <span></span>
+                    </div>
                 </div>
             </div>
         `;
