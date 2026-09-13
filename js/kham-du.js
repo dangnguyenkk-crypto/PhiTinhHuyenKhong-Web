@@ -364,17 +364,19 @@
             html += `<g transform="rotate(${bq.goc} ${xB.toFixed(1)} ${yB.toFixed(1)})"><text x="${xB.toFixed(1)}" y="${yB.toFixed(1)}" font-size="${(tpFontSize*1.3).toFixed(1)}" font-weight="900" fill="#fff" stroke="#2a2a2a" stroke-width="3" paint-order="stroke" text-anchor="middle" dominant-baseline="middle">${bq.ten}</text></g>`;
         });
 
-        // Kim chỉ hướng nhà — đặt ra ngoài vòng chia độ, giống các la bàn khác
+        // Kim chỉ hướng nhà — rút ngắn dừng lại NGAY TRƯỚC vòng chia độ (rOuter), không vượt
+        // ra ngoài đè lên các số độ (0°,10°,20°...) nằm ở bán kính rDoSo→rDoText. Nhãn
+        // "▲ HƯỚNG NHÀ" đặt hẳn ra ngoài rDoText để không chồng lên số độ.
         let radMui = (houseFacing - 90) * Math.PI / 180;
-        let rKimHuong = rDoSo + 25;
+        let rKimHuong = rOuter - 4;
         let xHF = cx + rKimHuong * Math.cos(radMui), yHF = cy + rKimHuong * Math.sin(radMui);
         let xHB = cx - rKimHuong * Math.cos(radMui), yHB = cy - rKimHuong * Math.sin(radMui);
         html += `<line x1="${xHB.toFixed(1)}" y1="${yHB.toFixed(1)}" x2="${xHF.toFixed(1)}" y2="${yHF.toFixed(1)}" stroke="#00c8c8" stroke-width="2.5"/>`;
-        let tl=20, ta=0.3;
+        let tl=14, ta=0.3;
         let x1a = xHF-tl*Math.cos(radMui-ta), y1a = yHF-tl*Math.sin(radMui-ta);
         let x2a = xHF-tl*Math.cos(radMui+ta), y2a = yHF-tl*Math.sin(radMui+ta);
         html += `<polygon points="${xHF.toFixed(1)},${yHF.toFixed(1)} ${x1a.toFixed(1)},${y1a.toFixed(1)} ${x2a.toFixed(1)},${y2a.toFixed(1)}" fill="#00c8c8"/>`;
-        let xLH = cx+(rKimHuong+35)*Math.cos(radMui), yLH = cy+(rKimHuong+35)*Math.sin(radMui);
+        let xLH = cx+(rDoText+22)*Math.cos(radMui), yLH = cy+(rDoText+22)*Math.sin(radMui);
         html += `<text x="${xLH.toFixed(1)}" y="${yLH.toFixed(1)}" font-size="${tpFontSize+3}" font-weight="800" fill="#ff0000" stroke="#fff" stroke-width="1.5" paint-order="stroke" text-anchor="middle" transform="rotate(${houseFacing} ${xLH.toFixed(1)} ${yLH.toFixed(1)})">▲ HƯỚNG NHÀ</text>`;
 
         // Tâm: nhãn "Kham Dư" + góc hướng nhà hiện tại + Long tại Hướng
@@ -556,10 +558,10 @@
         container.innerHTML = `
             <div style="display:flex;flex-direction:column;align-items:center;padding:12px;gap:10px;width:100%;max-width:520px;margin:0 auto;">
                 <div style="display:flex;flex-wrap:wrap;gap:6px;align-items:center;justify-content:center;width:100%;">
-                    <button id="kdBtnChooseFile" style="flex:0 0 auto;padding:6px 10px;border-radius:6px;border:1px solid #4CAF50;background:#4CAF50;color:#fff;font-size:12px;cursor:pointer;white-space:nowrap;">🖼️ Chọn ảnh</button>
+                    <button id="kdBtnChooseFile" style="flex:0 0 auto;width:auto;padding:6px 10px;border-radius:6px;border:1px solid #4CAF50;background:#4CAF50;color:#fff;font-size:12px;cursor:pointer;white-space:nowrap;">🖼️ Chọn ảnh</button>
                     <input type="file" id="kdMapImageInput" accept="image/*" style="display:none;">
-                    <button id="kdBtnKhoaLaBan" onclick="kdToggleKhoaLaBan()" title="Khóa/mở khóa di chuyển ảnh nền" style="flex:0 0 auto;padding:4px 8px;border-radius:6px;border:1px solid #999;background:#fff;font-size:14px;cursor:pointer;">🔓</button>
-                    <button onclick="kdResetViTriAnh()" title="Reset vị trí/zoom/xoay ảnh" style="flex:0 0 auto;padding:4px 8px;border-radius:6px;border:1px solid #999;background:#fff;font-size:12px;cursor:pointer;white-space:nowrap;">↺ Reset</button>
+                    <button id="kdBtnKhoaLaBan" onclick="kdToggleKhoaLaBan()" title="Khóa/mở khóa di chuyển ảnh nền" style="flex:0 0 auto;width:auto;padding:4px 8px;border-radius:6px;border:1px solid #999;background:#fff;font-size:14px;cursor:pointer;">🔓</button>
+                    <button onclick="kdResetViTriAnh()" title="Reset vị trí/zoom/xoay ảnh" style="flex:0 0 auto;width:auto;padding:4px 8px;border-radius:6px;border:1px solid #999;background:#fff;color:#333;font-weight:700;font-size:12px;cursor:pointer;white-space:nowrap;">↺ Reset</button>
                     <label style="flex:0 0 auto;font-size:12px;white-space:nowrap;">Xoay (°):
                         <input type="number" id="kdBgRotation" value="0" step="1" style="width:48px;padding:3px 4px;font-size:12px;"
                             oninput="kdCapNhatXoayAnh(this.value)">
@@ -585,13 +587,13 @@
                          Đặt góc dưới-phải khung ảnh, mỗi nút gọi kdPanAnhNen() bước nhỏ 4px. -->
                     <div style="position:absolute;bottom:8px;right:8px;display:grid;grid-template-columns:repeat(3,26px);grid-template-rows:repeat(3,26px);gap:2px;z-index:20;">
                         <span></span>
-                        <button onclick="kdPanAnhNen(0,-1)" title="Dịch ảnh lên" style="grid-column:2;grid-row:1;border-radius:4px;border:1px solid #999;background:rgba(255,255,255,0.85);font-size:12px;cursor:pointer;padding:0;">▲</button>
+                        <button onclick="kdPanAnhNen(0,-1)" title="Dịch ảnh lên" style="grid-column:2;grid-row:1;width:100%;height:100%;border-radius:4px;border:1px solid #999;background:rgba(255,255,255,0.85);font-size:14px;color:#1565c0;font-weight:900;cursor:pointer;padding:0;">▲</button>
                         <span></span>
-                        <button onclick="kdPanAnhNen(-1,0)" title="Dịch ảnh sang trái" style="grid-column:1;grid-row:2;border-radius:4px;border:1px solid #999;background:rgba(255,255,255,0.85);font-size:12px;cursor:pointer;padding:0;">◀</button>
+                        <button onclick="kdPanAnhNen(-1,0)" title="Dịch ảnh sang trái" style="grid-column:1;grid-row:2;width:100%;height:100%;border-radius:4px;border:1px solid #999;background:rgba(255,255,255,0.85);font-size:14px;color:#1565c0;font-weight:900;cursor:pointer;padding:0;">◀</button>
                         <span></span>
-                        <button onclick="kdPanAnhNen(1,0)" title="Dịch ảnh sang phải" style="grid-column:3;grid-row:2;border-radius:4px;border:1px solid #999;background:rgba(255,255,255,0.85);font-size:12px;cursor:pointer;padding:0;">▶</button>
+                        <button onclick="kdPanAnhNen(1,0)" title="Dịch ảnh sang phải" style="grid-column:3;grid-row:2;width:100%;height:100%;border-radius:4px;border:1px solid #999;background:rgba(255,255,255,0.85);font-size:14px;color:#1565c0;font-weight:900;cursor:pointer;padding:0;">▶</button>
                         <span></span>
-                        <button onclick="kdPanAnhNen(0,1)" title="Dịch ảnh xuống" style="grid-column:2;grid-row:3;border-radius:4px;border:1px solid #999;background:rgba(255,255,255,0.85);font-size:12px;cursor:pointer;padding:0;">▼</button>
+                        <button onclick="kdPanAnhNen(0,1)" title="Dịch ảnh xuống" style="grid-column:2;grid-row:3;width:100%;height:100%;border-radius:4px;border:1px solid #999;background:rgba(255,255,255,0.85);font-size:14px;color:#1565c0;font-weight:900;cursor:pointer;padding:0;">▼</button>
                         <span></span>
                     </div>
                 </div>
