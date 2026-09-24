@@ -17,11 +17,11 @@
         <button class="tab-btn" id="tabBtnThuyphap" onclick="chuyenTab('thuyphap')">💧 Thủy Pháp</button>
         <button class="tab-btn" id="tabBtnTamnha" onclick="chuyenTab('tamnha')">📐 Tâm Nhà</button>
         <button class="tab-btn" id="tabBtnTimnha" onclick="chuyenTab('timnha')">🔍 Tìm Nhà</button>
-        <button class="tab-btn" id="tabBtnCuucungluoi" onclick="chuyenTab('cuucungluoi')">🔲 Cửu Cung</button>
-        <button class="tab-btn" id="tabBtnLichvannien" onclick="chuyenTab('lichvannien')">📜 Lịch VN</button>
+        <button class="tab-btn" id="tabBtnCuucungluoi" onclick="chuyenTab('cuucungluoi')">🔲 C.Cung Lưới</button>
         <button class="tab-btn" id="tabBtnKhamdu" onclick="chuyenTab('khamdu')">🗺️ Kham Dư</button>
+        <button class="tab-btn" id="tabBtnLichvannien" onclick="chuyenTab('lichvannien')">📜 Lịch VN</button>
         <button class="tab-btn" id="tabBtnLoandau" onclick="chuyenTab('loandau')">🏔️ Loan Đầu</button>
-</div>
+    </div>
 
     <!-- TAB HỒ SƠ NHÀ -->
     <div id="tab-hoso" class="tab-content"></div>
@@ -287,20 +287,31 @@
                 <div style="flex:1; min-width:70px;"><label style="font-size:10px; display:block; margin-bottom:1px;">Hướng (°)</label>
                     <input type="number" id="houseFacing" value="180" min="0" max="360" style="padding:4px 6px; font-size:12px; width:100%; height:24px;" oninput="capNhatHuongTuThuyPhap()">
                 </div>
-                <div style="flex:1.1; min-width:65px;"><label style="font-size:9px; display:block; margin-bottom:1px;">Nước ĐẾN (Bát trạch)</label>
+                <div style="flex:1.1; min-width:65px;"><label style="font-size:9px; display:block; margin-bottom:1px;">Nước ĐẾN</label>
                     <select id="selSonDen" style="padding:4px 4px; font-size:11px; width:100%; height:24px;"></select>
                 </div>
-                <div style="flex:1.1; min-width:65px;"><label style="font-size:9px; display:block; margin-bottom:1px;">Nước ĐI (Bát trạch)</label>
+                <div style="flex:1.1; min-width:65px;"><label style="font-size:9px; display:block; margin-bottom:1px;">Nước ĐI</label>
                     <select id="selSonDi" style="padding:4px 4px; font-size:11px; width:100%; height:24px;"></select>
                 </div>
-                <div style="flex:1.1; min-width:90px;">
-                    <button onclick="xacNhanThuyKhau()" style="padding:4px 6px; font-size:12px; width:100%; height:34px; white-space:nowrap;">✅ Xác nhận</button>
+            </div>
+            <!-- "Lai Long" — sơn núi tới, quan sát từ tâm nhà. Logic ứng dụng của nút này sẽ bổ
+                 sung sau; ở bước này chỉ cần đúng vị trí UI (dropdown 24 sơn + nút info). -->
+            <div style="display:flex; gap:6px; flex-wrap:wrap; margin-top:6px; align-items:flex-end;">
+                <div style="flex:1.1; min-width:65px;"><label style="font-size:9px; display:block; margin-bottom:1px;">⛰️ Lai Long</label>
+                    <select id="selLaiLong" style="padding:4px 4px; font-size:11px; width:100%; height:24px;" onchange="chonLaiLong(this.value)"></select>
+                </div>
+                <button type="button" onclick="alert('Đứng tại tâm, thấy núi tới từ đâu (núi cao nhất nằm ở sơn nào);  Hoặc nếu ko thấy núi thì xem thủy khẩu (nước chảy ra), Ngược 180 độ với thủy khẩu thì chính là Lai long')" title="Giải thích Lai Long" style="flex:0 0 auto; width:22px; height:22px; border-radius:50%; border:1.5px solid #1565c0; background:#e3f2fd; color:#1565c0; font-size:12px; font-weight:800; font-style:italic; cursor:pointer; padding:0; line-height:1; align-self:flex-end; margin-bottom:1px;">i</button>
+                <!-- "Long nhập thủ" — cùng hàng với Lai Long. Chọn 1 trong 24 sơn; giá trị được lưu
+                     vào longNhapThuRaw (thuy-phap.js) và đưa vào "Thông tin thủy pháp". Có ô trống
+                     "— chọn —" nên hiển thị luôn khớp dữ liệu. Nút (i) ở trên là của Lai Long. -->
+                <div style="flex:1.1; min-width:65px;"><label style="font-size:9px; display:block; margin-bottom:1px;">🐉 Long nhập thủ</label>
+                    <select id="selLongNhapThu" style="padding:4px 4px; font-size:11px; width:100%; height:24px;" onchange="chonLongNhapThu(this.value)"></select>
                 </div>
             </div>
-            <!-- Chỉ dùng cho la bàn Trường Sinh (12 cung Địa Chi) — 24 sơn không đủ rõ ràng vì
-                 các sơn Càn/Khôn/Cấn/Tốn nằm vắt ngang ranh giới 2 Địa Chi (vd Càn nửa thuộc
-                 Tuất, nửa thuộc Hợi), nên la bàn Trường Sinh cần chọn thẳng Địa Chi, không suy
-                 ngầm từ sơn 24. Ẩn/hiện hàng này do JS điều khiển theo kiểu la bàn đang chọn. -->
+            <!-- Chỉ dùng cho la bàn Trường Sinh: nút chọn chế độ khởi Cục (Thủy Khẩu/Tọa) và
+                 chiều Thuận/Nghịch. Nước Đến/Đi dùng chung dropdown #selSonDen/#selSonDi (24
+                 sơn) ở trên — không còn dropdown riêng theo 12 Địa Chi nữa. Ẩn/hiện hàng này
+                 do JS điều khiển theo kiểu la bàn đang chọn. -->
             <div id="tpDiaChiRow" style="display:none; gap:6px; flex-wrap:wrap; margin-top:6px;">
                 <!-- Chọn khởi Trường Sinh theo Thủy Khẩu (Cục = Nước Đi, mặc định) hay theo Tọa
                      (Ngũ Hành của Sơn Tọa nhà). Đổi chế độ này đổi hẳn cách xác định Cục/Hành,
@@ -311,12 +322,10 @@
                         <button id="btnTruongSinhTheoToa" type="button" onclick="chonKhoiTruongSinhCheDo('toa')" style="flex:1; padding:5px 4px; font-size:11px; border-radius:6px; cursor:pointer; border:1.5px solid #999; background:#fff; color:#555; font-weight:600;">⛰️ Tọa nhà</button>
                     </div>
                 </div>
-                <div style="flex:1.1; min-width:65px;"><label style="font-size:10px; display:block; margin-bottom:1px;">Nước ĐẾN (vòng Trường Sinh)</label>
-                    <select id="selDiaChiDen" style="padding:4px 4px; font-size:11px; width:100%; height:24px;" onchange="veCompassOverlay(parseFloat(document.getElementById('houseFacing').value)||0)"></select>
-                </div>
-                <div style="flex:1.1; min-width:65px;"><label style="font-size:10px; display:block; margin-bottom:1px;">Nước ĐI (vòng Trường Sinh)</label>
-                    <select id="selDiaChiDi" style="padding:4px 4px; font-size:11px; width:100%; height:24px;" onchange="veCompassOverlay(parseFloat(document.getElementById('houseFacing').value)||0)"></select>
-                </div>
+                <!-- Đã bỏ dropdown Nước Đến/Đi riêng theo 12 Địa Chi — la bàn Trường Sinh giờ
+                     dùng chung dropdown #selSonDen/#selSonDi (24 sơn) ở trên, tự quy đổi sang
+                     12 Địa Chi trong thuy-phap.js (hàm quyDoiSonSangDiaChi). -->
+
                 <!-- Ý nghĩa nút Thuận/Nghịch đổi theo chế độ ở trên:
                      - Thủy Khẩu: chiều CHẠY của vòng 12 cung (nước chảy qua Minh Đường thuận hay
                        nghịch chiều 12 Địa Chi) — cùng 1 điểm khởi, chỉ đảo chiều đếm.
@@ -339,6 +348,11 @@
                         <button id="btnToggleBatTrachMenhTrongTS" type="button" onclick="toggleBatTrachMenhTrongTruongSinh()" style="flex:1; padding:5px 4px; font-size:11px; border-radius:6px; cursor:pointer; border:1.5px solid #4CAF50; background:#4CAF50; color:#fff; font-weight:600;">🧑 Mệnh gia chủ</button>
                     </div>
                 </div>
+                <!-- Nút Xác nhận dời xuống đây (dưới cùng các nút nhập/chọn) để không còn nằm
+                     lẫn giữa hàng Hướng/Nước Đến/Nước Đi, tránh gây hiểu nhầm nó thuộc về đó. -->
+                <div style="flex:1 1 100%; min-width:100px; margin-top:6px;">
+                    <button onclick="xacNhanThuyKhau()" style="padding:6px 6px; font-size:12px; width:100%; height:34px; white-space:nowrap;">✅ Xác nhận</button>
+                </div>
             </div>
             <!-- Chỉ dùng cho la bàn Bát Trạch (8 cung) — chọn nền la bàn tra theo Trạch đất
                  (Quái Trạch suy từ hướng nhà — mặc định) hay Mệnh gia chủ (Quái Mệnh theo năm
@@ -352,6 +366,26 @@
         <div class="module-panel legend" style="padding:4px 8px;">
             <b>Hướng dẫn:</b> Kéo la bàn đặt tâm cửa chính. Mũi tên xanh = hướng nhà. nhìn ra ngoài <br>
             🔵 Nước Đến &nbsp; 🟠 Nước Đi &nbsp; 🔴 Hướng Nhà
+            <!-- CHÚ GIẢI TÊN CÁC VÒNG — chỉ hiện khi đang ở la bàn "Trường Sinh" (JS ẩn/hiện trong
+                 veCompassOverlay() của thuy-phap.js). Liệt kê TỪ TRONG RA NGOÀI, cùng thứ tự với
+                 khối comment "BẢN ĐỒ CÁC VÒNG" trong veLaBanTruongSinh(). Khi thêm/bớt/đổi tên một
+                 vòng trên la bàn thì nhớ sửa cả chỗ này. -->
+            <div id="tpChuThichCacVong" style="display:none; margin-top:6px; padding-top:5px; border-top:1px dashed #d9cfc0;">
+                <details open>
+                    <summary style="cursor:pointer; font-weight:700; color:#8b0000;">📖 Tên các vòng la bàn Trường Sinh (từ trong ra ngoài)</summary>
+                    <div style="display:flex; gap:6px; align-items:flex-start; margin:3px 0;"><span style="flex:0 0 28px; height:12px; margin-top:3px; border-radius:3px; border:1px solid #b9ad98; background:#ffffff;"></span><span><b>Tâm</b> — tên Cục/Hành, Nước Đến, Nước Đi (chế độ Tọa nhà thì hiện Tọa).</span></div>
+                    <div style="display:flex; gap:6px; align-items:flex-start; margin:3px 0;"><span style="flex:0 0 28px; height:12px; margin-top:3px; border-radius:3px; border:1px solid #b9ad98; background:linear-gradient(90deg,#42a5f5 50%,#e53935 50%);"></span><span><b>Dải Bát Trạch – Mệnh</b> — Du Niên theo Quái <b>Mệnh</b> gia chủ (nút 🧑 Mệnh gia chủ); dải trong cùng.</span></div>
+                    <div style="display:flex; gap:6px; align-items:flex-start; margin:3px 0;"><span style="flex:0 0 28px; height:12px; margin-top:3px; border-radius:3px; border:1px solid #b9ad98; background:linear-gradient(90deg,#42a5f5 50%,#e53935 50%);"></span><span><b>Dải Bát Trạch – Trạch</b> — Du Niên theo Quái <b>Trạch</b> của hướng nhà (nút 🏠 Trạch đất); nằm ngoài dải Mệnh. Hai dải bật/tắt độc lập.</span></div>
+                    <div style="display:flex; gap:6px; align-items:flex-start; margin:3px 0;"><span style="flex:0 0 28px; height:12px; margin-top:3px; border-radius:3px; border:1px solid #b9ad98; background:#f1e9d8;"></span><span><b>Vòng Long Pháp – Luận Long</b> — dành riêng cho luận Long, <i>hiện chưa có nội dung</i>.</span></div>
+                    <div style="display:flex; gap:6px; align-items:flex-start; margin:3px 0;"><span style="flex:0 0 28px; height:12px; margin-top:3px; border-radius:3px; border:1px solid #b9ad98; background:linear-gradient(90deg,#42a5f5 34%,#e53935 34%,#e53935 67%,#bdbdbd 67%);"></span><span><b>Vòng 12 Địa Chi (Trường Sinh)</b> — 12 giai đoạn Trường Sinh; nền xanh = cát, đỏ = hung, xám = chưa chọn Nước Đi.</span></div>
+                    <div style="display:flex; gap:6px; align-items:flex-start; margin:3px 0;"><span style="flex:0 0 28px; height:12px; margin-top:3px; border-radius:3px; border:1px solid #b9ad98; background:linear-gradient(90deg,#e8dcc8 34%,#d8e8dc 34%,#d8e8dc 67%,#dce4f0 67%);"></span><span><b>Nhân bàn</b> — 24 sơn, lệch <b>−7,5°</b> so với Địa bàn.</span></div>
+                    <div style="display:flex; gap:6px; align-items:flex-start; margin:3px 0;"><span style="flex:0 0 28px; height:12px; margin-top:3px; border-radius:3px; border:1px solid #b9ad98; background:linear-gradient(90deg,#e8dcc8 34%,#d8e8dc 34%,#d8e8dc 67%,#dce4f0 67%);"></span><span><b>Thiên bàn</b> — 24 sơn, lệch <b>+7,5°</b> so với Địa bàn.</span></div>
+                    <div style="display:flex; gap:6px; align-items:flex-start; margin:3px 0;"><span style="flex:0 0 28px; height:12px; margin-top:3px; border-radius:3px; border:1px solid #b9ad98; background:linear-gradient(90deg,#e8dcc8 34%,#d8e8dc 34%,#d8e8dc 67%,#dce4f0 67%);"></span><span><b>Địa bàn</b> — 24 sơn chuẩn (không lệch). Mọi mốc được tô đậm ở vòng này: 🔴 Hướng nhà, 🔵 Nước Đến, 🟠 Nước Đi, 🟣 Tọa nhà / Mộ.</span></div>
+                    <div style="display:flex; gap:6px; align-items:flex-start; margin:3px 0;"><span style="flex:0 0 28px; height:12px; margin-top:3px; border-radius:3px; border:1px solid #b9ad98; background:linear-gradient(90deg,#a5d6a7 25%,#ffe082 25%,#ffe082 50%,#ef9a9a 50%,#ef9a9a 75%,#90caf9 75%);"></span><span><b>Vòng Ngũ Hành Long</b> — hành của Long theo từng sơn (Mộc, Kim, Hỏa, Thủy); ô tô đậm = Lai Long.</span></div>
+                    <div style="display:flex; gap:6px; align-items:flex-start; margin:3px 0;"><span style="flex:0 0 28px; height:12px; margin-top:3px; border-radius:3px; border:1px solid #b9ad98; background:repeating-linear-gradient(90deg,#5c4a3a 0,#5c4a3a 1px,#ffffff 1px,#ffffff 5px);"></span><span><b>Vòng chia độ (ngoài cùng)</b> — 0°–360°, vạch mỗi 10°. Mũi tên xanh ngọc xuyên tâm = hướng nhà.</span></div>
+                    <div style="margin-top:4px; color:#888;">Chỉ Địa bàn dùng để tô mốc Đến/Đi/Tọa/Hướng/Mộ; Nhân bàn, Thiên bàn và Long Pháp chỉ để đối chiếu.</div>
+                </details>
+            </div>
         </div>
     </div>
 
@@ -869,9 +903,10 @@
     <script src="js/tim-nha.js"></script>
     <script src="js/cuu-cung-luoi.js"></script>
     <script src="js/lich-van-nien.js"></script>
+
     <script src="js/thong-tin-nha.js"></script>
     <script src="js/ho-so.js"></script>
     <script src="js/loan-dau.js"></script>
-    <script src="js/kham-du.js"></script>
+<script src="js/kham-du.js"></script>
 </body>
 </html>
