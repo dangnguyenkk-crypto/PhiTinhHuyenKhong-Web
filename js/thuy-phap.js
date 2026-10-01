@@ -520,9 +520,13 @@
                 return h;
             }
 
-            function veLaBanTruongSinh() {
-                let svg = damBaoSvgTruongSinhTonTai(); if (!svg) return;
-                svg.innerHTML = "";
+                        function veLaBanTruongSinh() {
+                            let svg = damBaoSvgTruongSinhTonTai(); if (!svg) return;
+                            svg.innerHTML = taoHtmlLaBanTruongSinh();
+                        }
+                        // Sinh CHUỖI SVG của la bàn Trường Sinh (viewBox 1300x1300, tâm 650,650). Dùng chung cho
+                        // tab Thủy Pháp (veLaBanTruongSinh ở trên) và tab Tâm Nhà (window.taoHtmlLaBanTruongSinh).
+                        function taoHtmlLaBanTruongSinh() {
                 // Vòng Long Pháp build LẠI mỗi lần vẽ để luôn khớp Nước Đi/chiều hiện tại — rẻ (12
                 // phần tử) nên không cần tối ưu chỉ-build-khi-đổi như vongTruongSinh.
                 if (typeof buildVongLongPhap === "function") buildVongLongPhap();
@@ -878,9 +882,17 @@
                     html += `<text x="${cx}" y="${cy+15}" font-size="${tpFontSize}" font-weight="600" fill="#666" stroke="#fff" stroke-width="2.5" paint-order="stroke" text-anchor="middle">Chọn Nước Đi để xác định Cục</text>`;
                 }
 
-                svg.innerHTML = html;
+                return html;
             }
             window.veLaBanTruongSinh = veLaBanTruongSinh;
+            // Cho tab Tâm Nhà: trả chuỗi SVG la bàn Trường Sinh, đọc cùng điều khiển/biến của Thủy Pháp
+            // (Nước Đến/Đi, Thủy Khẩu/Tọa, Thuận/Nghịch, Lai Long, dải Bát Trạch, độ mờ nền).
+            // fontSizeUnits (tùy chọn) = cỡ chữ cơ sở theo đơn vị viewBox, thay tạm cho tpFontSize.
+            window.taoHtmlLaBanTruongSinh = function(fontSizeUnits) {
+                let tpFontSizeLuu = tpFontSize;
+                if (fontSizeUnits > 0) tpFontSize = fontSizeUnits;
+                try { return taoHtmlLaBanTruongSinh(); } finally { tpFontSize = tpFontSizeLuu; }
+            };
 
             // ====================================================================
             // LA BÀN BÁT TRẠCH THỦY PHÁP (8 CUNG) — kiểu la bàn thứ 4 cho tab Thủy Pháp.

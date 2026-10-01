@@ -13,7 +13,7 @@
             centroidWorld: null, bgImage: null, bgImgWorld: null, bgImgRotation: 0,
             isResetView: false, huongResetCu: 0, fontSizeCompass: 10,
             dragging: false, lastTouch: null,
-            doors: [], showCompass: true
+            doors: [], showCompass: true, kieuLaBan: 'tron24son'
         };
 
         var svgMain = document.getElementById('tnSvgMain');
@@ -142,7 +142,17 @@
             }
 
             // La bàn tại tâm (chỉ vẽ khi đã có tâm VÀ đang bật hiện la bàn)
-            if (tamNhaData.centroidWorld && tamNhaData.showCompass) {
+            if (tamNhaData.centroidWorld && tamNhaData.showCompass && tamNhaData.kieuLaBan === 'truongSinh' && typeof window.taoHtmlLaBanTruongSinh === 'function') {
+                // La bàn Trường Sinh — dùng chung hàm vẽ + điều khiển (Nước Đến/Đi, Thủy Khẩu/Tọa, Thuận/Nghịch,
+                // Lai Long, Bát Trạch, độ mờ nền) của tab Thủy Pháp. Hướng nhà đọc từ #houseFacing (đã đồng bộ với #tnHuongLaBan).
+                const pTS = worldToScreenTamNha(tamNhaData.centroidWorld.x, tamNhaData.centroidWorld.y);
+                const azTS = parseFloat(document.getElementById('tnHuongLaBan').value) || 0;
+                const minDimTS = Math.min(rect.width, rect.height) * 0.95;
+                const scaleTS = (minDimTS * 0.47) / 590; // 590 = bán kính số độ của la bàn Trường Sinh (viewBox 1300, tâm 650)
+                const rotTS = tamNhaData.isResetView ? -azTS : 0; // Reset: xoay để hướng nhà lên trên (như la bàn 24 Sơn)
+                html += '<g transform="translate(' + pTS.x + ' ' + pTS.y + ') rotate(' + rotTS + ') scale(' + scaleTS + ') translate(-650 -650)">'
+                    + window.taoHtmlLaBanTruongSinh(tamNhaData.fontSizeCompass * 0.85 / scaleTS) + '</g>';
+            } else if (tamNhaData.centroidWorld && tamNhaData.showCompass) {
                 const p = worldToScreenTamNha(tamNhaData.centroidWorld.x, tamNhaData.centroidWorld.y);
                 const az = parseFloat(document.getElementById('tnHuongLaBan').value) || 0;
                 const minDim = Math.min(rect.width, rect.height) * 0.95;
@@ -263,6 +273,14 @@
             renderDoorList(); redrawTamNha();
         }
         window.toggleTamNhaCompass = toggleTamNhaCompass;
+        // Chọn kiểu la bàn hiển thị ở Tâm Nhà: 'tron24son' (mặc định) hoặc 'truongSinh'
+        function chonKieuLaBanTamNha(kieu) {
+            tamNhaData.kieuLaBan = (kieu === 'truongSinh') ? 'truongSinh' : 'tron24son';
+            var sel = document.getElementById('tnKieuLaBan');
+            if (sel && sel.value !== tamNhaData.kieuLaBan) sel.value = tamNhaData.kieuLaBan;
+            redrawTamNha();
+        }
+        window.chonKieuLaBanTamNha = chonKieuLaBanTamNha;
         function undoTamNha() { if (tamNhaData.closed){tamNhaData.closed=false;}else if(tamNhaData.vertices.length>0){tamNhaData.vertices.pop();tamNhaData.lockedEdges.pop();} tamNhaData.centroidWorld=null; document.getElementById('tnKetQuaTam').style.display='none'; renderTamNhaEdgeList(); redrawTamNha(); }
         window.undoTamNha = undoTamNha;
         function resetTamNha() {
@@ -447,7 +465,8 @@
                 }),
                 doors: JSON.parse(JSON.stringify(tamNhaData.doors || [])),
                 pxPerMeter: tamNhaData.pxPerMeter,
-                showCompass: tamNhaData.showCompass,
+                 showCompass: tamNhaData.showCompass,
+                 kieuLaBan: tamNhaData.kieuLaBan || 'tron24son',
                 bgImageSrc: tamNhaData.bgImage ? tamNhaData.bgImage.src : null,
                 bgImgWorld: tamNhaData.bgImgWorld,
                 bgImgRotation: tamNhaData.bgImgRotation || 0,
@@ -486,6 +505,8 @@
             tamNhaData.fontSizeCompass = parseInt(inp.tnFontSize) || 8;
             tamNhaData.centroidWorld = null;
             tamNhaData.showCompass = obj.showCompass !== false;
+            tamNhaData.kieuLaBan = (obj.kieuLaBan === 'truongSinh') ? 'truongSinh' : 'tron24son';
+            setVal("tnKieuLaBan", tamNhaData.kieuLaBan);
             tamNhaData.zoomLevel = 1; tamNhaData.panX = 0; tamNhaData.panY = 0;
 
             function hoanTatKhoiPhuc() {

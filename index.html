@@ -440,6 +440,13 @@
                         <span style="font-size:12px;">° <span id="tnTenSon" style="color:#8b0000; font-weight:700;">Tý</span></span>
                     </div>
                 </div>
+                <div style="flex:1; min-width:90px;">
+                    <label style="font-size:10px; display:block; margin-bottom:1px; font-weight:600; color:#444;">🧭 Kiểu la bàn</label>
+                    <select id="tnKieuLaBan" onchange="chonKieuLaBanTamNha(this.value)" style="padding:2px 4px; border:1px solid #ccc; border-radius:4px; font-size:12px; height:24px; width:100%; max-width:130px;">
+                        <option value="tron24son">🧭 24 Sơn</option>
+                        <option value="truongSinh">♻️ Trường Sinh</option>
+                    </select>
+                </div>
                 <div style="flex:1; min-width:70px;">
                     <label style="font-size:10px; display:block; margin-bottom:1px; font-weight:600; color:#444;">🎨 Màu tia</label>
                     <input type="color" id="tnColorTia" value="#e91e63" style="height:24px; padding:2px; cursor:pointer; width:100%; max-width:70px;" oninput="capNhatMauTiaTamNha()" onchange="capNhatMauTiaTamNha()">
