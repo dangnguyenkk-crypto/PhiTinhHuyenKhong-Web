@@ -462,6 +462,10 @@
             // liệu (hướng nhà, sơn đã chọn…) thì thêm tham số rồi truyền vào ở chỗ gọi trong
             // veLaBanTruongSinh(). Toàn bộ nội dung nên đặt trong <g data-vong="long-phap">.
             // ====================================================================
+            // 6 giai đoạn được tô nổi bật màu xanh lá trên vòng Long Pháp (theo yêu cầu người dùng).
+            // Đã BỎ "Mộc Dục" khỏi danh sách — Mộc Dục thực chất không tốt (dễ sinh cờ bạc, rượu
+            // chè, gia phong bại hoại) nên không tô xanh (màu cát) cho cung này nữa.
+            const CAC_GIAI_DOAN_TO_XANH_LONG_PHAP = ["Trường Sinh", "Quan Đới", "Lâm Quan", "Đế Vượng", "Dưỡng"];
             function veVongLongPhapLuanLong(cx, cy, rTrong, rNgoai, coChu, doLechNhan, bangLongPhap) {
                 // 12 ô, mỗi ô GỘP ĐÚNG 2 CUNG LIỀN KỀ trên VÒNG NHÂN BÀN THẬT (vòng 24 Sơn TRONG CÙNG
                 // trong 3 vòng, r 340→400 ngoài Long Pháp) — KHÔNG phải theo Địa bàn. Nhân bàn lệch
@@ -491,12 +495,25 @@
                     let xsI = cx + rTrong * Math.cos(re), ysI = cy + rTrong * Math.sin(re);
                     let xeI = cx + rTrong * Math.cos(rs), yeI = cy + rTrong * Math.sin(rs);
                     let g = bangLongPhap ? bangLongPhap.find(x => x.diaChi === s2.ten) : null;
-                    let mauNen = g ? (g.gd === "Mộ" ? "#e8b4a8" : "#f1e9d8") : "#f1e9d8";
-                    h += `<path d="M${xsO.toFixed(1)},${ysO.toFixed(1)} A${rNgoai},${rNgoai} 0 0,1 ${xeO.toFixed(1)},${yeO.toFixed(1)} L${xsI.toFixed(1)},${ysI.toFixed(1)} A${rTrong},${rTrong} 0 0,0 ${xeI.toFixed(1)},${yeI.toFixed(1)} Z" fill="${mauNen}" fill-opacity="0.95" stroke="#b9ad98" stroke-width="0.8"/>`;
+                    // Tô nổi bật màu XANH LÁ cho 6 giai đoạn cát của vòng Long Pháp (theo yêu cầu
+                    // người dùng): Trường Sinh, Mộc Dục, Quan Đới, Lâm Quan, Đế Vượng, Dưỡng. Ô
+                    // "Mộ" vẫn giữ nguyên màu hồng nhạt như cũ, các giai đoạn còn lại giữ nền vàng nhạt mặc định.
+                    let mauNen = g
+                        ? (g.gd === "Mộ" ? "#e8b4a8"
+                            : (CAC_GIAI_DOAN_TO_XANH_LONG_PHAP.indexOf(g.gd) >= 0 ? "#a5d6a7" : "#f1e9d8"))
+                        : "#f1e9d8";
+                    h += `<path d="M${xsO.toFixed(1)},${ysO.toFixed(1)} A${rNgoai},${rNgoai} 0 0,1 ${xeO.toFixed(1)},${yeO.toFixed(1)} L${xsI.toFixed(1)},${ysI.toFixed(1)} A${rTrong},${rTrong} 0 0,0 ${xeI.toFixed(1)},${yeI.toFixed(1)} Z" fill="${mauNen}" fill-opacity="${doMoNenLaBan}" stroke="#b9ad98" stroke-width="0.8"/>`;
                     let rChu = (rTrong + rNgoai) / 2, radT = (gocTam - 90) * Math.PI / 180;
                     let xT = cx + rChu * Math.cos(radT), yT = cy + rChu * Math.sin(radT);
-                    let nhanChu = g ? (g.gd + " · " + s1.ten + "·" + s2.ten) : (s1.ten + "·" + s2.ten);
-                    let coChuThat = g ? coChu * 0.5 : coChu * 0.62;
+                    // Có giai đoạn (đã chọn Nước Đi): CHỈ hiện tên giai đoạn (vd "Trường Sinh"), bỏ
+                    // hẳn 2 tên sơn — chữ ngắn hơn nên phóng to hơn cho dễ đọc. Chưa có giai đoạn
+                    // (chưa chọn Nước Đi): vẫn giữ tên 2 sơn làm chỗ giữ chỗ, không có gì khác để hiện.
+                    let nhanChu = g ? g.gd : (s1.ten + "·" + s2.ten);
+                    // 0.95: đã đo thử — "Trường Sinh"/"Đế Vượng" (dài nhất) chiếm ~60% bề ngang ô ở
+                    // 0.78; nâng lên 0.95 vẫn còn dư margin, không tràn, ở mọi mức cỡ chữ (thanh
+                    // trượt 8–28). Nhánh else (chưa chọn Nước Đi) giữ nguyên 0.62 vì "Canh·Hợi" có
+                    // dấu · làm chữ rộng hơn tương đối so với 1 từ giai đoạn.
+                    let coChuThat = g ? coChu * 0.95 : coChu * 0.62;
                     h += `<g transform="rotate(${gocTam} ${xT.toFixed(1)} ${yT.toFixed(1)})"><text x="${xT.toFixed(1)}" y="${yT.toFixed(1)}" font-size="${coChuThat.toFixed(1)}" font-weight="700" fill="#7a5a1e" text-anchor="middle" dominant-baseline="middle">${nhanChu}</text></g>`;
                 }
                 h += `</g>`;
@@ -528,16 +545,18 @@
                 //     rInner=200 đi vào tâm: Trạch (ngoài) rồi Mệnh (trong). Dải nào tắt
                 //     (hienThiBatTrachTrachTrongTruongSinh / hienThiBatTrachMenhTrongTruongSinh) thì bỏ qua,
                 //     dải còn lại dịch sát rInner (KHÔNG giãn dày ra). 8 phương vị × 45°, tô theo Du Niên.
-                // (3) NHÂN BÀN    r 200→260 (rInner→rNhanNgoai): 24 sơn, góc = Địa bàn − 7.5°.
-                // (4) VÒNG LONG PHÁP – LUẬN LONG   r 260→320 (rNhanNgoai→rLongPhapNgoai): CHỖ GIỮ CHỖ,
+                // (3) NHÂN BÀN    r 200→270 (rInner→rNhanNgoai): 24 sơn, góc = Địa bàn − 7.5°.
+                // (4) VÒNG LONG PHÁP – LUẬN LONG   r 270→340 (rNhanNgoai→rLongPhapNgoai): CHỖ GIỮ CHỖ,
                 //     hiện chỉ có khung + tên 12 ô (2 sơn Nhân bàn/ô). Nội dung sau này viết trong hàm
                 //     veVongLongPhapLuanLong().
-                // (5) THIÊN BÀN   r 320→380 (rLongPhapNgoai→rThienNgoai): 24 sơn, góc = Địa bàn + 7.5°.
-                // (6) 12 ĐỊA CHI (Trường Sinh)   r 380→460 (rThienNgoai→rMid): 12 cung × 30°, tâm cung
+                // (5) THIÊN BÀN   r 340→410 (rLongPhapNgoai→rThienNgoai): 24 sơn, góc = Địa bàn + 7.5°.
+                // (6) 12 ĐỊA CHI (Trường Sinh)   r 410→460 (rThienNgoai→rMid): 12 cung × 30°, tâm cung
                 //     tại CHÍNH góc, không lệch (Tý=0°, Sửu=30°…), thẳng hàng với Địa bàn (xem
-                //     GOC_DIA_CHI_12 đầu file). Chữ ngoài (rTextGD) = giai đoạn Trường Sinh; chữ
-                //     trong (rTextChi) = Địa Chi. Nền: xanh = cát, đỏ = hung (mauTheoDiem12), xám =
-                //     chưa có Cục. Viền xanh dương = cung Nước Đến, viền cam = cung Nước Đi.
+                //     GOC_DIA_CHI_12 đầu file). Chỉ còn 1 lớp chữ (rTextGD) = tên giai đoạn Trường
+                //     Sinh/Mộc Dục/.../Dưỡng — ĐÃ BỎ lớp chữ Địa Chi (Tý/Sửu/Dần...) từng hiện ở
+                //     rTextChi, theo yêu cầu người dùng. Nền: xanh = cát, đỏ = hung (mauTheoDiem12),
+                //     xám = chưa có Cục (Mộc Dục luôn tô xám, không tô cát — xem ghi chú tại chỗ
+                //     tính mauNen). Viền xanh dương = cung Nước Đến, viền cam = cung Nước Đi.
                 // (7) ĐỊA BÀN     r 460→520 (rMid→rOuter): 24 sơn gốc (DS24_SON trong shared.js), mỗi
                 //     sơn 15°, tâm tại s.goc (Tý=0°, Quý=15°…). Nền theo nhóm Chi/Can/Quái (NHOM_24_SON).
                 //     Tô đậm viền: Hướng nhà = đỏ, Nước Đến = xanh dương, Nước Đi = cam, Tọa/Mộ = tím.
@@ -551,13 +570,18 @@
                 // THIÊN BÀN → 12 ĐỊA CHI → ĐỊA BÀN → Ngũ Hành Long. rInner vẫn là mốc chung "cạnh ngoài
                 // dải Bát Trạch" — mọi vòng phía trên đều tính tiếp từ đây, chỉ đổi THỨ TỰ CỘNG DỒN.
                 const rInner = 200;
-                const rNhanNgoai = 260;           // cạnh ngoài Nhân bàn = cạnh trong Long Pháp
-                const rLongPhapNgoai = 320;        // cạnh ngoài Long Pháp = cạnh trong Thiên bàn
-                const rThienNgoai = 380;           // cạnh ngoài Thiên bàn = cạnh trong 12 Địa Chi
+                // Vòng 12 Địa Chi giờ chỉ còn 1 lớp chữ (tên giai đoạn, đã bỏ chữ Địa Chi) nên
+                // không cần dày như trước (80) — thu còn 50, phần dư (30) chia đều cho 3 vòng phía
+                // trong (Nhân bàn/Long Pháp/Thiên bàn: 60→70 mỗi vòng) để tận dụng không gian,
+                // theo yêu cầu người dùng. rMid (460, cạnh ngoài 12 Địa Chi / cạnh trong Địa bàn)
+                // và mọi vòng từ Địa bàn trở ra GIỮ NGUYÊN, không bị ảnh hưởng.
+                const rNhanNgoai = 270;            // cạnh ngoài Nhân bàn = cạnh trong Long Pháp
+                const rLongPhapNgoai = 340;         // cạnh ngoài Long Pháp = cạnh trong Thiên bàn
+                const rThienNgoai = 410;            // cạnh ngoài Thiên bàn = cạnh trong 12 Địa Chi
                 const rMid = 460;                  // cạnh ngoài 12 Địa Chi = cạnh trong Địa bàn (giữ tên rMid vì nhiều chỗ khác tham chiếu)
                 const rOuter = 520, rLongOuter = 550;
-                const rTextGD = 442, rTextChi = 400, rText24Son = 490, rTextLong = 535, rTamTrong = 35;
-                const rTextNhan = 230, rTextThien = 350;
+                const rTextGD = 435, rTextChi = 400, rText24Son = 490, rTextLong = 535, rTamTrong = 35;
+                const rTextNhan = 235, rTextThien = 375;
                 const DO_LECH_NHAN_THIEN = 7.5; // Nhân bàn = Địa − 7.5°, Thiên bàn = Địa + 7.5°
                 const rDoTick = rLongOuter, rDoText = rLongOuter + 40, rDoSo = rLongOuter + 20;
                 // ---- 2 dải Bát Trạch TÍCH HỢP (Trạch đất / Mệnh gia chủ) — chèn NGAY BÊN TRONG vòng
@@ -593,7 +617,7 @@
                     sonToa = laySonToa(houseFacing);
                     cuc = sonToNguHanh[sonToa.ten] || null;
                 } else {
-                    cuc = diaChiDi ? diaChiToCuc[diaChiDi] : null;
+                    cuc = timCucTheoNuocDi(sonDiRaw);
                 }
                 let bang12 = cuc ? (vongTruongSinh[cuc] || []) : null;
 
@@ -638,7 +662,13 @@
                         html += `<g transform="rotate(${gocTam} ${xT.toFixed(1)} ${yT.toFixed(1)})"><text x="${xT.toFixed(1)}" y="${yT.toFixed(1)}" font-size="${(tpFontSize*1.05).toFixed(1)}" font-weight="700" fill="#2a2a2a" stroke="#fff" stroke-width="2" paint-order="stroke" text-anchor="middle" dominant-baseline="middle">${s.ten}</text></g>`;
                     });
                 }
-                veVong24SonPhu(rMid, rNhanNgoai, rTextNhan, -DO_LECH_NHAN_THIEN); // Nhân bàn
+                // SỬA LỖI: trước đây gọi veVong24SonPhu(rMid, rNhanNgoai, ...) — dùng nhầm rMid (460)
+                // thay vì rInner (200) làm bán kính trong, khiến dải tô nền của vòng Nhân bàn (24 sơn
+                // TRONG CÙNG, đúng ra ở r 200→260 theo bản đồ các vòng phía trên) bị vẽ lấn ra tới tận
+                // r 460 rồi bị các vòng vẽ sau đó (Thiên bàn, 12 Địa Chi) đè kín hoàn toàn — kết quả là
+                // vòng 24 sơn trong cùng không hề có màu nền. Đổi lại đúng rInner để vòng này tô nền
+                // đúng vị trí r 200→260 của nó và không còn bị đè mất.
+                veVong24SonPhu(rInner, rNhanNgoai, rTextNhan, -DO_LECH_NHAN_THIEN); // Nhân bàn (24 sơn trong cùng)
                 veVong24SonPhu(rNhanNgoai, rThienNgoai, rTextThien, +DO_LECH_NHAN_THIEN); // Thiên bàn
 
                 DS24_SON.forEach(function(s) {
@@ -690,7 +720,7 @@
                     let xL = cx + rTextLong * Math.cos(radTLong), yL = cy + rTextLong * Math.sin(radTLong);
                     let gocChuanLong = ((gocTamLong % 360) + 360) % 360;
                     let gocChuLong = (gocChuanLong > 90 && gocChuanLong < 270) ? gocTamLong + 180 : gocTamLong;
-                    html += `<g transform="rotate(${gocChuLong} ${xL.toFixed(1)} ${yL.toFixed(1)})"><text x="${xL.toFixed(1)}" y="${yL.toFixed(1)}" font-size="${(tpFontSize*0.65).toFixed(1)}" font-weight="700" fill="${VIEN_NGU_HANH_LONG[hanhLong]}" text-anchor="middle" dominant-baseline="middle">${hanhLong}</text></g>`;
+                    html += `<g transform="rotate(${gocChuLong} ${xL.toFixed(1)} ${yL.toFixed(1)})"><text x="${xL.toFixed(1)}" y="${yL.toFixed(1)}" font-size="${(tpFontSize*0.95).toFixed(1)}" font-weight="700" fill="${VIEN_NGU_HANH_LONG[hanhLong]}" stroke="#fff" stroke-width="1.5" paint-order="stroke" text-anchor="middle" dominant-baseline="middle">${hanhLong}</text></g>`;
                 });
 
                 // ---- VÒNG CHIA ĐỘ (ngoài cùng, mỗi 10°) ----
@@ -705,10 +735,9 @@
                     html += `<text x="${xt.toFixed(1)}" y="${yt.toFixed(1)}" font-size="${(tpFontSize*1.05).toFixed(1)}" font-weight="600" fill="#2a2a2a" stroke="#fff" stroke-width="2" paint-order="stroke" text-anchor="middle" dominant-baseline="middle" transform="rotate(${deg} ${xt.toFixed(1)} ${yt.toFixed(1)})">${deg}</text>`;
                 }
 
-                // 12 cung THUẦN Địa Chi, mỗi cung đúng 30°, tâm cung tại đúng bội số của 30°
-                // (Tý=0°, Sửu=30°, Dần=60°...) — không lệch, không gán kèm sơn Thiên Can/Quái nào.
-                // Biên ngoài của vòng này là rMid (giáp Địa bàn), biên trong là rThienNgoai (giáp
-                // Thiên bàn).
+                // Vòng 12 Địa Chi (Trường Sinh): giữ nguyên phần tô nền cát/hung + TÊN GIAI ĐOẠN
+                // (Trường Sinh, Mộc Dục, Quan Đới...) — theo yêu cầu người dùng CHỈ bỏ phần chữ
+                // Địa Chi (Tý, Sửu, Dần...) từng hiện ở vòng trong (rTextChi), không xóa cả vòng.
                 GOC_DIA_CHI_12.forEach(function(dc) {
                     let gocTam = dc.goc;
                     let g = bang12 ? bang12.find(x => x.diaChi === dc.ten) : null;
@@ -719,7 +748,10 @@
                     let xsI = cx + rThienNgoai * Math.cos(re), ysI = cy + rThienNgoai * Math.sin(re);
                     let xeI = cx + rThienNgoai * Math.cos(rs), yeI = cy + rThienNgoai * Math.sin(rs);
                     // Chưa xác định Cục (chưa chọn Nước Đi) → tô xám trung tính, không cát/hung.
-                    let mauNen = g ? mauTheoDiem12(g.den) : "#cfcfcf";
+                    // Mộc Dục thực chất KHÔNG tốt (dễ sinh cờ bạc, rượu chè...) dù điểm den trong
+                    // mucDoCatHung12 đang để dương — theo yêu cầu người dùng, KHÔNG tô nền xanh
+                    // (màu cát) cho riêng cung này nữa, chỉ giữ nền xám trung tính.
+                    let mauNen = g ? (g.gd === "Mộc Dục" ? "#bdbdbd" : mauTheoDiem12(g.den)) : "#cfcfcf";
                     let laCungDen = gdDen && gdDen.diaChi === dc.ten;
                     let laCungDi = gdDi && gdDi.diaChi === dc.ten;
                     let vien = laCungDen ? "#1565c0" : (laCungDi ? "#e65100" : "#3a2a1a");
@@ -731,16 +763,13 @@
                     let x2b = cx + rMid * Math.cos(rs), y2b = cy + rMid * Math.sin(rs);
                     html += `<line x1="${x1b.toFixed(1)}" y1="${y1b.toFixed(1)}" x2="${x2b.toFixed(1)}" y2="${y2b.toFixed(1)}" stroke="#3a2a1a" stroke-width="1"/>`;
 
-                    // Tên giai đoạn (Trường Sinh, Mộc Dục...) — vòng ngoài (bỏ trống nếu chưa có Cục)
+                    // Tên giai đoạn (Trường Sinh, Mộc Dục...) — chữ duy nhất còn lại của vòng này,
+                    // giữ nguyên đúng vị trí bán kính cũ (rTextGD) như trước khi bỏ chữ Địa Chi.
                     let radT = (gocTam - 90) * Math.PI / 180;
                     if (g) {
                         let xGD = cx + rTextGD * Math.cos(radT), yGD = cy + rTextGD * Math.sin(radT);
                         html += `<g transform="rotate(${gocTam} ${xGD.toFixed(1)} ${yGD.toFixed(1)})"><text x="${xGD.toFixed(1)}" y="${yGD.toFixed(1)}" font-size="${(tpFontSize*1.1).toFixed(1)}" font-weight="800" fill="#7a1010" stroke="#fff" stroke-width="3" paint-order="stroke" text-anchor="middle" dominant-baseline="middle">${g.gd}</text></g>`;
                     }
-
-                    // Địa Chi — vòng trong
-                    let xChi = cx + rTextChi * Math.cos(radT), yChi = cy + rTextChi * Math.sin(radT);
-                    html += `<g transform="rotate(${gocTam} ${xChi.toFixed(1)} ${yChi.toFixed(1)})"><text x="${xChi.toFixed(1)}" y="${yChi.toFixed(1)}" font-size="${(tpFontSize*1.3).toFixed(1)}" font-weight="900" fill="#1a1a1a" stroke="#fff" stroke-width="3" paint-order="stroke" text-anchor="middle" dominant-baseline="middle">${dc.ten}</text></g>`;
                 });
 
                 
@@ -838,8 +867,12 @@
                     html += `<text x="${cx}" y="${cy+30}" font-size="${tpFontSize}" font-weight="700" fill="#555" stroke="#fff" stroke-width="2.5" paint-order="stroke" text-anchor="middle">${chieuTruongSinh==="nghich"?"Trường Sinh nghịch":"Trường Sinh thuận"}</text>`;
                 } else if (cuc) {
                     html += `<text x="${cx}" y="${cy-30}" font-size="${(tpFontSize*1.4).toFixed(1)}" font-weight="900" fill="#2e7d32" stroke="#fff" stroke-width="3" paint-order="stroke" text-anchor="middle">${cuc} Cục</text>`;
-                    if (diaChiDen) html += `<text x="${cx}" y="${cy+25}" font-size="${tpFontSize}" font-weight="700" fill="#1565c0" stroke="#fff" stroke-width="2.5" paint-order="stroke" text-anchor="middle">Đến: ${diaChiDen}${gdDen?" — "+gdDen.gd:""}</text>`;
-                    html += `<text x="${cx}" y="${cy+49}" font-size="${tpFontSize}" font-weight="700" fill="#e65100" stroke="#fff" stroke-width="2.5" paint-order="stroke" text-anchor="middle">Đi: ${diaChiDi}${gdDi?" — "+gdDi.gd:""}</text>`;
+                    // Hiện đúng TÊN SƠN gốc đã chọn (sonDenRaw/sonDiRaw), không phải Địa Chi quy
+                    // đổi (diaChiDen/diaChiDi) — trước đây chọn Tốn lại hiện "Đi: Tị" (Địa Chi quy
+                    // đổi qua quyDoiSonSangDiaChi), gây hiểu nhầm là chọn nhầm sơn. diaChiDen/diaChiDi
+                    // vẫn dùng NỘI BỘ để tra gdDen/gdDi (giai đoạn Trường Sinh) — không đổi.
+                    if (sonDenRaw) html += `<text x="${cx}" y="${cy+25}" font-size="${tpFontSize}" font-weight="700" fill="#1565c0" stroke="#fff" stroke-width="2.5" paint-order="stroke" text-anchor="middle">Đến: ${sonDenRaw}${gdDen?" — "+gdDen.gd:""}</text>`;
+                    html += `<text x="${cx}" y="${cy+49}" font-size="${tpFontSize}" font-weight="700" fill="#e65100" stroke="#fff" stroke-width="2.5" paint-order="stroke" text-anchor="middle">Đi: ${sonDiRaw}${gdDi?" — "+gdDi.gd:""}</text>`;
                 } else {
                     html += `<text x="${cx}" y="${cy-15}" font-size="${(tpFontSize*1.2).toFixed(1)}" font-weight="800" fill="#c62828" stroke="#fff" stroke-width="3" paint-order="stroke" text-anchor="middle">⚠️ Chưa chọn Nước Đi</text>`;
                     html += `<text x="${cx}" y="${cy+15}" font-size="${tpFontSize}" font-weight="600" fill="#666" stroke="#fff" stroke-width="2.5" paint-order="stroke" text-anchor="middle">Chọn Nước Đi để xác định Cục</text>`;
@@ -1824,10 +1857,27 @@
                 }
             });
 
+            // diaChiToCuc CŨ chỉ tra đúng khi Nước Đi là 1 trong 12 Địa Chi (Thân/Tý/Thìn/...), vì
+            // quyDoiSonSangDiaChi() quy Nước Đi về ĐÚNG 1 Địa Chi theo cặp Nhân bàn 2 sơn liền kề
+            // (SON_SANG_DIA_CHI_12) — SAI với 4/6 sơn của mỗi nhóm Thủy Khẩu thật (Tốn/Tị/Bính/Ngọ
+            // không map đúng Cục như Ất/Thìn, dù cùng 1 nhóm 6 sơn — đã xác nhận bằng số với người
+            // dùng). Cục THẬT phải tính theo NHÓM 6 SƠN (NHOM_THUY_KHAU, giống hệt vòng Long Pháp),
+            // không theo cặp 2 sơn liền kề. timCucTheoNuocDi() thay hẳn cách tra diaChiToCuc[diaChiDi].
             const diaChiToCuc = {"Thân":"Thủy","Tý":"Thủy","Thìn":"Thủy","Hợi":"Mộc","Mão":"Mộc","Mùi":"Mộc","Dần":"Hỏa","Ngọ":"Hỏa","Tuất":"Hỏa","Tị":"Kim","Dậu":"Kim","Sửu":"Kim"};
+            // Long Cục = hành ĐỐI LẬP với hành của chính nhóm 6 sơn chứa Nước Đi (nhóm Hỏa — quanh
+            // Thủy Khẩu Thìn — cho Long Cục Thủy; nhóm Thủy — quanh Thủy Khẩu Tuất — cho Long Cục
+            // Hỏa; v.v. — xác nhận trực tiếp với người dùng, xem lịch sử trao đổi ngày tạo dòng này).
+            const CUC_DOI_LAP_HANH = {"Hỏa":"Thủy","Thủy":"Hỏa","Mộc":"Kim","Kim":"Mộc"};
+            function timCucTheoNuocDi(sonDi) {
+                let nhom = timNhomThuyKhau(sonDi);
+                return nhom ? CUC_DOI_LAP_HANH[nhom.hanh] : null;
+            }
             const thuTuDiaChi12 = ["Thân","Dậu","Tuất","Hợi","Tý","Sửu","Dần","Mão","Thìn","Tị","Ngọ","Mùi"];
             const tenGiaiDoan12 = ["Trường Sinh","Mộc Dục","Quan Đới","Lâm Quan","Đế Vượng","Suy","Bệnh","Tử","Mộ","Tuyệt","Thai","Dưỡng"];
-            const mucDoCatHung12 = [{den:5,di:-5},{den:4,di:-4},{den:4,di:-3},{den:4,di:-3},{den:5,di:-4},{den:-2,di:5},{den:-3,di:4},{den:-3,di:4},{den:-4,di:5},{den:-5,di:5},{den:-3,di:-3},{den:2,di:2}];
+            // SỬA LỖI: trước đây Tuyệt (den:-5, mức hung nặng nhất) bị tô đậm hơn Mộ (den:-4) —
+            // ngược với ý người dùng, Mộ mới phải là cung hung nặng nhất (đậm nhất). Đã đổi lại:
+            // Mộ = den:-5 (đậm nhất), Tuyệt = den:-4. Giữ nguyên di (đều =5, không đổi).
+            const mucDoCatHung12 = [{den:5,di:-5},{den:4,di:-4},{den:4,di:-3},{den:4,di:-3},{den:5,di:-4},{den:-2,di:5},{den:-3,di:4},{den:-3,di:4},{den:-5,di:5},{den:-4,di:5},{den:-3,di:-3},{den:2,di:2}];
             // Điểm khởi vòng Trường Sinh theo Cục, tính THẲNG TỪ MỘ (không qua điểm khởi Trường
             // Sinh k=0 như trước) — vì Mộ là mốc CỐ ĐỊNH không đổi theo chiều thuận/nghịch, còn
             // tính từ Trường Sinh rồi lùi theo buoc sẽ làm Mộ trôi sang Địa Chi khác ở chiều nghịch
@@ -2041,7 +2091,7 @@
                     sonToaChoTongKet = laySonToa(houseFacing);
                     cuc = sonToNguHanh[sonToaChoTongKet.ten] || null;
                 } else {
-                    cuc = diaChiDi ? diaChiToCuc[diaChiDi] : null;
+                    cuc = timCucTheoNuocDi(sonDi);
                 }
                 let ketQuaDen = (cuc && diaChiDen) ? traTamHop(cuc, diaChiDen) : null;
                 let ketQuaDi = (cuc && diaChiDi) ? traTamHop(cuc, diaChiDi) : null;

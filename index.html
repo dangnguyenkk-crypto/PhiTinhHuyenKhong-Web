@@ -213,7 +213,6 @@
             <!-- Nút Định vị / Căn giữa / Chụp: cùng hàng, ở giữa -->
             <div style="position:absolute; bottom:15px; left:50%; transform:translateX(-50%); display:flex; align-items:center; gap:6px; z-index:20; pointer-events:none;">
                 <button id="btnGPS" class="btn-gps" onclick="locateMe()" style="position:static; width:32px; height:32px; margin:0; pointer-events:auto;">📍</button>
-                <button class="nav-btn" onclick="resetViTriAnhNen()" title="Căn giữa lại ảnh nền" style="width:auto; padding:8px 12px; font-size:12px; pointer-events:auto;">↺ Căn giữa</button>
                 <button id="btnCaptureMaps" class="btn-capture-maps" onclick="captureMapImage()" style="display:none; position:static; margin:0; transform:none; pointer-events:auto;">📸 Chụp</button>
             </div>
             <!-- 4 nút di chuyển ảnh nền: sát lề phải -->
@@ -376,14 +375,30 @@
                     <div style="display:flex; gap:6px; align-items:flex-start; margin:3px 0;"><span style="flex:0 0 28px; height:12px; margin-top:3px; border-radius:3px; border:1px solid #b9ad98; background:#ffffff;"></span><span><b>Tâm</b> — tên Cục/Hành, Nước Đến, Nước Đi (chế độ Tọa nhà thì hiện Tọa).</span></div>
                     <div style="display:flex; gap:6px; align-items:flex-start; margin:3px 0;"><span style="flex:0 0 28px; height:12px; margin-top:3px; border-radius:3px; border:1px solid #b9ad98; background:linear-gradient(90deg,#42a5f5 50%,#e53935 50%);"></span><span><b>Dải Bát Trạch – Mệnh</b> — Du Niên theo Quái <b>Mệnh</b> gia chủ (nút 🧑 Mệnh gia chủ); dải trong cùng.</span></div>
                     <div style="display:flex; gap:6px; align-items:flex-start; margin:3px 0;"><span style="flex:0 0 28px; height:12px; margin-top:3px; border-radius:3px; border:1px solid #b9ad98; background:linear-gradient(90deg,#42a5f5 50%,#e53935 50%);"></span><span><b>Dải Bát Trạch – Trạch</b> — Du Niên theo Quái <b>Trạch</b> của hướng nhà (nút 🏠 Trạch đất); nằm ngoài dải Mệnh. Hai dải bật/tắt độc lập.</span></div>
-                    <div style="display:flex; gap:6px; align-items:flex-start; margin:3px 0;"><span style="flex:0 0 28px; height:12px; margin-top:3px; border-radius:3px; border:1px solid #b9ad98; background:#f1e9d8;"></span><span><b>Vòng Long Pháp – Luận Long</b> — dành riêng cho luận Long, <i>hiện chưa có nội dung</i>.</span></div>
-                    <div style="display:flex; gap:6px; align-items:flex-start; margin:3px 0;"><span style="flex:0 0 28px; height:12px; margin-top:3px; border-radius:3px; border:1px solid #b9ad98; background:linear-gradient(90deg,#42a5f5 34%,#e53935 34%,#e53935 67%,#bdbdbd 67%);"></span><span><b>Vòng 12 Địa Chi (Trường Sinh)</b> — 12 giai đoạn Trường Sinh; nền xanh = cát, đỏ = hung, xám = chưa chọn Nước Đi.</span></div>
                     <div style="display:flex; gap:6px; align-items:flex-start; margin:3px 0;"><span style="flex:0 0 28px; height:12px; margin-top:3px; border-radius:3px; border:1px solid #b9ad98; background:linear-gradient(90deg,#e8dcc8 34%,#d8e8dc 34%,#d8e8dc 67%,#dce4f0 67%);"></span><span><b>Nhân bàn</b> — 24 sơn, lệch <b>−7,5°</b> so với Địa bàn.</span></div>
+                    <div style="display:flex; gap:6px; align-items:flex-start; margin:3px 0;"><span style="flex:0 0 28px; height:12px; margin-top:3px; border-radius:3px; border:1px solid #b9ad98; background:#f1e9d8;"></span><span><b>Vòng Long Pháp – Luận Long</b> — dành riêng cho luận Long, <i>hiện chưa có nội dung</i>.</span></div>
                     <div style="display:flex; gap:6px; align-items:flex-start; margin:3px 0;"><span style="flex:0 0 28px; height:12px; margin-top:3px; border-radius:3px; border:1px solid #b9ad98; background:linear-gradient(90deg,#e8dcc8 34%,#d8e8dc 34%,#d8e8dc 67%,#dce4f0 67%);"></span><span><b>Thiên bàn</b> — 24 sơn, lệch <b>+7,5°</b> so với Địa bàn.</span></div>
+                    <div style="display:flex; gap:6px; align-items:flex-start; margin:3px 0;"><span style="flex:0 0 28px; height:12px; margin-top:3px; border-radius:3px; border:1px solid #b9ad98; background:linear-gradient(90deg,#42a5f5 34%,#e53935 34%,#e53935 67%,#bdbdbd 67%);"></span><span><b>Vòng 12 Địa Chi (Trường Sinh)</b> — chỉ còn tên giai đoạn Trường Sinh (đã bỏ chữ Địa Chi Tý/Sửu/Dần...); nền xanh = cát, đỏ = hung, xám = chưa chọn Nước Đi (Mộc Dục luôn tô xám).</span></div>
                     <div style="display:flex; gap:6px; align-items:flex-start; margin:3px 0;"><span style="flex:0 0 28px; height:12px; margin-top:3px; border-radius:3px; border:1px solid #b9ad98; background:linear-gradient(90deg,#e8dcc8 34%,#d8e8dc 34%,#d8e8dc 67%,#dce4f0 67%);"></span><span><b>Địa bàn</b> — 24 sơn chuẩn (không lệch). Mọi mốc được tô đậm ở vòng này: 🔴 Hướng nhà, 🔵 Nước Đến, 🟠 Nước Đi, 🟣 Tọa nhà / Mộ.</span></div>
                     <div style="display:flex; gap:6px; align-items:flex-start; margin:3px 0;"><span style="flex:0 0 28px; height:12px; margin-top:3px; border-radius:3px; border:1px solid #b9ad98; background:linear-gradient(90deg,#a5d6a7 25%,#ffe082 25%,#ffe082 50%,#ef9a9a 50%,#ef9a9a 75%,#90caf9 75%);"></span><span><b>Vòng Ngũ Hành Long</b> — hành của Long theo từng sơn (Mộc, Kim, Hỏa, Thủy); ô tô đậm = Lai Long.</span></div>
                     <div style="display:flex; gap:6px; align-items:flex-start; margin:3px 0;"><span style="flex:0 0 28px; height:12px; margin-top:3px; border-radius:3px; border:1px solid #b9ad98; background:repeating-linear-gradient(90deg,#5c4a3a 0,#5c4a3a 1px,#ffffff 1px,#ffffff 5px);"></span><span><b>Vòng chia độ (ngoài cùng)</b> — 0°–360°, vạch mỗi 10°. Mũi tên xanh ngọc xuyên tâm = hướng nhà.</span></div>
                     <div style="margin-top:4px; color:#888;">Chỉ Địa bàn dùng để tô mốc Đến/Đi/Tọa/Hướng/Mộ; Nhân bàn, Thiên bàn và Long Pháp chỉ để đối chiếu.</div>
+                </details>
+                <!-- GHI CHÚ Ý NGHĨA DÒNG NƯỚC THEO CUNG TRƯỜNG SINH — người dùng cung cấp, tham
+                     khảo khi xem kết quả "Nước Đến"/"Nước Đi" ở phần Tam Hợp Trường Sinh phía trên. -->
+                <details style="margin-top:6px;">
+                    <summary style="cursor:pointer; font-weight:700; color:#8b0000;">🌊 Ý nghĩa dòng nước theo Cung Trường Sinh (chảy đến Minh Đường)</summary>
+                    <div style="margin:4px 0 2px 2px; line-height:1.6; font-size:12px;">
+                        <div>• Dòng nước chảy từ <b>Trường Sinh</b> đến Minh đường thì lợi về nhân khẩu, con cháu thịnh vượng.</div>
+                        <div>• Dòng nước chảy từ <b>Đế Vượng</b> đến Minh đường thì lợi về quan danh, sự nghiệp, nhiều tài lộc.</div>
+                        <div>• Dòng nước chảy từ <b>Quan Đới</b> đến Minh đường thì lợi cho gia đình phong hóa, con cháu học giỏi, thông minh.</div>
+                        <div>• Dòng nước chảy từ <b>Lâm Quan</b> đến Minh đường thì tuổi trẻ làm quan chức, công danh thành đạt.</div>
+                        <div>• Dòng nước chảy từ <b>Mộc Dục</b> đến Minh đường thì sinh cờ bạc, rượu chè, gia tài khánh kiệt, gia phong bại hoại.</div>
+                        <div>• Dòng nước chảy từ <b>Suy</b> đến Minh đường thì gặp tai họa, tối kỵ; nếu không chảy đến Minh đường thì con cháu công danh, phú quý.</div>
+                        <div>• Dòng nước chảy từ <b>Mộ</b> đến Minh đường thì hung, kỵ; nếu có dòng nước chảy quanh co thì có người nổi danh.</div>
+                        <div>• Dòng nước chảy từ <b>Bệnh - Tử</b> đến Minh đường thì gặp tai họa; nếu không chảy qua Minh đường thì tốt đẹp.</div>
+                        <div>• Dòng nước chảy từ <b>Tuyệt - Thai</b> đến Minh đường thì gia đình bất hòa, hại người tốn của.</div>
+                    </div>
                 </details>
             </div>
         </div>

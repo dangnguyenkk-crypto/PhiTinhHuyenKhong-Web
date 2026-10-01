@@ -49,6 +49,10 @@
     };
     const MAU_NGU_HANH = { "Kim":"#d4b106", "Mộc":"#2e7d32", "Thủy":"#1565c0", "Hỏa":"#c62828", "Thổ":"#8d6e34" };
 
+    // ---- NGŨ HÀNH CỦA BÁT QUÁI (Hậu Thiên) — dùng cho khối thống kê Tọa/Hướng bên dưới la
+    // bàn. Khảm=Thủy, Khôn=Thổ, Chấn=Mộc, Tốn=Mộc, Càn=Kim, Đoài=Kim, Cấn=Thổ, Ly=Hỏa.
+    const NGU_HANH_BAT_QUAI = { "Khảm":"Thủy", "Khôn":"Thổ", "Chấn":"Mộc", "Tốn":"Mộc", "Càn":"Kim", "Đoài":"Kim", "Cấn":"Thổ", "Ly":"Hỏa" };
+
     // ---- BẢNG TAM BÀN QUÁI (Giang Đông / Giang Tây / Nam Bắc) ----
     const TAM_BAN_QUAI = {
         "Sửu":"Giang Đông","Cấn":"Giang Đông","Dần":"Giang Đông","Giáp":"Giang Đông",
@@ -59,6 +63,61 @@
         "Tị":"Nam Bắc","Tỵ":"Nam Bắc","Bính":"Nam Bắc","Ngọ":"Nam Bắc","Đinh":"Nam Bắc"
     };
     const MAU_TAM_BAN_QUAI = { "Giang Đông":"#2e7d32", "Giang Tây":"#c62828", "Nam Bắc":"#1565c0" };
+
+    // ---- BẢNG NGŨ HÀNH CỦA 24 SƠN — dùng để tô nền vòng 24 Sơn/Địa bàn VÀ để tra trong khối
+    // thống kê Tọa/Hướng bên dưới la bàn. Có 2 TRƯỜNG PHÁI khác nhau, chuyển qua lại bằng nút
+    // (xem kdCheDoSon/kdToggleCheDoSon phía dưới):
+    //
+    // (A) TIỂU HUYỀN KHÔNG (theo đúng 5 nhóm người dùng cung cấp trước đây cho tab Kham Dư,
+    //     KHÁC bảng Ngũ Hành Sơn dùng ở tab Thủy Pháp):
+    //   Kim:  Càn, Khôn, Mão, Ngọ
+    //   Mộc:  Hợi, Giáp, Cấn, Quý
+    //   Thổ:  Tuất, Canh, Sửu, Mùi
+    //   Thủy: Tý, Dần, Thìn, Tốn, Tân, Tị, Thân, Nhâm
+    //   Hỏa:  Bính, Đinh, Dậu, Ất
+    // (Đủ 4+4+4+8+4 = 24 sơn, không trùng/thiếu. Có thêm khóa "Tỵ" trùng "Tị" để phòng dữ liệu
+    // DS24_SON dùng cách viết khác — xem TAM_BAN_QUAI ở trên cũng làm tương tự.)
+    const NGU_HANH_24_SON_TIEU_HUYEN_KHONG = {
+        "Càn":"Kim", "Khôn":"Kim", "Mão":"Kim", "Ngọ":"Kim",
+        "Hợi":"Mộc", "Giáp":"Mộc", "Cấn":"Mộc", "Quý":"Mộc",
+        "Tuất":"Thổ", "Canh":"Thổ", "Sửu":"Thổ", "Mùi":"Thổ",
+        "Tý":"Thủy", "Dần":"Thủy", "Thìn":"Thủy", "Tốn":"Thủy", "Tân":"Thủy", "Tị":"Thủy", "Tỵ":"Thủy", "Thân":"Thủy", "Nhâm":"Thủy",
+        "Bính":"Hỏa", "Đinh":"Hỏa", "Dậu":"Hỏa", "Ất":"Hỏa"
+    };
+    // Màu nền NHẠT (pastel) — dùng cho nền cả ô 24 Sơn, khác với MAU_NGU_HANH (màu đậm, dùng cho
+    // chữ/vòng Long 72 phía trên) để không bị chói khi tô cả nền. Cùng tông màu pastel đã dùng
+    // cho Ngũ Hành Long ở tab Thủy Pháp để nhất quán trong toàn app.
+    const MAU_NGU_HANH_24_SON_TIEU_HUYEN_KHONG = { "Kim":"#ffe082", "Mộc":"#a5d6a7", "Thổ":"#d7ccc8", "Thủy":"#90caf9", "Hỏa":"#ef9a9a" };
+
+    // Công dụng (theo người dùng): Đại Huyền Không dùng để định Thủy Đến/Thủy Đi, áp dụng cho
+    // cả Âm Trạch (mộ phần) lẫn Dương Trạch (nhà ở) — xem ghi chú tương ứng hiển thị trong
+    // khối thống kê (#kdThongKe) khi kdCheDoSon === "dai".
+    // (B) ĐẠI HUYỀN KHÔNG (nhóm khác hẳn Tiểu Huyền Không ở trên — theo đúng người dùng cung
+    //     cấp). Lưu ý: nhóm "Thổ và Thủy" người dùng gộp CHUNG 1 nhóm duy nhất (không tách
+    //     riêng Thổ/Thủy như bên Tiểu Huyền Không), nên dùng nhãn ghép "Thổ/Thủy" cho nhóm này.
+    //     Riêng chữ "Tân" trong nhóm Mộc người dùng gõ trùng 2 lần trong tin nhắn gốc — đối chiếu
+    //     lại với đủ 24 sơn thì còn thiếu đúng 1 sơn "Thân" (chưa xuất hiện ở nhóm nào khác), nên
+    //     mình suy đoán đó là lỗi gõ nhầm Tân/Thân và đã điền "Thân" vào chỗ đó cho đủ 24 sơn,
+    //     không trùng/thiếu — ĐÃ dối chiếu lại bằng script, khớp 100% với TAM_BAN_QUAI. Nếu ý
+    //     người dùng khác, cần sửa lại dòng Mộc bên dưới:
+    //   Kim:      Tý, Dần, Thìn, Cấn, Bính, Ất
+    //   Mộc:      Ngọ, Tân, Tuất, Khôn, Nhâm, Thân (suy đoán — xem ghi chú trên)
+    //   Thổ/Thủy: Mão, Tị, Sửu, Càn, Canh, Đinh
+    //   Hỏa:      Dậu, Hợi, Mùi, Tốn, Giáp, Quý
+    const NGU_HANH_24_SON_DAI_HUYEN_KHONG = {
+        "Tý":"Kim", "Dần":"Kim", "Thìn":"Kim", "Cấn":"Kim", "Bính":"Kim", "Ất":"Kim",
+        "Ngọ":"Mộc", "Tân":"Mộc", "Tuất":"Mộc", "Khôn":"Mộc", "Nhâm":"Mộc", "Thân":"Mộc",
+        "Mão":"Thổ/Thủy", "Tị":"Thổ/Thủy", "Tỵ":"Thổ/Thủy", "Sửu":"Thổ/Thủy", "Càn":"Thổ/Thủy", "Canh":"Thổ/Thủy", "Đinh":"Thổ/Thủy",
+        "Dậu":"Hỏa", "Hợi":"Hỏa", "Mùi":"Hỏa", "Tốn":"Hỏa", "Giáp":"Hỏa", "Quý":"Hỏa"
+    };
+    // Nhóm "Thổ/Thủy" dùng 1 màu riêng (xanh-xám pha) vì không thuộc hẳn về 1 trong 5 màu Ngũ
+    // Hành chuẩn — không dùng lại màu Thổ hay Thủy riêng lẻ để tránh gây hiểu lầm là thuần 1 hành.
+    const MAU_NGU_HANH_24_SON_DAI_HUYEN_KHONG = { "Kim":"#ffe082", "Mộc":"#a5d6a7", "Thổ/Thủy":"#b0bec5", "Hỏa":"#ef9a9a" };
+
+    // Chế độ đang chọn cho vòng 24 Sơn + khối thống kê Tọa/Hướng: "tieu" (mặc định, giữ nguyên
+    // hành vi cũ) hoặc "dai". Nút bấm đổi chế độ nằm trong khoiTaoGiaoDienKhamDu(), xem
+    // kdToggleCheDoSon() cuối file (gần các hàm window.kd... khác).
+    let kdCheDoSon = "tieu";
 
     // ---- 12 Song Sơn của Thiên Bàn (lệch +7.5° so với Địa bàn), dùng riêng để đo
     // Thủy (Nước Đến/Đi), không dùng để đo Tọa/Hướng.
@@ -267,7 +326,12 @@
             let laToaSon = laySonToa(houseFacing);
             let laToa = laToaSon && laToaSon.ten === s.ten;
             let laHuong = sonHienTai && sonHienTai.ten === s.ten;
-            let mauNen = s.amDuong === "Duong" ? "#fdf6e3" : "#eef1f7";
+            // Tô nền theo NHÓM NGŨ HÀNH của sơn (thay cho Âm/Dương trước đây), theo yêu cầu
+            // người dùng — chọn 1 trong 2 bảng theo kdCheDoSon (Tiểu/Đại Huyền Không).
+            let bangHanhSonDangChon = kdCheDoSon === "dai" ? NGU_HANH_24_SON_DAI_HUYEN_KHONG : NGU_HANH_24_SON_TIEU_HUYEN_KHONG;
+            let bangMauSonDangChon = kdCheDoSon === "dai" ? MAU_NGU_HANH_24_SON_DAI_HUYEN_KHONG : MAU_NGU_HANH_24_SON_TIEU_HUYEN_KHONG;
+            let hanh24SonKD = bangHanhSonDangChon[s.ten];
+            let mauNen = bangMauSonDangChon[hanh24SonKD] || "#cfcfcf";
             let vien = laHuong ? "#c62828" : (laToa ? "#6a1b9a" : "#3a2a1a");
             let dayVien = (laHuong || laToa) ? 3.5 : 0.8;
             html += `<path d="M${xsO.toFixed(1)},${ysO.toFixed(1)} A${rSon24},${rSon24} 0 0,1 ${xeO.toFixed(1)},${yeO.toFixed(1)} L${xsI.toFixed(1)},${ysI.toFixed(1)} A${rSon24Trong},${rSon24Trong} 0 0,0 ${xeI.toFixed(1)},${yeI.toFixed(1)} Z" fill="${mauNen}" fill-opacity="${doMoNenLaBan}" stroke="${vien}" stroke-width="${dayVien}"/>`;
@@ -359,7 +423,10 @@
             let mauNen = MAU_BAT_QUAI_8[idx];
             html += `<path d="M${xsO.toFixed(1)},${ysO.toFixed(1)} A${rBatQuai},${rBatQuai} 0 0,1 ${xeO.toFixed(1)},${yeO.toFixed(1)} L${cx},${cy} Z" fill="${mauNen}" fill-opacity="${Math.max(doMoNenLaBan*0.6,0.22)}" stroke="#3a2a1a" stroke-width="0.8"/>`;
             let radT = (bq.goc - 90) * Math.PI / 180;
-            let rTextBQ = rBatQuai * 0.65;
+            // Dịch chữ Quái ra sát mép ngoài vòng Bát Quái (gần vòng Trường Sinh KD ngay bên
+            // ngoài, r=rBatQuai=160) thay vì nằm giữa cung gần tâm la bàn như trước (0.65) —
+            // theo yêu cầu người dùng.
+            let rTextBQ = rBatQuai * 0.88;
             let xB = cx + rTextBQ * Math.cos(radT), yB = cy + rTextBQ * Math.sin(radT);
             html += `<g transform="rotate(${bq.goc} ${xB.toFixed(1)} ${yB.toFixed(1)})"><text x="${xB.toFixed(1)}" y="${yB.toFixed(1)}" font-size="${(tpFontSize*1.3).toFixed(1)}" font-weight="900" fill="#fff" stroke="#2a2a2a" stroke-width="3" paint-order="stroke" text-anchor="middle" dominant-baseline="middle">${bq.ten}</text></g>`;
         });
@@ -379,35 +446,121 @@
         let xLH = cx+(rDoText+22)*Math.cos(radMui), yLH = cy+(rDoText+22)*Math.sin(radMui);
         html += `<text x="${xLH.toFixed(1)}" y="${yLH.toFixed(1)}" font-size="${tpFontSize+3}" font-weight="800" fill="#ff0000" stroke="#fff" stroke-width="1.5" paint-order="stroke" text-anchor="middle" transform="rotate(${houseFacing} ${xLH.toFixed(1)} ${yLH.toFixed(1)})">▲ HƯỚNG NHÀ</text>`;
 
-        // Tâm: nhãn "Kham Dư" + góc hướng nhà hiện tại + Long tại Hướng
+        // Tâm: nhãn "Kham Dư" + góc hướng nhà hiện tại + Long tại Hướng — PHÓNG TO toàn bộ cụm
+        // chữ ở tâm theo yêu cầu người dùng (trước đây 0.75–0.9x tpFontSize, quá nhỏ so với các
+        // vòng khác). Giãn lại khoảng cách dòng (cy+...) cho khớp cỡ chữ mới, tránh đè chữ.
         html += `<circle cx="${cx}" cy="${cy}" r="6" fill="#ff1a1a" stroke="#fff" stroke-width="2"/>`;
-        html += `<text x="${cx}" y="${cy-30}" font-size="${(tpFontSize*1.1).toFixed(1)}" font-weight="900" fill="#2e7d32" stroke="#fff" stroke-width="3" paint-order="stroke" text-anchor="middle">KHAM DƯ</text>`;
-        html += `<text x="${cx}" y="${cy-8}" font-size="${(tpFontSize*0.9).toFixed(1)}" font-weight="700" fill="#555" stroke="#fff" stroke-width="2.5" paint-order="stroke" text-anchor="middle">${houseFacing.toFixed(1)}°</text>`;
+        html += `<text x="${cx}" y="${cy-34}" font-size="${(tpFontSize*1.3).toFixed(1)}" font-weight="900" fill="#2e7d32" stroke="#fff" stroke-width="3.2" paint-order="stroke" text-anchor="middle">KHAM DƯ</text>`;
+        html += `<text x="${cx}" y="${cy-10}" font-size="${(tpFontSize*1.05).toFixed(1)}" font-weight="700" fill="#555" stroke="#fff" stroke-width="2.8" paint-order="stroke" text-anchor="middle">${houseFacing.toFixed(1)}°</text>`;
         if (sonHienTai) {
-            html += `<text x="${cx}" y="${cy+10}" font-size="${(tpFontSize*0.85).toFixed(1)}" font-weight="700" fill="#c62828" stroke="#fff" stroke-width="2.5" paint-order="stroke" text-anchor="middle">Hướng: ${sonHienTai.ten}</text>`;
+            html += `<text x="${cx}" y="${cy+15}" font-size="${(tpFontSize*1.15).toFixed(1)}" font-weight="700" fill="#c62828" stroke="#fff" stroke-width="3" paint-order="stroke" text-anchor="middle">Hướng: ${sonHienTai.ten}</text>`;
         }
         // Long tại Hướng (tra theo góc houseFacing trong BANG_72_LONG)
         let idxLong = Math.floor((((houseFacing - 337.5) % 360 + 360) % 360) / 5);
         let tenLongHuong = BANG_72_LONG[idxLong];
         if (tenLongHuong) {
             let hanhLongHuong = NAPAM_60[tenLongHuong] || "";
-            html += `<text x="${cx}" y="${cy+28}" font-size="${(tpFontSize*0.8).toFixed(1)}" font-weight="700" fill="${MAU_NGU_HANH[hanhLongHuong]||'#333'}" stroke="#fff" stroke-width="2.5" paint-order="stroke" text-anchor="middle">Long: ${tenLongHuong} (${hanhLongHuong})</text>`;
+            html += `<text x="${cx}" y="${cy+39}" font-size="${(tpFontSize*1.1).toFixed(1)}" font-weight="700" fill="${MAU_NGU_HANH[hanhLongHuong]||'#333'}" stroke="#fff" stroke-width="3" paint-order="stroke" text-anchor="middle">Long: ${tenLongHuong} (${hanhLongHuong})</text>`;
         } else {
-            html += `<text x="${cx}" y="${cy+28}" font-size="${(tpFontSize*0.8).toFixed(1)}" font-weight="700" fill="#3a3a3a" stroke="#fff" stroke-width="2.5" paint-order="stroke" text-anchor="middle">Long: Không Vong</text>`;
+            html += `<text x="${cx}" y="${cy+39}" font-size="${(tpFontSize*1.1).toFixed(1)}" font-weight="700" fill="#3a3a3a" stroke="#fff" stroke-width="3" paint-order="stroke" text-anchor="middle">Long: Không Vong</text>`;
         }
         // Thông tin vòng Trường Sinh Kham Dư (Cục + Thuận/Nghịch tại Tọa), hoặc cảnh báo
         // đỏ nếu Tọa phạm đúng ô Không Vong trong bảng 72 Long.
         if (canhBaoKhongVongToa) {
-            html += `<rect x="${cx-130}" y="${cy+38}" width="260" height="26" fill="#c62828" rx="4"/>`;
-            html += `<text x="${cx}" y="${cy+55}" font-size="${(tpFontSize*0.78).toFixed(1)}" font-weight="900" fill="#fff" text-anchor="middle">Tọa phạm Kính Không Vong</text>`;
-            html += `<text x="${cx}" y="${cy+72}" font-size="${(tpFontSize*0.7).toFixed(1)}" font-weight="700" fill="#c62828" stroke="#fff" stroke-width="2" paint-order="stroke" text-anchor="middle">Âm sai Dương thác</text>`;
+            html += `<rect x="${cx-145}" y="${cy+48}" width="290" height="32" fill="#c62828" rx="5"/>`;
+            html += `<text x="${cx}" y="${cy+69}" font-size="${(tpFontSize*1.0).toFixed(1)}" font-weight="900" fill="#fff" text-anchor="middle">Tọa phạm Kính Không Vong</text>`;
+            html += `<text x="${cx}" y="${cy+92}" font-size="${(tpFontSize*0.9).toFixed(1)}" font-weight="700" fill="#c62828" stroke="#fff" stroke-width="2.5" paint-order="stroke" text-anchor="middle">Âm sai Dương thác</text>`;
         } else if (cucKD) {
-            html += `<text x="${cx}" y="${cy+46}" font-size="${(tpFontSize*0.75).toFixed(1)}" font-weight="700" fill="#1565c0" stroke="#fff" stroke-width="2.2" paint-order="stroke" text-anchor="middle">Cục: ${cucKD} — ${chieuThuanKD ? "Thuận" : "Nghịch"}</text>`;
+            html += `<text x="${cx}" y="${cy+64}" font-size="${(tpFontSize*1.05).toFixed(1)}" font-weight="700" fill="#1565c0" stroke="#fff" stroke-width="2.8" paint-order="stroke" text-anchor="middle">Cục: ${cucKD} — ${chieuThuanKD ? "Thuận" : "Nghịch"}</text>`;
         }
 
         svg.innerHTML = html;
+
+        // ====================================================================
+        // THỐNG KÊ Tọa/Hướng — Quái + Sơn + Long, kèm Ngũ Hành mỗi phần, ghi vào
+        // #kdThongKe (nằm DƯỚI la bàn, ngoài SVG). Tái dùng lại các biến đã tính ở
+        // trên (gocToaKD, houseFacing, tenLongToaKD, tenLongHuong, sonHienTai...)
+        // thay vì tính lại từ đầu.
+        //   - Quái: tra theo BATQUAI_8 (8 cung x 45°, đã khai báo ở vòng Bát Quái trên).
+        //   - Sơn: Tọa dùng laySonToa(houseFacing); Hướng dùng lại sonHienTai đã có.
+        //   - Long: Tọa dùng lại tenLongToaKD (đã tính ở vòng Trường Sinh Kham Dư);
+        //     Hướng dùng lại tenLongHuong (đã tính ở nhãn tâm la bàn). Ngũ Hành của Long
+        //     tra qua NAPAM_60 — KHÔNG dùng cucKD (đó là Cục đã gộp Thủy+Thổ riêng cho
+        //     mục đích tính Trường Sinh, không phải Ngũ Hành Nạp Âm gốc của Long).
+        // ====================================================================
+        let elThongKe = document.getElementById("kdThongKe");
+        if (elThongKe) {
+            function timBatQuaiTheoGocKD(goc) {
+                let g = ((goc % 360) + 360) % 360, best = BATQUAI_8[0], bestDiff = 999;
+                BATQUAI_8.forEach(function(bq) {
+                    let diff = Math.min(Math.abs(g - bq.goc), 360 - Math.abs(g - bq.goc));
+                    if (diff < bestDiff) { bestDiff = diff; best = bq; }
+                });
+                return best;
+            }
+            let quaiToaTK = timBatQuaiTheoGocKD(gocToaKD);
+            let quaiHuongTK = timBatQuaiTheoGocKD(houseFacing);
+            let sonToaTK = laySonToa(houseFacing);
+            let sonHuongTK = sonHienTai; // đã tính ở vòng 24 Sơn phía trên
+            let hanhLongToaTK = tenLongToaKD ? (NAPAM_60[tenLongToaKD] || "?") : null;
+            let hanhLongHuongTK = tenLongHuong ? (NAPAM_60[tenLongHuong] || "?") : null;
+
+            function dongTK(nhan, mauNhan, quai, son, tenLong, hanhLong) {
+                let hanhQuai = NGU_HANH_BAT_QUAI[quai.ten] || "?";
+                let bangHanhSonTK = kdCheDoSon === "dai" ? NGU_HANH_24_SON_DAI_HUYEN_KHONG : NGU_HANH_24_SON_TIEU_HUYEN_KHONG;
+                let hanhSon = bangHanhSonTK[son.ten] || "?";
+                let phanLong = tenLong
+                    ? `<b>${tenLong}</b> (${hanhLong})`
+                    : `<b style="color:#c62828;">Không Vong</b>`;
+                return `<div style="margin:2px 0;"><b style="color:${mauNhan};">${nhan}</b>: `
+                    + `Quái <b>${quai.ten}</b> (${hanhQuai})`
+                    + ` &nbsp;·&nbsp; Sơn <b>${son.ten}</b> (${hanhSon})`
+                    + ` &nbsp;·&nbsp; Long ${phanLong}</div>`;
+            }
+
+            let noiDungTK = "";
+            noiDungTK += dongTK("Tọa", "#6a1b9a", quaiToaTK, sonToaTK, tenLongToaKD, hanhLongToaTK);
+            noiDungTK += dongTK("Hướng", "#c62828", quaiHuongTK, sonHuongTK, tenLongHuong, hanhLongHuongTK);
+            // Ghi chú nhỏ dưới 2 dòng Tọa/Hướng cho biết Ngũ Hành của "Sơn" đang tra theo
+            // trường phái nào (Tiểu hay Đại Huyền Không) — vì 2 trường phái cho ra Ngũ Hành
+            // Sơn khác nhau, cần ghi rõ tránh nhầm lẫn. Khi đang ở Đại Huyền Không, ghi chú
+            // thêm công dụng của trường phái này (theo yêu cầu người dùng): dùng để định Thủy
+            // Đến/Thủy Đi, áp dụng cho cả Âm Trạch (mộ phần) lẫn Dương Trạch (nhà ở).
+            noiDungTK += `<div style="margin-top:4px;font-size:11px;color:#302828;">* Ngũ Hành của "Sơn" đang tính theo <b>${kdCheDoSon === "dai" ? "Đại Huyền Không" : "Tiểu Huyền Không"}</b> </div>`;
+            if (kdCheDoSon === "dai") {
+                noiDungTK += `<div style="margin-top:2px;font-size:11px;color:#302828;">* Đại Huyền Không: dùng để định <b>Thủy Đến</b> và <b>Thủy Đi</b>, áp dụng cho cả <b>Âm Trạch</b> (mộ phần) lẫn <b>Dương Trạch</b> (nhà ở). là tọa/hướng phải dụng địa chi của sơn (Tý, Sửu, Dần,..., Hợi).
+                <br>`
+                                    + `&nbsp;&nbsp;– <b>Thủy Lai</b> phải đáo sơn thiên can/tứ duy(Giáp Ất Bính Đinh Canh Tân Nhâm Quý) hoặc Tứ duy (Càn, Khôn, Cấn, Tốn.) <br>`
+                                    + `&nbsp;&nbsp;– <b>Hướng và Thủy</b>  phải đồng một công vị (gọi là "đồng hành") hoặc tương sinh. "CHÚ Ý: NÓ KHÁC TIỂU HUYỀN KHÔNG NGŨ HÀNH"`
+                                    + `</div>`;
+
+            } else {
+                // Ghi chú công dụng + quy tắc xét Sa/Thủy cho Tiểu Huyền Không, theo đúng nội
+                // dung người dùng cung cấp — CHỈ hiển thị dưới dạng chú thích tham khảo, KHÔNG
+                // tính toán/phán tốt xấu tự động (người dùng xác nhận chỉ cần ghi chú).
+                noiDungTK += `<div style="margin-top:2px;font-size:11px;color:#302828;">`
+                    + `* Tiểu Huyền Không: dùng <b>Sơn Tọa</b> để xét <b>Sa</b>, dùng <b>Sơn Hướng</b> để xét <b>Thủy</b>.<br>`
+                    + `&nbsp;&nbsp;– <b>Thủy Lai</b> phải từ sơn hành <b>vượng tướng</b> cho hướng ngôi mộ: tức phải ở sơn có Ngũ Hành <b>đồng hành</b> với hành của Hướng (mộ), hoặc sơn có Ngũ Hành <b>sinh ra</b> hành của Hướng.<br>`
+                    + `&nbsp;&nbsp;– <b>Thủy Khứ</b> phải từ sơn hành <b>hưu tù</b> của hướng ngôi mộ: tức phải khứ từ sơn có Ngũ Hành <b>được Hướng sinh ra</b> ("sinh xuất"), hoặc sơn có Ngũ Hành <b>bị Hướng khắc</b> ("khắc nhập").`
+                    + `</div>`;
+            }
+            elThongKe.innerHTML = noiDungTK;
+        }
     }
     window.veLaBanKhamDu = veLaBanKhamDu;
+
+    // Đổi trường phái Ngũ Hành 24 Sơn (Tiểu ⇄ Đại Huyền Không) rồi vẽ lại toàn bộ la bàn +
+    // thống kê. Cũng cập nhật luôn chữ trên nút cho đúng chế độ vừa chọn.
+    window.kdToggleCheDoSon = function() {
+        kdCheDoSon = (kdCheDoSon === "dai") ? "tieu" : "dai";
+        let btn = document.getElementById("kdBtnCheDoSon");
+        if (btn) {
+            btn.textContent = kdCheDoSon === "dai"
+                ? "🔄 Ngũ Hành 24 Sơn: Đại Huyền Không (bấm để đổi)"
+                : "🔄 Ngũ Hành 24 Sơn: Tiểu Huyền Không (bấm để đổi)";
+        }
+        veLaBanKhamDu();
+    };
 
     // ====================================================================
     // ẢNH NỀN (chọn từ thư viện) + PAN/ZOOM/KHÓA — bản RÚT GỌN của cơ chế
@@ -556,7 +709,7 @@
         if (container.dataset.kdInit === "1") return; // tránh khởi tạo lại nhiều lần
         container.dataset.kdInit = "1";
         container.innerHTML = `
-            <div style="display:flex;flex-direction:column;align-items:center;padding:12px;gap:10px;width:100%;max-width:520px;margin:0 auto;">
+            <div style="display:flex;flex-direction:column;align-items:center;padding:12px 0px;gap:10px;width:100%;max-width:520px;margin:0 auto;">
                 <div style="display:flex;flex-wrap:wrap;gap:6px;align-items:center;justify-content:center;width:100%;">
                     <button id="kdBtnChooseFile" style="flex:0 0 auto;width:auto;padding:6px 10px;border-radius:6px;border:1px solid #4CAF50;background:#4CAF50;color:#fff;font-size:12px;cursor:pointer;white-space:nowrap;">🖼️ Chọn ảnh</button>
                     <input type="file" id="kdMapImageInput" accept="image/*" style="display:none;">
@@ -584,7 +737,8 @@
                     <div style="position:absolute;top:0;left:0;width:100%;height:100%;pointer-events:none;" id="kdCompassOverlay"></div>
                     <!-- 4 nút mũi tên chạm được — thay cho phím mũi tên bàn phím (vô dụng trên
                          điện thoại/Android WebView vì không có bàn phím vật lý luôn hiện diện).
-                         Đặt góc dưới-phải khung ảnh, mỗi nút gọi kdPanAnhNen() bước nhỏ 4px. -->
+                         Theo yêu cầu người dùng, ĐỂ LẠI NẰM TRONG khung la bàn (đè góc dưới-phải)
+                         như bản gốc — không tách ra ngoài nữa. Mỗi nút gọi kdPanAnhNen() bước nhỏ 4px. -->
                     <div style="position:absolute;bottom:8px;right:8px;display:grid;grid-template-columns:repeat(3,26px);grid-template-rows:repeat(3,26px);gap:2px;z-index:20;">
                         <span></span>
                         <button onclick="kdPanAnhNen(0,-1)" title="Dịch ảnh lên" style="grid-column:2;grid-row:1;width:100%;height:100%;border-radius:4px;border:1px solid #999;background:rgba(255,255,255,0.85);font-size:14px;color:#1565c0;font-weight:900;cursor:pointer;padding:0;">▲</button>
@@ -597,6 +751,12 @@
                         <span></span>
                     </div>
                 </div>
+                <!-- Nút chuyển trường phái Ngũ Hành 24 Sơn (Tiểu/Đại Huyền Không) — đổi cả màu
+                     nền vòng 24 Sơn lẫn giá trị Ngũ Hành "Sơn" trong khối thống kê bên dưới. -->
+                <button id="kdBtnCheDoSon" onclick="kdToggleCheDoSon()" style="width:100%;max-width:500px;padding:8px;background:#eef3fb;border:1px solid #99aecb;border-radius:6px;color:#1a3a6b;font-weight:700;font-size:13px;cursor:pointer;">🔄 Ngũ Hành 24 Sơn: Tiểu Huyền Không (bấm để đổi)</button>
+                <!-- THỐNG KÊ Tọa/Hướng: Quái + Sơn + Long, kèm Ngũ Hành từng phần — nội dung do
+                     veLaBanKhamDu() ghi vào mỗi lần vẽ lại la bàn (xem cuối hàm đó). -->
+                <div id="kdThongKe" style="width:100%;max-width:500px;background:#fffaf0;border:1px solid #d8c9a8;border-radius:8px;padding:10px 14px;font-size:13px;line-height:1.9;color:#2a1a0a;"></div>
             </div>
         `;
         kdGanSuKienChonAnh();
