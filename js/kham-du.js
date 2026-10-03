@@ -551,8 +551,22 @@
 
     // Đổi trường phái Ngũ Hành 24 Sơn (Tiểu ⇄ Đại Huyền Không) rồi vẽ lại toàn bộ la bàn +
     // thống kê. Cũng cập nhật luôn chữ trên nút cho đúng chế độ vừa chọn.
+    // Hàng chip chú thích màu nền vòng 24 Sơn theo Ngũ Hành — lấy ĐÚNG bảng màu mà veLaBanKhamDu()
+    // đang dùng (bangMauSonDangChon), nên đổi Tiểu/Đại Huyền Không thì chip đổi theo.
+    function kdVeChuThichNguHanh() {
+        let el = document.getElementById("kdChuThichNguHanh");
+        if (!el) return;
+        let bangMau = kdCheDoSon === "dai" ? MAU_NGU_HANH_24_SON_DAI_HUYEN_KHONG : MAU_NGU_HANH_24_SON_TIEU_HUYEN_KHONG;
+        let thuTu = ["Kim", "Mộc", "Thủy", "Hỏa", "Thổ", "Thổ/Thủy"];
+        el.innerHTML = thuTu.filter(function(h) { return bangMau[h]; }).map(function(h) {
+            return '<span style="display:inline-flex;align-items:center;gap:5px;padding:2px 8px 2px 3px;border:1px solid #d8c9a8;border-radius:12px;background:#fff;font-size:12px;font-weight:700;color:#2a1a0a;white-space:nowrap;">'
+                + '<span style="display:inline-block;width:16px;height:16px;border-radius:50%;background:' + bangMau[h] + ';border:1px solid #3a2a1a;"></span>' + h + '</span>';
+        }).join("");
+    }
+
     window.kdToggleCheDoSon = function() {
         kdCheDoSon = (kdCheDoSon === "dai") ? "tieu" : "dai";
+        kdVeChuThichNguHanh();
         let btn = document.getElementById("kdBtnCheDoSon");
         if (btn) {
             btn.textContent = kdCheDoSon === "dai"
@@ -754,6 +768,8 @@
                 <!-- Nút chuyển trường phái Ngũ Hành 24 Sơn (Tiểu/Đại Huyền Không) — đổi cả màu
                      nền vòng 24 Sơn lẫn giá trị Ngũ Hành "Sơn" trong khối thống kê bên dưới. -->
                 <button id="kdBtnCheDoSon" onclick="kdToggleCheDoSon()" style="width:100%;max-width:500px;padding:8px;background:#eef3fb;border:1px solid #99aecb;border-radius:6px;color:#1a3a6b;font-weight:700;font-size:13px;cursor:pointer;">🔄 Ngũ Hành 24 Sơn: Tiểu Huyền Không (bấm để đổi)</button>
+                <!-- Chú thích màu Ngũ Hành của vòng 24 Sơn — nội dung do kdVeChuThichNguHanh() ghi vào. -->
+                <div id="kdChuThichNguHanh" style="width:100%;max-width:500px;display:flex;flex-wrap:wrap;justify-content:center;gap:6px;"></div>
                 <!-- THỐNG KÊ Tọa/Hướng: Quái + Sơn + Long, kèm Ngũ Hành từng phần — nội dung do
                      veLaBanKhamDu() ghi vào mỗi lần vẽ lại la bàn (xem cuối hàm đó). -->
                 <div id="kdThongKe" style="width:100%;max-width:500px;background:#fffaf0;border:1px solid #d8c9a8;border-radius:8px;padding:10px 14px;font-size:13px;line-height:1.9;color:#2a1a0a;"></div>
@@ -771,6 +787,7 @@
             if (isNaN(kdDoMoNen)) kdDoMoNen = 0.5;
             veLaBanKhamDu();
         });
+        kdVeChuThichNguHanh();
         veLaBanKhamDu();
     }
 
