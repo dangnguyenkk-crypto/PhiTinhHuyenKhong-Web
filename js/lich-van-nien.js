@@ -227,21 +227,39 @@ const LICH_VAN_NIEN = (function() {
         };
     }
 
-    function getGioTotXau(dayCan) {
-        let scores = GIO_TOT_THEO_CAN[dayCan] || GIO_TOT_THEO_CAN["Giáp"];
-        let result = [];
-        for (let i = 0; i < 12; i++) {
-            result.push({
-                chi: GIO_CHI[i],
-                khung: GIO_KHUNG[i],
-                diem: scores[i],
-                isTot: scores[i] >= 2,
-                isXau: scores[i] === 0
-            });
+        // hang: thứ hạng tốt (1 = tốt nhất); diem: số sao (0 = Hắc Đạo)
+        const GIO_THAN = [
+            {ten:"Thanh Long", hang:1,  diem:3}, {ten:"Minh Đường", hang:2,  diem:3},
+            {ten:"Thiên Hình", hang:99, diem:0}, {ten:"Chu Tước",  hang:99, diem:0},
+            {ten:"Kim Quỹ",   hang:3,  diem:2}, {ten:"Bảo Quang",  hang:4,  diem:2},
+            {ten:"Bạch Hổ",   hang:99, diem:0}, {ten:"Ngọc Đường", hang:5,  diem:1},
+            {ten:"Thiên Lao", hang:99, diem:0}, {ten:"Huyền Vũ",   hang:99, diem:0},
+            {ten:"Tư Mệnh",   hang:6,  diem:1}, {ten:"Câu Trận",   hang:99, diem:0}
+        ];
+
+        function getGioTotXau(dayChi) {
+            let chiIdx = CHI.indexOf(dayChi);
+            if (chiIdx < 0) chiIdx = 0;
+            // Giờ Thanh Long: Tý/Ngọ→Thân, Sửu/Mùi→Tuất, Dần/Thân→Tý, Mão/Dậu→Dần, Thìn/Tuất→Thìn, Tỵ/Hợi→Ngọ
+            let batDau = (8 + 2 * (chiIdx % 6)) % 12;
+            let result = [];
+            for (let i = 0; i < 12; i++) {
+                let gioIdx = (batDau + i) % 12;
+                let than = GIO_THAN[i];
+                result.push({
+                    chi: GIO_CHI[gioIdx],
+                    khung: GIO_KHUNG[gioIdx],
+                    sao: than.ten,
+                    hang: than.hang,
+                    diem: than.diem,
+                    isTot: than.diem >= 1,
+                    isXau: than.diem === 0,
+                    _idx: gioIdx
+                });
+            }
+            // Giờ tốt xếp theo thứ hạng (Thanh Long trước), giờ xấu xếp theo thứ tự Tý → Hợi
+            return result.sort((a, b) => (a.hang - b.hang) || (a._idx - b._idx));
         }
-        // Sắp xếp: giờ tốt trước, sau đó trung bình, xấu cuối
-        return result.sort((a, b) => b.diem - a.diem);
-    }
 
     function formatLunarDay(day) {
         return day <= 10 ? "mồng " + day : "ngày " + day;
@@ -266,7 +284,7 @@ const LICH_VAN_NIEN = (function() {
             let zodiac = getZodiacAnimal(lunar.year);
             let hoangDao = getNgayHoangDao(day, month, year);
             let solarTerm = getCurrentSolarTerm(day, month, year);
-            let gioTot = getGioTotXau(dayCan);
+            let gioTot = getGioTotXau(canChiDay.split(" ")[1]);
             let thu = THU_NAMES[new Date(year, month - 1, day).getDay()];
             // Tính chi giờ hiện tại
             let chiGioHienTai = GIO_CHI[Math.floor(((hour + 1) % 24) / 2)];
@@ -302,24 +320,15 @@ const LICH_VAN_NIEN = (function() {
 // ====================================================================
 // UI RENDERER — Giao diện 2 cột Dương-Âm lịch + Giờ tốt
 // ====================================================================
+const ICON_CON_GIAP = {
+    "Chuột": "🐭", "Trâu": "🐂", "Hổ": "🐯", "Mèo": "🐱", "Rồng": "🐲", "Rắn": "🐍",
+    "Ngựa": "🐴", "Dê": "🐐", "Khỉ": "🐵", "Gà": "🐔", "Chó": "🐶", "Lợn": "🐷"
+};
 
 function taoSaoRating(diem) {
-    // diem: 0-3, tạo 3 sao: đầy = tốt, nửa = trung bình, rỗng = xấu
-    let saoVang = diem >= 2 ? 1 : 0;
-    let saoNua = diem === 1 ? 1 : 0;
-    let saoXam = 3 - saoVang - saoNua;
-
-    let html = '';
-    for (let i = 0; i < saoVang; i++) {
-        html += '★';
-    }
-    for (let i = 0; i < saoNua; i++) {
-        html += '⯪'; // half star
-    }
-    for (let i = 0; i < saoXam; i++) {
-        html += '☆';
-    }
-    return html;
+    // diem: 0-3 → số sao vàng đúng bằng diem, phần còn lại là sao rỗng (tổng 3 sao)
+    let soSao = Math.max(0, Math.min(3, diem));
+    return '★'.repeat(soSao) + '☆'.repeat(3 - soSao);
 }
 
 function taoHTMLLichVanNien(info, year, month) {
@@ -350,46 +359,44 @@ function taoHTMLLichVanNien(info, year, month) {
         dayOptions += `<option value="${d}" ${d === selectedDay ? 'selected' : ''}>${d}</option>`;
     }
 
-    // Tạo lịch tháng grid
-    let calendarGrid = taoLichThangGrid(year, month, selectedDay);
+      // Tạo lịch tháng grid
+      let calendarGrid = taoLichThangGrid(year, month, selectedDay);
 
-    // Tạo danh sách giờ tốt
-    let gioTotHTML = '';
-    let gioTotList = info.gioTot.filter(g => g.diem >= 2);
-    let gioXauList = info.gioTot.filter(g => g.diem === 0);
+      // Tạo danh sách giờ tốt
+      let gioTotHTML = '';
+      let gioTotList = info.gioTot.filter(g => g.diem >= 1);
+      let gioXauList = info.gioTot.filter(g => g.diem === 0);
 
-    if (gioTotList.length > 0) {
-        gioTotHTML += `<div style="margin-bottom:12px;"><div style="color:#d32f2f;font-size:13px;font-weight:bold;margin-bottom:8px;">⭐ GIỜ TỐT HÔM NAY</div>`;
-        gioTotHTML += `<div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;">`;
-        for (let g of gioTotList) {
-            let stars = taoSaoRating(g.diem);
-            gioTotHTML += `
-                <div style="display:flex;align-items:center;gap:6px;padding:6px 8px;background:#fff8f0;border-radius:6px;border:1px solid #e3d5c0;">
-                    <span style="color:#d32f2f;font-size:11px;">●</span>
-                    <span style="font-size:13px;font-weight:600;color:#333;">${g.chi} (${g.khung})</span>
-                    <span style="margin-left:auto;font-size:14px;color:#ff9800;letter-spacing:1px;">${stars}</span>
-                </div>`;
-        }
-        gioTotHTML += `</div></div>`;
-    }
+      if (gioTotList.length > 0) {
+          gioTotHTML += `<div style="margin-bottom:10px;"><div style="color:#d32f2f;font-size:12px;font-weight:bold;margin-bottom:6px;">⭐ GIỜ TỐT</div>`;
+          gioTotHTML += `<div style="display:grid;grid-template-columns:1fr 1fr;gap:4px;">`;
+          for (let g of gioTotList) {
+              let stars = taoSaoRating(g.diem);
+              gioTotHTML += `
+                  <div style="display:flex;flex-direction:column;gap:2px;padding:6px 8px;background:#fff8f0;border-radius:6px;border:1px solid #e3d5c0;">
+                      <span style="font-size:12px;font-weight:600;color:#333;white-space:nowrap;">${g.chi} (${g.khung})</span>
+                      <span style="font-size:12px;color:#e65100;font-weight:600;white-space:nowrap;">${g.sao} <span style="font-size:13px;color:#ff9800;letter-spacing:1px;">${stars}</span></span>
+                  </div>`;
+          }
+          gioTotHTML += `</div></div>`;
+      }
 
-    // Tạo danh sách giờ xấu
-    let gioXauHTML = '';
-    if (gioXauList.length > 0) {
-        gioXauHTML += `<div style="margin-bottom:12px;"><div style="color:#666;font-size:13px;font-weight:bold;margin-bottom:8px;">⚠️ GIỜ NÊN TRÁNH</div>`;
-        gioXauHTML += `<div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;">`;
-        for (let g of gioXauList) {
-            gioXauHTML += `
-                <div style="display:flex;align-items:center;gap:6px;padding:6px 8px;background:#f5f5f5;border-radius:6px;border:1px solid #ddd;">
-                    <span style="color:#999;font-size:11px;">●</span>
-                    <span style="font-size:13px;color:#666;">${g.chi} (${g.khung})</span>
-                    <span style="margin-left:auto;font-size:14px;color:#ccc;letter-spacing:1px;">☆☆☆</span>
-                </div>`;
-        }
-        gioXauHTML += `</div></div>`;
-    }
+      // Tạo danh sách giờ xấu
+      let gioXauHTML = '';
+      if (gioXauList.length > 0) {
+          gioXauHTML += `<div style="margin-bottom:12px;"><div style="color:#666;font-size:12px;font-weight:bold;margin-bottom:6px;">⚠️ GIỜ NÊN TRÁNH</div>`;
+          gioXauHTML += `<div style="display:grid;grid-template-columns:1fr 1fr;gap:4px;">`;
+          for (let g of gioXauList) {
+              gioXauHTML += `
+                  <div style="display:flex;flex-direction:column;gap:2px;padding:6px 8px;background:#f5f5f5;border-radius:6px;border:1px solid #ddd;">
+                      <span style="font-size:12px;font-weight:600;color:#666;white-space:nowrap;">${g.chi} (${g.khung})</span>
+                      <span style="font-size:12px;color:#999;white-space:nowrap;">${g.sao}</span>
+                  </div>`;
+          }
+          gioXauHTML += `</div></div>`;
+      }
 
-    return `
+      return `
     <div id="lichVanNienWrapper" style="max-width:500px;margin:0 auto;padding:12px;">
 
         <!-- Header chọn ngày -->
@@ -482,7 +489,7 @@ function taoHTMLLichVanNien(info, year, month) {
 
         <!-- Hoàng đạo + Con giáp -->
         <div style="background:#fff;border:1px solid #e3d5c0;border-radius:10px;padding:12px;margin-bottom:12px;box-shadow:0 1px 4px rgba(0,0,0,0.06);display:flex;justify-content:space-between;align-items:center;">
-            <span style="font-size:13px;color:#8B4513;font-weight:600;">🐕 ${info.zodiacAnimal}</span>
+            <span style="font-size:13px;color:#8B4513;font-weight:600;">${ICON_CON_GIAP[info.zodiacAnimal] || '🐾'} Năm ${info.zodiacAnimal}</span>
             <span style="font-size:13px;font-weight:bold;padding:4px 12px;border-radius:20px;${info.hoangDao.isHoangDao ? 'background:#e8f5e9;color:#2e7d32;' : 'background:#ffebee;color:#c62828;'}">
                 ${info.hoangDao.isHoangDao ? '✓' : '⚠'} ${info.hoangDao.text}
             </span>
@@ -539,8 +546,18 @@ function taoLichThangGrid(year, month, selectedDay) {
         </div>`;
     }
 
-    // Ngày trong tháng
-    for (let d = 1; d <= daysInMonth; d++) {
+        // 10 ngày trai (Phật giáo): mồng 1, 8, 14, 15, 18, 23, 24 và 3 ngày cuối tháng âm lịch
+        const NGAY_TRAI = [1, 8, 14, 15, 18, 23, 24];
+
+        // Tính sẵn âm lịch cho các ngày trong tháng + 3 ngày sau (để biết 3 ngày cuối tháng âm)
+        let lichCache = {};
+        for (let k = 1; k <= daysInMonth + 3; k++) {
+            let dt = new Date(year, month - 1, k);
+            lichCache[k] = LICH_VAN_NIEN.getFullInfo(dt.getDate(), dt.getMonth() + 1, dt.getFullYear());
+        }
+
+        // Ngày trong tháng
+        for (let d = 1; d <= daysInMonth; d++) {
         let isSelected = d === selectedDay;
         let isToday = false;
         let now = new Date();
@@ -548,8 +565,10 @@ function taoLichThangGrid(year, month, selectedDay) {
             isToday = true;
         }
 
-        // Tính âm lịch cho ngày này
-        let lunarInfo = LICH_VAN_NIEN.getFullInfo(d, month, year);
+        // Âm lịch cho ngày này (lấy từ cache đã tính sẵn)
+        let lunarInfo = lichCache[d];
+        let laCuoiThangAm = [1, 2, 3].some(k => lichCache[d + k] && lichCache[d + k].lunarDayNum === 1);
+        let laNgayTrai = NGAY_TRAI.indexOf(lunarInfo.lunarDayNum) !== -1 || laCuoiThangAm;
         let lunarDayMatch = lunarInfo.lunarDate.match(/(mồng|ngày)\s*(\d+)/);
         let lunarDayNum = lunarDayMatch ? lunarDayMatch[2] : "";
         let isLunar1 = lunarDayNum === "1";
@@ -564,12 +583,16 @@ function taoLichThangGrid(year, month, selectedDay) {
         // Ngày hoàng đạo indicator
         let hoangDaoDot = "";
         if (lunarInfo.hoangDao.isHoangDao && !isSelected) {
-            hoangDaoDot = `<div style="position:absolute;top:2px;right:2px;width:5px;height:5px;background:#4CAF50;border-radius:50%;"></div>`;
+            hoangDaoDot = `<div style="position:absolute;top:2px;right:2px;width:5px;height:5px;background:#FBC02D;border-radius:50%;"></div>`;
         }
+
+        let traiIcon = laNgayTrai
+            ? `<div style="position:absolute;top:1px;left:2px;font-size:10px;line-height:1;" title="Ngày trai">🪷</div>`
+            : "";
 
         daysHTML += `<div onclick="chonNgayTrongThang(${d},${month},${year})" style="aspect-ratio:1;background:${bgColor};border:1.5px solid ${borderColor};border-radius:6px;padding:2px;cursor:pointer;position:relative;transition:all 0.15s;${isSelected?'box-shadow:0 2px 6px rgba(76,175,80,0.3);transform:scale(1.05);':''}"
             onmouseover="if(!this.style.transform.includes('scale'))this.style.transform='scale(1.03)'" onmouseout="if(!this.style.transform.includes('1.05'))this.style.transform='scale(1)'">
-            ${hoangDaoDot}
+            ${hoangDaoDot}${traiIcon}
             <div style="font-size:12px;font-weight:${isToday||isSelected?'bold':'normal'};color:${textColor};text-align:right;">${d}</div>
             <div style="font-size:9px;color:${lunarColor};text-align:center;margin-top:1px;font-weight:${lunarWeight};">${lunarDayNum}</div>
         </div>`;
@@ -595,7 +618,10 @@ function taoLichThangGrid(year, month, selectedDay) {
             <div style="width:8px;height:8px;background:#e8f5e9;border:1.5px solid #4CAF50;border-radius:2px;"></div> Hôm nay
         </div>
         <div style="display:flex;align-items:center;gap:4px;font-size:10px;color:#666;">
-            <div style="width:6px;height:6px;background:#4CAF50;border-radius:50%;"></div> Hoàng đạo
+            <div style="width:6px;height:6px;background:#FBC02D;border-radius:50%;"></div> Hoàng đạo
+        </div>
+        <div style="display:flex;align-items:center;gap:4px;font-size:10px;color:#666;">
+            <span style="font-size:10px;">🪷</span> Ngày trai
         </div>
         <div style="display:flex;align-items:center;gap:4px;font-size:10px;color:#666;">
             <span style="color:#d32f2f;font-weight:bold;font-size:9px;">1</span> Mồng 1 / Rằm

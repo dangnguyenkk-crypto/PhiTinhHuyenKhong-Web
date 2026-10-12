@@ -502,13 +502,53 @@
   // 8 cung bát quái + Trung cung (tên cung/%/S-H-V/Thành Môn/từ khóa/Niên tinh) sẽ đặt vào ĐÚNG TÂM
   // Ô VUÔNG lưới 3x3 tương ứng thay vì trên biên nhà theo bearing — theo yêu cầu Ka: xem thông tin
   // trong 9 ô Lạc Thư thay vì trong rẻ quạt tròn. Đường tia 24 sơn/tên 24 sơn vẫn giữ nguyên như cũ.
+    // ===== NGUYỆT TINH + CHỌN NHANH 12 THÁNG ÂM (đồng bộ với tab Nội Khí qua #thangXemAm) =====
+    function layNguyetBan() {
+      var elT = document.getElementById("thangXemAm");
+      var t = elT ? parseInt(elT.value, 10) : 0;
+      if (!t || typeof tinhSaoNguyet !== "function" || typeof lapTinhBan !== "function") return null;
+      var sao = tinhSaoNguyet(currentNamXem, t);
+      return { thang: t, sao: sao, ban: lapTinhBan(sao, true) }; // ban[1..9] = Nguyệt tinh tại từng cung (số Lạc Thư)
+    }
+
+    function capNhatThangAmPicker() {
+      var box = document.getElementById("ccThangAmPicker");
+      if (!box) return;
+      if (!box.dataset.built) {
+        var h = "";
+        for (var t = 1; t <= 12; t++) {
+            h += '<button type="button" class="cc-thang-btn" data-t="' + t + '" style="padding:6px 0;font-size:10px;min-width:0;border:1px solid #555;border-radius:4px;cursor:pointer;letter-spacing:-0.3px;">' + t + '</button>';
+        }
+        box.innerHTML = h;
+        box.dataset.built = "1";
+        box.addEventListener("click", function (e) {
+          var b = e.target.closest(".cc-thang-btn");
+          if (!b) return;
+          var namAmEl = document.getElementById("namAmXem");
+          var namAm = namAmEl ? (parseInt(namAmEl.value, 10) || currentNamXem) : currentNamXem;
+          // nhayToiThang (phi-tinh.js) set ô Âm lịch của Nội Khí → dongBoTuAm → tính lại → cuuCungLuoiRedraw
+          if (typeof window.nhayToiThang === "function") window.nhayToiThang(namAm, parseInt(b.dataset.t, 10));
+        });
+      }
+      var elT = document.getElementById("thangXemAm");
+      var cur = elT ? parseInt(elT.value, 10) : 0;
+      var btns = box.querySelectorAll(".cc-thang-btn");
+      for (var i = 0; i < btns.length; i++) {
+        var on = parseInt(btns[i].dataset.t, 10) === cur;
+        btns[i].style.background = on ? "#4CAF50" : "#333";
+        btns[i].style.color = on ? "#fff" : "#ddd";
+        btns[i].style.fontWeight = on ? "bold" : "normal";
+      }
+    }
+    window.capNhatThangAmPicker = capNhatThangAmPicker;
   function renderCompassOverlay(svgSelector, center, housePoints, rotationDeg, centerCellHalfW, centerCellHalfH, khuyetThreshold, showPct, gridBounds, showSonRays) {
     return CM.renderCompassOverlay(svgSelector, center, housePoints, rotationDeg, centerCellHalfW, centerCellHalfH, khuyetThreshold, {
       getScaledFontSize: setScaledFontSize,
       scaledOffset: scaledOffset,
       currentVan: currentVan,
-      currentNamXem: currentNamXem,
-      onHuongClick: openHuongModal,
+          currentNamXem: currentNamXem,
+          nguyetTinh: layNguyetBan(),
+          onHuongClick: openHuongModal,
       showPct: showPct,
       gridMode: !!gridBounds,
       gridBounds: gridBounds,
@@ -913,8 +953,9 @@
       renderCompassOverlay("#cuuCungSvg2", center, currentPoints, rotationDeg, centerCellHalfW, centerCellHalfH, threshold, showPctLabel, gridBounds, showSonRays);
     }
 
-    drawHandles();
-    buildEdgeList();
+        drawHandles();
+        buildEdgeList();
+        capNhatThangAmPicker();
     if (typeof CuaModule !== 'undefined') CuaModule.renderList(cuuCungDoorCtx);
   }
 

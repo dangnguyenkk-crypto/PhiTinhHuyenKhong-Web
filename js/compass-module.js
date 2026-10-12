@@ -386,7 +386,8 @@
     var getScaledFontSizeFn = ctx.getScaledFontSize || function (el, basePx) { el.style.fontSize = basePx + "px"; };
     var scaledOffsetFn = ctx.scaledOffset || function (px) { return px; };
     var currentVan = ctx.currentVan || 9;
-    var currentNamXem = ctx.currentNamXem || new Date().getFullYear();
+        var currentNamXem = ctx.currentNamXem || new Date().getFullYear();
+        var nguyetTinh = ctx.nguyetTinh || null; // { thang, sao, ban[1..9] } — do cuu-cung-luoi.js truyền vào; null thì không hiện Ng
     var showPct = ctx.showPct !== false; // mặc định true nếu không truyền — giữ tương thích ngược
 
     // ==================================================================
@@ -636,7 +637,7 @@
       g.appendChild(kwText);
 
       var nienTinhVal = flyStarValue(nienTrungCurrent, HUONG_DATA[k].sao);
-      var nienStr = "N" + nienTinhVal;
+      var nienStr = "N" + nienTinhVal + (nguyetTinh ? " Ng" + nguyetTinh.ban[soCungHuongK] : "");
       var ntText = document.createElementNS("http://www.w3.org/2000/svg", "text");
       ntText.setAttribute("class", "nien-tinh");
       ntText.setAttribute("x", hx.toFixed(2)); ntText.setAttribute("y", (hy + scaledOffsetFn(19)).toFixed(2));
@@ -728,7 +729,7 @@
       }
     }
 
-    var centerNienVal = "N" + nienTrungCurrent;
+    var centerNienVal = "N" + nienTrungCurrent + (nguyetTinh ? " Ng" + nguyetTinh.ban[5] : "");
     var centerNienText = document.createElementNS("http://www.w3.org/2000/svg", "text");
     centerNienText.setAttribute("class", "nien-tinh");
     centerNienText.setAttribute("x", center.x); centerNienText.setAttribute("y", (center.y + scaledOffsetFn(14)).toFixed(2));
