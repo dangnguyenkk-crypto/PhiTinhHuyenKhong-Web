@@ -620,9 +620,9 @@ const BANG_MENH_QUAI_THEO_SO = {
     4: { nam: { quaiSo: 7, cung: "Đoài" }, nu: { quaiSo: 8, cung: "Cấn" } },
     5: { nam: { quaiSo: 6, cung: "Càn" }, nu: { quaiSo: 9, cung: "Ly" } },
     6: { nam: { quaiSo: 2, cung: "Khôn" }, nu: { quaiSo: 1, cung: "Khảm" } },
-    7: { nam: { quaiSo: 3, cung: "Chấn" }, nu: { quaiSo: 2, cung: "Khôn" } },
-    8: { nam: { quaiSo: 2, cung: "Khôn" }, nu: { quaiSo: 3, cung: "Chấn" } },
-    9: { nam: { quaiSo: 4, cung: "Tốn" }, nu: { quaiSo: 9, cung: "Ly" } }
+    7: { nam: { quaiSo: 4, cung: "Tốn" }, nu: { quaiSo: 2, cung: "Khôn" } },
+    8: { nam: { quaiSo: 3, cung: "Chấn" }, nu: { quaiSo: 3, cung: "Chấn" } },
+    9: { nam: { quaiSo: 2, cung: "Khôn" }, nu: { quaiSo: 4, cung: "Tốn" } }
 };
 // Nhóm Đông tứ mệnh / Tây tứ mệnh theo Cung
 const NHOM_DONG_TAY_TU_MENH = {
@@ -644,9 +644,69 @@ function tinhTongChuSoVeMotChuSo(soNam) {
 }
 
 // Trả về { namSinh, gioiTinh, soRutGon, quaiSo, cung, hanh, nhom } hoặc null nếu năm sinh không hợp lệ.
+// ---- LẬP XUÂN: xác định năm sinh "hiệu lực" cho Quái mệnh / Nạp âm ----
+// Theo Bát trạch (và Tứ trụ), năm mới bắt đầu từ LẬP XUÂN (Mặt Trời ở kinh độ 315°, ~3-5/2 dương lịch),
+// không phải 1/1 dương lịch. Người sinh từ 1/1 đến trước Lập Xuân tính theo năm TRƯỚC.
+// Ngày sinh (tháng/ngày) lấy từ window.NGAY_SINH_CHU = { thang, ngay } (do tab Thông Tin đặt); chưa nhập
+// thì giữ nguyên năm sinh. Ngày trùng đúng ngày Lập Xuân được tính là đã sang năm mới.
+function _lxJd(dd, mm, yy) {
+    let a = Math.floor((14 - mm) / 12), y = yy + 4800 - a, m = mm + 12 * a - 3;
+    return dd + Math.floor((153 * m + 2) / 5) + 365 * y + Math.floor(y / 4) - Math.floor(y / 100) + Math.floor(y / 400) - 32045;
+}
+function _lxKinhDoMatTroi(jd) { // kinh độ Mặt Trời lúc 0h giờ VN (UTC+7) của ngày có số JD = jd
+    let T = (jd - 2451545.5 - 7 / 24) / 36525.0, T2 = T * T, dr = Math.PI / 180;
+    let M = 357.52910 + 35999.05030 * T - 0.0001559 * T2 - 0.00000048 * T * T2;
+    let L0 = 280.46645 + 36000.76983 * T + 0.0003032 * T2;
+    let DL = (1.914600 - 0.004817 * T - 0.000014 * T2) * Math.sin(dr * M)
+        + (0.019993 - 0.000101 * T) * Math.sin(dr * 2 * M) + 0.000290 * Math.sin(dr * 3 * M);
+    let L = (L0 + DL) % 360; if (L < 0) L += 360;
+    return L;
+}
+// Đổi ngày ÂM LỊCH -> DƯƠNG LỊCH bằng cách dò từng ngày bằng LICH_VAN_NIEN (có nhớ kết quả để khỏi tính lại).
+let _lxCacheAm = {};
+function _lxAmSangDuong(ngay, thang, namAm) {
+    if (typeof LICH_VAN_NIEN === 'undefined') return null;
+    let key = ngay + '-' + thang + '-' + namAm;
+    if (key in _lxCacheAm) return _lxCacheAm[key];
+    let kq = null;
+    for (let nhuan of [false, true]) { // ưu tiên tháng thường, không có mới thử tháng nhuận
+        for (let i = 0; i < 430 && !kq; i++) {
+            let dt = new Date(namAm, 0, 1 + i);
+            let f = LICH_VAN_NIEN.getFullInfo(dt.getDate(), dt.getMonth() + 1, dt.getFullYear(), 12);
+            if (f.lunarYear === namAm && f.lunarMonthNum === thang && f.lunarDayNum === ngay && !!f.isLeapMonth === nhuan) {
+                kq = { d: dt.getDate(), m: dt.getMonth() + 1, y: dt.getFullYear() };
+            }
+        }
+        if (kq) break;
+    }
+    _lxCacheAm[key] = kq;
+    return kq;
+}
+// Ngày sinh DƯƠNG LỊCH {d,m,y} (đổi từ âm nếu người dùng chọn ÂL); null nếu chưa nhập / không hợp lệ.
+function ngaySinhDuongLich(namSinh) {
+    let nam = parseInt(namSinh), ns = window.NGAY_SINH_CHU;
+    if (!nam || isNaN(nam) || !ns) return null;
+    let thang = parseInt(ns.thang), ngay = parseInt(ns.ngay);
+    if (!thang || !ngay) return null;
+    return ns.al ? _lxAmSangDuong(ngay, thang, nam) : { d: ngay, m: thang, y: nam };
+}
+window.ngaySinhDuongLich = ngaySinhDuongLich;
+function namSinhHieuLuc(namSinh) {
+    let nam = parseInt(namSinh);
+    if (!nam || isNaN(nam)) return nam;
+    let sd = ngaySinhDuongLich(nam);
+    if (!sd) return nam;
+    if (sd.m > 2) return sd.y; // từ tháng 3 trở đi chắc chắn đã qua Lập Xuân
+    // Trước Lập Xuân <=> hết ngày sinh (0h hôm sau) Mặt Trời vẫn chưa tới 315°
+    let kd = _lxKinhDoMatTroi(_lxJd(sd.d, sd.m, sd.y) + 1);
+    return (kd < 315) ? sd.y - 1 : sd.y;
+}
+window.namSinhHieuLuc = namSinhHieuLuc;
+
 function tinhMenhQuai(namSinhDuongLich, gioiTinh) {
-    let nam = parseInt(namSinhDuongLich);
-    if (!nam || isNaN(nam)) return null;
+    let namSinhGoc = parseInt(namSinhDuongLich);
+    if (!namSinhGoc || isNaN(namSinhGoc)) return null;
+    let nam = namSinhHieuLuc(namSinhGoc); // sinh trước Lập Xuân -> tính theo năm trước
     let soRutGon = tinhTongChuSoVeMotChuSo(nam);
     let hang = BANG_MENH_QUAI_THEO_SO[soRutGon];
     if (!hang) return null;
@@ -657,6 +717,8 @@ function tinhMenhQuai(namSinhDuongLich, gioiTinh) {
     let nhom = NHOM_DONG_TAY_TU_MENH[cung];
     return {
         namSinh: nam,
+        namSinhGoc: namSinhGoc,
+        truocLapXuan: nam !== namSinhGoc,
         gioiTinh: gt,
         soRutGon: soRutGon,
         quaiSo: ket.quaiSo,
@@ -680,8 +742,9 @@ const NGU_HANH_THEO_SO_NAP_AM = { 1: "Kim", 2: "Thủy", 3: "Hỏa", 4: "Thổ",
 
 // Trả về { namSinh, can, chi, canChi, hanh } hoặc null nếu năm sinh không hợp lệ.
 function tinhNapAmNguHanh(namSinhDuongLich) {
-    let nam = parseInt(namSinhDuongLich);
-    if (!nam || isNaN(nam)) return null;
+    let namGoc = parseInt(namSinhDuongLich);
+    if (!namGoc || isNaN(namGoc)) return null;
+    let nam = namSinhHieuLuc(namGoc); // sinh trước Lập Xuân -> tính theo năm trước
     let can = NAM_CAN_NAP_AM[(nam + 6) % 10];
     let chi = CHI_NAP_AM[(nam + 8) % 12];
     let soCan = SO_CAN_NAP_AM[can];

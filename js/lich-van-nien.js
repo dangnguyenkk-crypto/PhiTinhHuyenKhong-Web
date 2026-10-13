@@ -529,102 +529,91 @@ function taoLichThangGrid(year, month, selectedDay) {
     let thuColors = ["#555", "#555", "#555", "#555", "#555", "#1976d2", "#d32f2f"];
 
     // Header thứ
-    let headerHTML = `<div style="display:grid;grid-template-columns:repeat(7,1fr);gap:3px;margin-bottom:4px;">`;
+    let headerHTML = `<div style="display:grid;grid-template-columns:repeat(7,1fr);gap:4px;margin-bottom:4px;">`;
     for (let i = 0; i < 7; i++) {
         headerHTML += `<div style="text-align:center;padding:6px 2px;font-size:11px;font-weight:bold;color:${thuColors[i]};">${thuLabels[i]}</div>`;
     }
     headerHTML += `</div>`;
 
-    // Các ngày trong tháng
-    let daysHTML = `<div style="display:grid;grid-template-columns:repeat(7,1fr);gap:3px;">`;
+    let daysHTML = `<div style="display:grid;grid-template-columns:repeat(7,1fr);gap:4px;">`;
 
-    // Ngày tháng trước (fill empty)
+    // Ô trống tháng trước: chỉ hiện số mờ, không viền
     for (let i = 0; i < firstDay; i++) {
         let prevDay = daysInPrevMonth - firstDay + i + 1;
-        daysHTML += `<div style="aspect-ratio:1;background:#faf8f5;border-radius:6px;padding:3px;opacity:0.35;">
-            <div style="font-size:10px;color:#bbb;text-align:right;">${prevDay}</div>
-        </div>`;
+        daysHTML += `<div style="aspect-ratio:1;display:flex;align-items:center;justify-content:center;font-size:12px;color:#ccc;">${prevDay}</div>`;
     }
 
-        // 10 ngày trai (Phật giáo): mồng 1, 8, 14, 15, 18, 23, 24 và 3 ngày cuối tháng âm lịch
-        const NGAY_TRAI = [1, 8, 14, 15, 18, 23, 24];
+    // 10 ngày trai (Phật giáo): mồng 1, 8, 14, 15, 18, 23, 24 và 3 ngày cuối tháng âm lịch
+    const NGAY_TRAI = [1, 8, 14, 15, 18, 23, 24];
 
-        // Tính sẵn âm lịch cho các ngày trong tháng + 3 ngày sau (để biết 3 ngày cuối tháng âm)
-        let lichCache = {};
-        for (let k = 1; k <= daysInMonth + 3; k++) {
-            let dt = new Date(year, month - 1, k);
-            lichCache[k] = LICH_VAN_NIEN.getFullInfo(dt.getDate(), dt.getMonth() + 1, dt.getFullYear());
-        }
+    // Tính sẵn âm lịch cho các ngày trong tháng + 3 ngày sau (để biết 3 ngày cuối tháng âm)
+    let lichCache = {};
+    for (let k = 1; k <= daysInMonth + 3; k++) {
+        let dt = new Date(year, month - 1, k);
+        lichCache[k] = LICH_VAN_NIEN.getFullInfo(dt.getDate(), dt.getMonth() + 1, dt.getFullYear());
+    }
 
-        // Ngày trong tháng
-        for (let d = 1; d <= daysInMonth; d++) {
+    let now = new Date();
+    for (let d = 1; d <= daysInMonth; d++) {
         let isSelected = d === selectedDay;
-        let isToday = false;
-        let now = new Date();
-        if (d === now.getDate() && month === (now.getMonth()+1) && year === now.getFullYear()) {
-            isToday = true;
-        }
+        let isToday = d === now.getDate() && month === (now.getMonth() + 1) && year === now.getFullYear();
+        let cot = (firstDay + d - 1) % 7; // 5 = T7, 6 = CN
 
-        // Âm lịch cho ngày này (lấy từ cache đã tính sẵn)
         let lunarInfo = lichCache[d];
+        let ld = lunarInfo.lunarDayNum;
         let laCuoiThangAm = [1, 2, 3].some(k => lichCache[d + k] && lichCache[d + k].lunarDayNum === 1);
-        let laNgayTrai = NGAY_TRAI.indexOf(lunarInfo.lunarDayNum) !== -1 || laCuoiThangAm;
-        let lunarDayMatch = lunarInfo.lunarDate.match(/(mồng|ngày)\s*(\d+)/);
-        let lunarDayNum = lunarDayMatch ? lunarDayMatch[2] : "";
-        let isLunar1 = lunarDayNum === "1";
-        let isLunar15 = lunarDayNum === "15";
+        let laNgayTrai = NGAY_TRAI.indexOf(ld) !== -1 || laCuoiThangAm;
+        let isLunar1 = ld === 1;
+        let isLunar15 = ld === 15;
+        let lunarText = isLunar1 ? (ld + "/" + lunarInfo.lunarMonthNum) : ld;
 
-        let bgColor = isSelected ? "#4CAF50" : (isToday ? "#e8f5e9" : "#fff");
-        let borderColor = isSelected ? "#4CAF50" : (isToday ? "#4CAF50" : "#e8e0d5");
-        let textColor = isSelected ? "#fff" : (isToday ? "#2e7d32" : "#333");
-        let lunarColor = isSelected ? "#c8e6c9" : (isLunar1 || isLunar15 ? "#d32f2f" : "#999");
-        let lunarWeight = isLunar1 || isLunar15 ? "bold" : "normal";
+        // Màu: ô chọn = nền xanh đặc; hôm nay = viền xanh; còn lại nền trắng viền nhạt
+        let bgColor = isSelected ? "#43A047" : (isToday ? "#E8F5E9" : "#fff");
+        let borderColor = isSelected ? "#43A047" : (isToday ? "#43A047" : "#ece6dc");
+        let solarColor = isSelected ? "#fff" : (cot === 6 ? "#d32f2f" : (cot === 5 ? "#1976d2" : "#2b2b2b"));
+        let lunarColor = isSelected ? "#e8f5e9" : ((isLunar1 || isLunar15) ? "#d32f2f" : "#777");
+        let lunarWeight = (isLunar1 || isLunar15) ? "700" : "400";
 
-        // Ngày hoàng đạo indicator
-        let hoangDaoDot = "";
-        if (lunarInfo.hoangDao.isHoangDao && !isSelected) {
-            hoangDaoDot = `<div style="position:absolute;top:2px;right:2px;width:5px;height:5px;background:#FBC02D;border-radius:50%;"></div>`;
-        }
+        // Hàng chỉ báo trên cùng (cao cố định, không đè lên số): 🪷 bên trái, chấm vàng bên phải
+        let traiIcon = laNgayTrai ? `<span style="font-size:10px;line-height:1;" title="Ngày trai">🪷</span>` : `<span></span>`;
+        let dot = (lunarInfo.hoangDao.isHoangDao && !isSelected)
+            ? `<span style="width:6px;height:6px;background:#FBC02D;border-radius:50%;display:inline-block;"></span>`
+            : (lunarInfo.hoangDao.isHoangDao
+                ? `<span style="width:6px;height:6px;background:#FFEB3B;border-radius:50%;display:inline-block;"></span>`
+                : `<span></span>`);
 
-        let traiIcon = laNgayTrai
-            ? `<div style="position:absolute;top:1px;left:2px;font-size:10px;line-height:1;" title="Ngày trai">🪷</div>`
-            : "";
-
-        daysHTML += `<div onclick="chonNgayTrongThang(${d},${month},${year})" style="aspect-ratio:1;background:${bgColor};border:1.5px solid ${borderColor};border-radius:6px;padding:2px;cursor:pointer;position:relative;transition:all 0.15s;${isSelected?'box-shadow:0 2px 6px rgba(76,175,80,0.3);transform:scale(1.05);':''}"
-            onmouseover="if(!this.style.transform.includes('scale'))this.style.transform='scale(1.03)'" onmouseout="if(!this.style.transform.includes('1.05'))this.style.transform='scale(1)'">
-            ${hoangDaoDot}${traiIcon}
-            <div style="font-size:12px;font-weight:${isToday||isSelected?'bold':'normal'};color:${textColor};text-align:right;">${d}</div>
-            <div style="font-size:9px;color:${lunarColor};text-align:center;margin-top:1px;font-weight:${lunarWeight};">${lunarDayNum}</div>
+        daysHTML += `<div onclick="chonNgayTrongThang(${d},${month},${year})" style="aspect-ratio:1;background:${bgColor};border:${isToday && !isSelected ? '2px' : '1px'} solid ${borderColor};border-radius:8px;cursor:pointer;box-sizing:border-box;display:flex;flex-direction:column;justify-content:space-between;align-items:center;padding:2px 3px 3px 3px;">
+            <div style="display:flex;justify-content:space-between;align-items:center;width:100%;height:11px;">${traiIcon}${dot}</div>
+            <div style="font-size:15px;line-height:1;font-weight:${(isToday || isSelected) ? '700' : '600'};color:${solarColor};">${d}</div>
+            <div style="font-size:10px;line-height:1;color:${lunarColor};font-weight:${lunarWeight};">${lunarText}</div>
         </div>`;
     }
 
-    // Ngày tháng sau (fill empty)
+    // Ô trống tháng sau
     let totalCells = firstDay + daysInMonth;
     let remainingCells = (7 - (totalCells % 7)) % 7;
     for (let i = 1; i <= remainingCells; i++) {
-        daysHTML += `<div style="aspect-ratio:1;background:#faf8f5;border-radius:6px;padding:3px;opacity:0.35;">
-            <div style="font-size:10px;color:#bbb;text-align:right;">${i}</div>
-        </div>`;
+        daysHTML += `<div style="aspect-ratio:1;display:flex;align-items:center;justify-content:center;font-size:12px;color:#ccc;">${i}</div>`;
     }
 
     daysHTML += `</div>`;
 
-    // Legend
-    let legendHTML = `<div style="display:flex;gap:12px;margin-top:10px;justify-content:center;flex-wrap:wrap;">
-        <div style="display:flex;align-items:center;gap:4px;font-size:10px;color:#666;">
-            <div style="width:8px;height:8px;background:#4CAF50;border-radius:2px;"></div> Ngày chọn
+    // Chú thích
+    let legendHTML = `<div style="display:flex;gap:12px;margin-top:12px;justify-content:center;flex-wrap:wrap;">
+        <div style="display:flex;align-items:center;gap:4px;font-size:11px;color:#666;">
+            <div style="width:10px;height:10px;background:#43A047;border-radius:3px;"></div> Ngày chọn
         </div>
-        <div style="display:flex;align-items:center;gap:4px;font-size:10px;color:#666;">
-            <div style="width:8px;height:8px;background:#e8f5e9;border:1.5px solid #4CAF50;border-radius:2px;"></div> Hôm nay
+        <div style="display:flex;align-items:center;gap:4px;font-size:11px;color:#666;">
+            <div style="width:10px;height:10px;background:#E8F5E9;border:2px solid #43A047;border-radius:3px;box-sizing:border-box;"></div> Hôm nay
         </div>
-        <div style="display:flex;align-items:center;gap:4px;font-size:10px;color:#666;">
-            <div style="width:6px;height:6px;background:#FBC02D;border-radius:50%;"></div> Hoàng đạo
+        <div style="display:flex;align-items:center;gap:4px;font-size:11px;color:#666;">
+            <div style="width:7px;height:7px;background:#FBC02D;border-radius:50%;"></div> Hoàng đạo
         </div>
-        <div style="display:flex;align-items:center;gap:4px;font-size:10px;color:#666;">
-            <span style="font-size:10px;">🪷</span> Ngày trai
+        <div style="display:flex;align-items:center;gap:4px;font-size:11px;color:#666;">
+            <span style="font-size:11px;">🪷</span> Ngày trai
         </div>
-        <div style="display:flex;align-items:center;gap:4px;font-size:10px;color:#666;">
-            <span style="color:#d32f2f;font-weight:bold;font-size:9px;">1</span> Mồng 1 / Rằm
+        <div style="display:flex;align-items:center;gap:4px;font-size:11px;color:#666;">
+            <span style="color:#d32f2f;font-weight:bold;font-size:11px;">1/10</span> Mồng 1 · <span style="color:#d32f2f;font-weight:bold;font-size:11px;">15</span> Rằm
         </div>
     </div>`;
 

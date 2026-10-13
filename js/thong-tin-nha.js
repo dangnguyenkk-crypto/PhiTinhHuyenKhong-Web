@@ -20,7 +20,10 @@
         matBang: { shape: 'rect', daiM: 10, rongM: 8, sonCua: '' },
         // Động khẩu tại — sơn (trong 24 sơn) nơi có "khí động" thực tế: đường/ngõ/cửa/nước lưu thông.
         // Dương trạch lấy động khẩu đường phố làm chuẩn lập hướng; Âm trạch xem Lai Long - Khứ Thủy.
-        dongKhauTaiSon: ''
+        dongKhauTaiSon: '',
+        // Ngày + tháng sinh gia chủ (không bắt buộc) — chỉ để biết sinh trước/sau Lập Xuân khi tính Trạch mệnh & Nạp âm.
+        // Năm sinh dùng chung ô #namSinhChu nên không nhập lại.
+        sinhNgay: '', sinhThang: '', sinhLoai: 'dl', // sinhLoai: 'dl' = dương lịch, 'al' = âm lịch
     };
 
     function escapeHtmlTT(s) {
@@ -129,6 +132,21 @@
         thongTinDongBoTruongGoc();
     };
 
+    // ==== NGÀY + THÁNG SINH GIA CHỦ (không bắt buộc) — xử lý mốc Lập Xuân (xem namSinhHieuLuc trong shared.js) ====
+    // Năm sinh dùng chung ô #namSinhChu, nên chỉ cần thêm 2 ô Ngày/Tháng — không phải nhập năm 2 lần.
+    function datNgaySinhToanCuc() {
+        let ng = parseInt(thongTinData.sinhNgay), th = parseInt(thongTinData.sinhThang);
+        window.NGAY_SINH_CHU = (ng >= 1 && ng <= 31 && th >= 1 && th <= 12) ? { thang: th, ngay: ng, al: thongTinData.sinhLoai === 'al' } : null;
+    }
+    window.thongTinDoiNgayThangSinh = function (key, value) {
+        thongTinData[key] = value;
+        datNgaySinhToanCuc();
+        if (typeof capNhatCanChiNamSinh === 'function') capNhatCanChiNamSinh('namSinhChu', 'canChiNamSinhChu');
+        if (typeof tinhToanPhiTinh === 'function') tinhToanPhiTinh();
+        if (typeof window.thuyPhapDongBoTuNguon === 'function') window.thuyPhapDongBoTuNguon();
+        thongTinDongBoTruongGoc();
+    };
+
     // Nơi khác (Phi Tinh, Cửu Cung Lưới...) đổi input gốc -> tab Thông Tin tự cập nhật lại hiển thị.
     // QUAN TRỌNG: không innerHTML lại toàn bộ khối mỗi lần gọi — nếu người dùng đang gõ dở trong 1
     // ô số (vd xoá bớt chữ số của Năm), việc thay cả DOM sẽ làm mất focus/con trỏ ngay sau ký tự
@@ -223,6 +241,9 @@
         <div style="border-top:1px dashed #e3d5c0;padding-top:8px;margin-top:8px;">
             <label style="font-size:12px;font-weight:700;color:#5c4a3a;display:block;margin-bottom:4px;">👤 Gia chủ</label>
             <div style="display:flex;gap:4px;flex-wrap:wrap;align-items:center;">
+                <input type="number" id="ttInSinhNgay" value="${escapeHtmlTT(thongTinData.sinhNgay)}" min="1" max="31" placeholder="Ngày" title="Ngày sinh (không bắt buộc)" oninput="thongTinDoiNgayThangSinh('sinhNgay', this.value)" style="width:44px;flex:none;padding:6px 2px;border:1px solid #ccc;border-radius:6px;font-size:12px;text-align:center;">
+                <input type="number" id="ttInSinhThang" value="${escapeHtmlTT(thongTinData.sinhThang)}" min="1" max="12" placeholder="Tháng" title="Tháng sinh (không bắt buộc)" oninput="thongTinDoiNgayThangSinh('sinhThang', this.value)" style="width:48px;flex:none;padding:6px 2px;border:1px solid #ccc;border-radius:6px;font-size:12px;text-align:center;">
+        <select id="ttInSinhLoai" title="Ngày/tháng sinh theo Dương lịch (DL) hay Âm lịch (ÂL)" onchange="thongTinDoiNgayThangSinh('sinhLoai', this.value)" style="width:50px;flex:none;padding:6px 0;border:1px solid #ccc;border-radius:6px;font-size:12px;"><option value="dl"${thongTinData.sinhLoai !== 'al' ? ' selected' : ''}>DL</option><option value="al"${thongTinData.sinhLoai === 'al' ? ' selected' : ''}>ÂL</option></select>
                 <input type="number" id="ttInNamSinhChu" value="${escapeHtmlTT(namSinhChu)}" placeholder="Năm sinh" title="Năm sinh" oninput="thongTinDoiNamSinhChu(this.value)" style="width:64px;flex:none;padding:6px 2px;border:1px solid #ccc;border-radius:6px;font-size:12px;text-align:center;">
                 <span id="ttInCanChiNamSinhChu" title="Can Chi năm sinh" style="width:70px;flex:none;padding:6px 2px;font-size:11px;font-weight:600;color:#5c4a3a;background:#f5f0e6;border-radius:6px;text-align:center;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;">${escapeHtmlTT(canChiNamSinhChu)}</span>
                 <select id="ttInGioiTinhChu" title="Giới tính" onchange="thongTinDoiGioiTinhChu(this.value)" style="width:56px;flex:none;padding:6px 0;border:1px solid #ccc;border-radius:6px;font-size:12px;">
@@ -230,6 +251,7 @@
                     <option value="nu"${gioiTinhChu === 'nu' ? ' selected' : ''}>Nữ</option>
                 </select>
             </div>
+            <div style="font-size:10px;color:#999;margin-top:3px;">Ngày/Tháng sinh (không bắt buộc): chọn <b>DL</b> = dương lịch hoặc <b>ÂL</b> = âm lịch (khi chọn ÂL, ô năm là năm âm lịch). Nhập để tính đúng người sinh trước Lập Xuân (~4/2): khi đó tính theo năm trước.</div>
             <div id="ttInCungMenh" style="margin-top:6px;">${renderCungMenhHtml(namSinhChu, gioiTinhChu)}</div>
         </div>`;
     }
@@ -250,12 +272,24 @@
                 <span style="font-size:12px;font-weight:700;color:#5c4a3a;">🔯 Mệnh Nạp Âm Ngũ Hành: ${napAm.canChi} — hành <b>${napAm.hanh}</b></span>
                </div>`
             : '';
+        let ghiAm = '';
+        if (window.NGAY_SINH_CHU && window.NGAY_SINH_CHU.al && typeof window.ngaySinhDuongLich === 'function') {
+            let sd = window.ngaySinhDuongLich(namSinhChu);
+            ghiAm = sd
+                ? `<div style="font-size:11px;color:#5c4a3a;margin-top:4px;">🌙 Âm lịch ${window.NGAY_SINH_CHU.ngay}/${window.NGAY_SINH_CHU.thang}/${namSinhChu} = dương lịch ${sd.d}/${sd.m}/${sd.y}</div>`
+                : `<div style="font-size:11px;color:#e65100;margin-top:4px;">⚠️ Không có ngày âm lịch ${window.NGAY_SINH_CHU.ngay}/${window.NGAY_SINH_CHU.thang} trong năm ${namSinhChu} — kiểm tra lại ngày/tháng.</div>`;
+        }
+        let ghiLapXuan = mq.truocLapXuan
+            ? `<div style="font-size:11px;color:#e65100;margin-top:4px;">⚠️ Sinh trước Lập Xuân → tính theo năm ${mq.namSinh} (không phải ${mq.namSinhGoc})</div>`
+            : '';
         let chuGiai = 'Mệnh theo Nạp Âm Ngũ Hành (dùng trong Tử vi, Tứ trụ, màu sắc,...); Mệnh Trạch dùng để xem: hướng nhà, hướng bếp, hướng bàn làm việc...';
         return `<div style="display:flex;align-items:center;gap:6px;padding:6px 8px;background:${nenNhom};border-radius:6px;">
             <span style="font-size:12px;font-weight:700;color:${mauNhom};">🏡 Trạch mệnh: ${mq.cung} (Quái ${mq.quaiSo}, hành ${mq.hanh})</span>
             <span style="font-size:11px;color:${mauNhom};margin-left:auto;">${mq.nhom}</span>
         </div>
         ${napAmHtml}
+        ${ghiAm}
+        ${ghiLapXuan}
         <div style="font-size:10px;color:#999;margin-top:3px;line-height:1.4;">
             <span class="nut-info" onclick='moInfoModal("🏡 Trạch mệnh &amp; Nạp Âm", ${JSON.stringify(escapeHtmlTT(chuGiai))})'>i</span>
             ${escapeHtmlTT(chuGiai)}
@@ -426,8 +460,14 @@
             suKien: (obj && Array.isArray(obj.suKien)) ? obj.suKien.map(x => ({ id: ttNextId++, nam: x.nam || '', noiDung: x.noiDung || '' })) : [],
             huongInfo: (obj && Array.isArray(obj.huongInfo)) ? obj.huongInfo.map(x => ({ id: ttNextId++, huong: x.huong || '', noiDung: x.noiDung || '' })) : [],
             matBang: (obj && obj.matBang) ? Object.assign({ shape: 'rect', daiM: 10, rongM: 8, sonCua: '' }, obj.matBang) : { shape: 'rect', daiM: 10, rongM: 8, sonCua: '' },
-            dongKhauTaiSon: (obj && obj.dongKhauTaiSon) || ''
+            dongKhauTaiSon: (obj && obj.dongKhauTaiSon) || '',
+            sinhNgay: (obj && obj.sinhNgay) || '',
+            sinhThang: (obj && obj.sinhThang) || '',
+            sinhLoai: (obj && obj.sinhLoai) || 'dl'
         };
+        datNgaySinhToanCuc();
+        if (typeof capNhatCanChiNamSinh === 'function') capNhatCanChiNamSinh('namSinhChu', 'canChiNamSinhChu');
+        if (typeof tinhToanPhiTinh === 'function') tinhToanPhiTinh();
         thongTinRenderTab();
     }
     window.apDungStateThongTin = apDungStateThongTin;

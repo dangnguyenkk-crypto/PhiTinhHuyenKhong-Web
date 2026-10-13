@@ -1966,6 +1966,8 @@ function capNhatCanChiNamSinh(idNamDuong, idHienThi) {
     let elD = document.getElementById(idNamDuong), elHt = document.getElementById(idHienThi);
     if (!elD || !elHt) return;
     let nam = parseInt(elD.value);
+    // Gia chủ: nếu đã nhập Ngày/Tháng sinh (tab Thông Tin) và sinh trước Lập Xuân -> hiện Can Chi của năm hiệu lực
+    if (nam && idNamDuong === "namSinhChu" && typeof window.namSinhHieuLuc === "function") nam = window.namSinhHieuLuc(nam) || nam;
     elHt.textContent = nam ? canChiNamSinh(nam) : "—";
 }
 window.capNhatCanChiNamSinh = capNhatCanChiNamSinh;
