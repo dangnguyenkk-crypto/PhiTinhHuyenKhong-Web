@@ -406,7 +406,7 @@
         let html = `
       <div style="padding:10px; max-width:520px; margin:0 auto;">
         <h2 style="color:#8b0000; margin-bottom:2px; font-size:16px;">📝 Thông Tin Nhà</h2>
-        <p style="font-size:11px; color:#666; margin-bottom:8px; line-height:1.4;">Khai báo ban đầu cho toàn bộ hồ sơ — các tab khác tự lấy dữ liệu từ đây.</p>
+        <p style="font-size:11px; color:#666; margin-bottom:8px; line-height:1.4;">Khai báo ban đầu cho toàn bộ hồ sơ — các tab khác tự lấy dữ liệu từ đây. Nhà hay làm việc thiện thì cho dù quay về hướng xấu hay đối diện hung tinh thì Đạo trời cũng quyết không giáng họa cho họ. Nhà chuyên gây điều ác, dẫu cho ở nơi hợp mệnh hợp hướng, chầu về cát tinh nhưng đạo Trời quyết chẳng ban phúc lành.</p>
 
         <div style="background:#fff; border:1px solid #e3d5c0; border-radius:10px; padding:10px; margin-bottom:8px;">
             <span style="font-size:12px; font-weight:700; color:#8b0000; display:block; margin-bottom:6px;">🏠 Trạch nhà</span>
