@@ -341,16 +341,13 @@
                 <!-- Bật/tắt 2 dải Bát Trạch (Trạch đất / Mệnh gia chủ) tích hợp bên trong vòng
                      12 Địa Chi của la bàn Trường Sinh — độc lập với la bàn Bát Trạch 8 cung
                      riêng (kiểu la bàn thứ 4). Mỗi dải bật/tắt riêng, không phụ thuộc nhau. -->
-                <div style="flex:1 1 100%; min-width:140px; margin-top:2px;"><label style="font-size:10px; display:block; margin-bottom:1px;">🀄 Dải Bát Trạch tích hợp (bên trong la bàn)</label>
-                    <div style="display:flex; gap:4px;">
-                        <button id="btnToggleBatTrachTrachTrongTS" type="button" onclick="toggleBatTrachTrachTrongTruongSinh()" style="flex:1; padding:5px 4px; font-size:11px; border-radius:6px; cursor:pointer; border:1.5px solid #4CAF50; background:#4CAF50; color:#fff; font-weight:600;">🏠 Trạch đất</button>
-                        <button id="btnToggleBatTrachMenhTrongTS" type="button" onclick="toggleBatTrachMenhTrongTruongSinh()" style="flex:1; padding:5px 4px; font-size:11px; border-radius:6px; cursor:pointer; border:1.5px solid #4CAF50; background:#4CAF50; color:#fff; font-weight:600;">🧑 Mệnh gia chủ</button>
-                    </div>
-                </div>
-                <!-- Nút Xác nhận dời xuống đây (dưới cùng các nút nhập/chọn) để không còn nằm
-                     lẫn giữa hàng Hướng/Nước Đến/Nước Đi, tránh gây hiểu nhầm nó thuộc về đó. -->
-                <div style="flex:1 1 100%; min-width:100px; margin-top:6px;">
-                    <button onclick="xacNhanThuyKhau()" style="padding:6px 6px; font-size:12px; width:100%; height:34px; white-space:nowrap;">✅ Xác nhận</button>
+            </div>
+            <!-- Bật/tắt 2 dải Bát Trạch (Trạch đất / Mệnh gia chủ) trên la bàn 24 sơn -->
+            <div id="tpBatTrach24SonRow" style="display:block; margin-top:6px;">
+                <label style="font-size:10px; display:block; margin-bottom:1px;">🀄 Dải Bát Trạch (trên la bàn 24 sơn)</label>
+                <div style="display:flex; gap:4px;">
+                    <button id="btnToggleBatTrachTrach24Son" type="button" onclick="toggleBatTrachTrach24Son()" style="flex:1; padding:5px 4px; font-size:11px; border-radius:6px; cursor:pointer; border:1.5px solid #4CAF50; background:#4CAF50; color:#fff; font-weight:600;">🏠 Trạch đất</button>
+                    <button id="btnToggleBatTrachMenh24Son" type="button" onclick="toggleBatTrachMenh24Son()" style="flex:1; padding:5px 4px; font-size:11px; border-radius:6px; cursor:pointer; border:1.5px solid #4CAF50; background:#4CAF50; color:#fff; font-weight:600;">🧑 Mệnh gia chủ</button>
                 </div>
             </div>
             <!-- Chỉ dùng cho la bàn Bát Trạch (8 cung) — chọn nền la bàn tra theo Trạch đất
@@ -359,6 +356,9 @@
             <div id="tpBatTrachCheDoRow" style="display:none; gap:6px; margin-top:6px;">
                 <button id="btnBatTrachTheoTrach" type="button" onclick="chonCheDoBatTrach('trach')" style="flex:1; padding:5px 6px; font-size:11px; border-radius:6px; cursor:pointer; border:1.5px solid #999; background:#fff; color:#555; font-weight:600;">🏠 Theo Trạch đất</button>
                 <button id="btnBatTrachTheoMenh" type="button" onclick="chonCheDoBatTrach('menh')" style="flex:1; padding:5px 6px; font-size:11px; border-radius:6px; cursor:pointer; border:1.5px solid #4CAF50; background:#4CAF50; color:#fff; font-weight:600;">🧑 So Mệnh gia chủ</button>
+            </div>
+            <div style="margin-top:6px;">
+                <button onclick="xacNhanThuyKhau()" style="padding:6px 6px; font-size:12px; width:100%; height:34px; white-space:nowrap;">✅ Xác nhận</button>
             </div>
             <div class="ket-qua-box" id="ketQuaThuyKhau" style="display:none;"></div>
         </div>
@@ -373,8 +373,6 @@
                 <details open>
                     <summary style="cursor:pointer; font-weight:700; color:#8b0000;">📖 Tên các vòng la bàn Trường Sinh (từ trong ra ngoài)</summary>
                     <div style="display:flex; gap:6px; align-items:flex-start; margin:3px 0;"><span style="flex:0 0 28px; height:12px; margin-top:3px; border-radius:3px; border:1px solid #b9ad98; background:#ffffff;"></span><span><b>Tâm</b> — tên Cục/Hành, Nước Đến, Nước Đi (chế độ Tọa nhà thì hiện Tọa).</span></div>
-                    <div style="display:flex; gap:6px; align-items:flex-start; margin:3px 0;"><span style="flex:0 0 28px; height:12px; margin-top:3px; border-radius:3px; border:1px solid #b9ad98; background:linear-gradient(90deg,#42a5f5 50%,#e53935 50%);"></span><span><b>Dải Bát Trạch – Mệnh</b> — Du Niên theo Quái <b>Mệnh</b> gia chủ (nút 🧑 Mệnh gia chủ); dải trong cùng.</span></div>
-                    <div style="display:flex; gap:6px; align-items:flex-start; margin:3px 0;"><span style="flex:0 0 28px; height:12px; margin-top:3px; border-radius:3px; border:1px solid #b9ad98; background:linear-gradient(90deg,#42a5f5 50%,#e53935 50%);"></span><span><b>Dải Bát Trạch – Trạch</b> — Du Niên theo Quái <b>Trạch</b> của hướng nhà (nút 🏠 Trạch đất); nằm ngoài dải Mệnh. Hai dải bật/tắt độc lập.</span></div>
                     <div style="display:flex; gap:6px; align-items:flex-start; margin:3px 0;"><span style="flex:0 0 28px; height:12px; margin-top:3px; border-radius:3px; border:1px solid #b9ad98; background:linear-gradient(90deg,#e8dcc8 34%,#d8e8dc 34%,#d8e8dc 67%,#dce4f0 67%);"></span><span><b>Nhân bàn</b> — 24 sơn, lệch <b>−7,5°</b> so với Địa bàn.</span></div>
                     <div style="display:flex; gap:6px; align-items:flex-start; margin:3px 0;"><span style="flex:0 0 28px; height:12px; margin-top:3px; border-radius:3px; border:1px solid #b9ad98; background:#f1e9d8;"></span><span><b>Vòng Long Pháp – Luận Long</b> — dành riêng cho luận Long, <i>hiện chưa có nội dung</i>.</span></div>
                     <div style="display:flex; gap:6px; align-items:flex-start; margin:3px 0;"><span style="flex:0 0 28px; height:12px; margin-top:3px; border-radius:3px; border:1px solid #b9ad98; background:linear-gradient(90deg,#e8dcc8 34%,#d8e8dc 34%,#d8e8dc 67%,#dce4f0 67%);"></span><span><b>Thiên bàn</b> — 24 sơn, lệch <b>+7,5°</b> so với Địa bàn.</span></div>
@@ -455,18 +453,14 @@
                     <label style="font-size:10px; display:block; margin-bottom:1px; font-weight:600; color:#444;">🎨 Ranh 8</label>
                     <input type="color" id="tnColorRanh8Huong" value="#1565c0" style="height:24px; padding:2px; cursor:pointer; width:100%; max-width:70px;" oninput="capNhatMauRanh8TamNha()" onchange="capNhatMauRanh8TamNha()">
                 </div>
-                <div style="flex:1; min-width:70px;">
-                    <label style="font-size:10px; display:block; margin-bottom:1px; font-weight:600; color:#444;">🔄 Xoay ảnh</label>
-                    <div style="display:flex; align-items:center; gap:2px;">
-                        <input type="number" id="tnBgRotation" value="0" step="1" style="width:52px; padding:2px 4px; border:1px solid #ccc; border-radius:4px; font-size:13px; height:24px;" oninput="capNhatXoayAnhTamNha(this.value)" onchange="capNhatXoayAnhTamNha(this.value)">
-                        <span style="font-size:12px;">°</span>
-                    </div>
-                </div>
             </div>
-            <div class="scale-row" style="margin-top:6px; display:flex; align-items:center; gap:8px; flex-wrap:wrap; border-top:1px dashed #ddd; padding-top:6px;">
-                <label style="font-size:12px; font-weight:600; color:#444; white-space:nowrap;">🔤 Cỡ chữ la bàn:</label>
-                <input type="range" id="tnFontSize" min="4" max="24" value="10" style="width:120px; padding:0; height:6px; cursor:pointer;" oninput="updateTamNhaFontSize(this.value)">
-                <span id="tnFontSizeLabel" style="font-size:12px; color:#444; min-width:30px; text-align:center;">10px</span>
+            <div class="scale-row" style="margin-top:6px; display:flex; align-items:center; gap:6px; flex-wrap:nowrap; border-top:1px dashed #ddd; padding-top:6px;">
+                <label style="font-size:11px; font-weight:600; color:#444; white-space:nowrap;">🔄 Xoay ảnh:</label>
+                <input type="number" id="tnBgRotation" value="0" step="1" style="width:46px; flex:0 0 auto; padding:2px 4px; border:1px solid #ccc; border-radius:4px; font-size:13px; height:24px;" oninput="capNhatXoayAnhTamNha(this.value)" onchange="capNhatXoayAnhTamNha(this.value)">
+                <span style="font-size:12px;">°</span>
+                <label style="font-size:11px; font-weight:600; color:#444; white-space:nowrap; margin-left:6px;">🔤 Cỡ chữ:</label>
+                <input type="range" id="tnFontSize" min="4" max="24" value="10" style="flex:1; min-width:50px; padding:0; height:6px; cursor:pointer;" oninput="updateTamNhaFontSize(this.value)">
+                <span id="tnFontSizeLabel" style="font-size:11px; color:#444; min-width:28px; text-align:center;">10px</span>
             </div>
         </div>
 
@@ -494,7 +488,7 @@
         </div>
 
         <div class="svg-wrap" id="tnSvgWrap" style="position:relative;">
-            <button id="btnResetView" onclick="resetTamNhaView()" style="position:absolute; top:8px; left:8px; z-index:30; padding:4px 12px; background:rgba(46,125,50,0.85); color:white; border:1px solid rgba(255,255,255,0.4); border-radius:20px; cursor:pointer; font-size:11px; font-weight:700; width:auto; margin:0;">🔄 Reset</button>
+            <button id="btnResetView" onclick="resetTamNhaView()" style="position:absolute; top:8px; left:6px; z-index:30; padding:4px 6px; background:rgba(46,125,50,0.85); color:white; border:1px solid rgba(255,255,255,0.4); border-radius:20px; cursor:pointer; font-size:11px; font-weight:700; width:auto; margin:0;">🧭 Bắc ở 12h</button>
             <svg id="tnSvgMain" style="width:100%;height:100%;overflow:visible;cursor:crosshair;"></svg>
             <div style="position:absolute; bottom:15px; right:15px; display:flex; flex-direction:column; align-items:center; gap:4px; z-index:10; pointer-events:none;">
                 <div style="display:flex; gap:4px; pointer-events:auto;">

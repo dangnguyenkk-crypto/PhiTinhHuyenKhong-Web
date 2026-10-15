@@ -119,26 +119,32 @@ function veCompassChung(svgId, cx, cy, houseFacing, options) {
     // 8 hướng -> 24 sơn -> 60 Thấu Địa Long -> vạch chia độ -> số độ.
     const {
     // ---- VÒNG 8 HƯỚNG (trong cùng) ----
-    r8Outer=125, // Bán kính ngoài của vòng 8 hướng
-    r8Inner=84,
-    r8Text=100,
+            r8Outer=160, // Bán kính ngoài của vòng 8 hướng
+            r8Inner=95,
+            r8Text=135,
     // ---- VÒNG 24 SƠN ----
-            r24Outer=355,
-            r24Inner=125,
-            r24Text=320,
-    // ---- VÒNG 60 THẤU ĐỊA LONG ----
-                rTdlOuter=410, // Bán kính ngoài của vòng 60 Long
-                rTdlInner=355, // Bán kính trong của vòng 60 Long (sát vòng 24 sơn)
-                rTdlTick=70,    // Chiều dài vạch chia 60 Long (tính từ rTdlOuter vào trong)
-            rDoTick=410, // Điểm bắt đầu vẽ vạch chia độ (tính từ tâm)
-            rDoText=450, // Vị trí đặt số độ (0°, 10°, 20°...)
-            rDoSo=430,// Bán kính ngoài cùng của la bàn (viền ngoài)
+            r24Outer: r24OuterGoc=355,
+            r24Inner=160,
+            r24Text: r24TextGoc=335,
+            rDoTick=355, // Điểm bắt đầu vẽ vạch chia độ (sát vòng 24 sơn)
+            rDoText=395, // Vị trí đặt số độ (0°, 10°, 20°...)
+            rDoSo=375,// Bán kính ngoài cùng của la bàn (viền ngoài)
     // ---- KIM CHỈ NAM & TIA ----
             rTia=1400,
             rTiaStart=35,
-            rKim=410, doMo=0.7,
+            rKim=360, doMo=0.7,
             mauTia=mauTiaHienTai, isReset=false, resetOffset=0, sonDen=null, sonDi=null,
-            showLabel=true, fontSize=15, mauRanh8=mauRanh8HienTai } = options || {};
+            showLabel=true, fontSize=15, mauRanh8=mauRanh8HienTai,
+            batTrach=[], tuBach=null, dayBatTrach=80, showKimBac=true } = options || {};
+    // Mỗi dải Bát Trạch dày 80, nằm NGOÀI vòng 24 sơn -> vòng 24 sơn thu hẹp lại để các dải vừa khít trong bán kính gốc
+    const DAY_DAI_BAT_TRACH = dayBatTrach;
+    const nBatTrach = (batTrach && batTrach.length) ? batTrach.length : 0;
+    const r24Outer = r24OuterGoc - nBatTrach * DAY_DAI_BAT_TRACH;
+    const r24Text = r24TextGoc - nBatTrach * DAY_DAI_BAT_TRACH;
+        // Có Tử Bạch: tên hướng dời ra sát mép ngoài vòng 8 hướng, số Tử Bạch nằm bên trong
+        const rTenHuong = tuBach ? (r8Outer - (r8Outer - r8Inner) * 0.26) : r8Text;
+        const rSoTuBach = r8Inner + (r8Outer - r8Inner) * 0.32;
+        const MAU_SO_TU_BACH = { 1:"#1565c0", 2:"#8d6e34", 3:"#2e7d32", 4:"#2e7d32", 5:"#8d6e34", 6:"#b8860b", 7:"#b8860b", 8:"#8d6e34", 9:"#c62828" };
 
     let rTamTrong = rTiaStart;
     let totalRotation = isReset ? resetOffset : 0;
@@ -160,50 +166,6 @@ function veCompassChung(svgId, cx, cy, houseFacing, options) {
             html += `<text x="${xt.toFixed(1)}" y="${yt.toFixed(1)}" font-size="${fontSize+2}" font-weight="600" fill="#2a2a2a" stroke="#fff" stroke-width="2" paint-order="stroke" text-anchor="middle" dominant-baseline="middle" transform="rotate(${deg} ${xt.toFixed(1)} ${yt.toFixed(1)})">${deg}</text>`;
         }
     }
-
-        // ---- VÒNG 60 THẤU ĐỊA LONG - VẠCH BIÊN + CHỮ XUYÊN TÂM ----
-        html += `<circle cx="${cx}" cy="${cy}" r="${rTdlOuter}" fill="rgba(253,250,242,${doMo*0.6})" stroke="#3a2a1a" stroke-width="0.5" opacity="${Math.max(0.3,doMo)}"/>`;
-        html += `<circle cx="${cx}" cy="${cy}" r="${rTdlInner}" fill="none" stroke="#5c4a3a" stroke-width="0.5" opacity="0.6"/>`;
-        let rTdlText = rTdlInner + 5;
-
-        DS24_SON.forEach(s => {
-            // Vạch ranh giới sơn (biên trái và phải)
-            let rbTdl = (s.goc - 7.5 - 90) * Math.PI / 180;
-            let x1t = cx + (rTdlOuter - rTdlTick) * Math.cos(rbTdl), y1t = cy + (rTdlOuter - rTdlTick) * Math.sin(rbTdl);
-            let x2t = cx + rTdlOuter * Math.cos(rbTdl), y2t = cy + rTdlOuter * Math.sin(rbTdl);
-            html += `<line x1="${x1t.toFixed(1)}" y1="${y1t.toFixed(1)}" x2="${x2t.toFixed(1)}" y2="${y2t.toFixed(1)}" stroke="#2a2a2a" stroke-width="1.5"/>`;
-
-            // Nếu là Địa Chi, vẽ 5 vạch biên
-            if (!DIA_CHI_SET[s.ten]) return;
-            let ten5 = THAU_DIA_LONG[s.ten];
-            if (!ten5) return;
-
-            for (let k = 0; k < 5; k++) {
-                let degK = s.goc - 7.5 + 3 + k * 3;
-                let radK = (degK - 90) * Math.PI / 180;
-
-                // VẠCH BIÊN 60 LONG
-                let xk1 = cx + (rTdlOuter - rTdlTick * 0.7) * Math.cos(radK), yk1 = cy + (rTdlOuter - rTdlTick * 0.7) * Math.sin(radK);
-                let xk2 = cx + rTdlOuter * Math.cos(radK), yk2 = cy + rTdlOuter * Math.sin(radK);
-                html += `<line x1="${xk1.toFixed(1)}" y1="${yk1.toFixed(1)}" x2="${xk2.toFixed(1)}" y2="${yk2.toFixed(1)}" stroke="${mauTia}" stroke-width="0.5"/>`;
-                html += `<line x1="${xk1.toFixed(1)}" y1="${yk1.toFixed(1)}" x2="${xk2.toFixed(1)}" y2="${yk2.toFixed(1)}" stroke="#ffffff" stroke-width="1" opacity="0.2"/>`;
-
-                // ===== TÊN 60 LONG - VIẾT XUYÊN TÂM (CHỮ ĐỨNG THEO BÁN KÍNH) =====
-                let degCenter = s.goc - 7.5 + 1.5 + k * 3;
-                let radCenter = (degCenter - 90) * Math.PI / 180;
-                let xkt = cx + rTdlText * Math.cos(radCenter), ykt = cy + rTdlText * Math.sin(radCenter);
-
-                let tenDayDu = ten5[k];
-                let tenHienThi = tenDayDu; //.replace(/\s/g, '');
-                let fontSizeTdl = fontSize * 0.9;
-
-                // XOAY CHỮ: degCenter - 90 để chữ đứng dọc theo bán kính
-                let gocXoay = degCenter - 90;
-                html += `<g transform="rotate(${gocXoay.toFixed(2)} ${xkt.toFixed(1)} ${ykt.toFixed(1)})">`;
-                html += `<text x="${xkt.toFixed(1)}" y="${ykt.toFixed(1)}" font-size="${fontSizeTdl.toFixed(1)}" font-weight="700" fill="#2a2a2a" stroke="#fff" stroke-width="2" paint-order="stroke" text-anchor="start" dominant-baseline="middle">${tenHienThi}</text>`;
-                html += `</g>`;
-            }
-        });
 
     // ---- VÒNG 24 SƠN ----
     html += `<circle cx="${cx}" cy="${cy}" r="${r24Outer}" fill="rgba(253,250,242,${doMo*0.85})" stroke="#3a2a1a" stroke-width="0.5" opacity="${Math.max(0.3,doMo)}"/>`;
@@ -250,11 +212,51 @@ function veCompassChung(svgId, cx, cy, houseFacing, options) {
             html8 = `<path d="M${xS.toFixed(1)},${yS.toFixed(1)} A${r8Outer},${r8Outer} 0 0,1 ${xE.toFixed(1)},${yE.toFixed(1)} L${xSi.toFixed(1)},${ySi.toFixed(1)} A${r8Inner},${r8Inner} 0 0,0 ${xEi.toFixed(1)},${yEi.toFixed(1)} Z" fill="${MAU_BAT_QUAI[i]}" opacity="0.55" stroke="${mauRanh8}" stroke-width="0.1" stroke-opacity="0.5"/>`;
         }
         html += html8;
-        let rc = (h.goc - 90) * Math.PI / 180, xt = cx + r8Text*Math.cos(rc), yt = cy + r8Text*Math.sin(rc);
+        let rc = (h.goc - 90) * Math.PI / 180, xt = cx + rTenHuong*Math.cos(rc), yt = cy + rTenHuong*Math.sin(rc);
         let isMain = h.goc % 90 === 0;
         html += `<text x="${xt.toFixed(1)}" y="${yt.toFixed(1)}" font-size="${isMain?fontSize+2:fontSize}" font-weight="700" fill="${isMain?'#8b4500':'#1a1a1a'}" stroke="#fff" stroke-width="2.0" paint-order="stroke" text-anchor="middle" dominant-baseline="middle" transform="rotate(${h.goc} ${xt.toFixed(1)} ${yt.toFixed(1)})">${h.ten}</text>`;
+            if (tuBach && tuBach.theoPhuong && tuBach.theoPhuong[h.ten] != null) {
+                let soTB = tuBach.theoPhuong[h.ten];
+                let xs = cx + rSoTuBach*Math.cos(rc), ys = cy + rSoTuBach*Math.sin(rc);
+                html += `<text x="${xs.toFixed(1)}" y="${ys.toFixed(1)}" font-size="${(fontSize*1.9).toFixed(1)}" font-weight="900" fill="${MAU_SO_TU_BACH[soTB]}" stroke="#fff" stroke-width="3" paint-order="stroke" text-anchor="middle" dominant-baseline="middle" transform="rotate(${h.goc} ${xs.toFixed(1)} ${ys.toFixed(1)})">${soTB}</text>`;
+            }
     });
 
+    // ---- DẢI BÁT TRẠCH (Trạch / Mệnh) — NGOÀI vòng 24 sơn ----
+    // batTrach = [{nhan, mauChu, cells:[{goc, phuong, ten, phu, mau, ungNam}]}], phần tử đầu = dải NGOÀI cùng.
+    if (batTrach && batTrach.length) {
+        let rCur = r24Outer;
+        function veChuDai(r, goc, noiDung, size, weight, mau) {
+            let radT = (goc - 90) * Math.PI / 180;
+            let x = cx + r * Math.cos(radT), y = cy + r * Math.sin(radT);
+            return `<g transform="rotate(${goc} ${x.toFixed(1)} ${y.toFixed(1)})" pointer-events="none"><text x="${x.toFixed(1)}" y="${y.toFixed(1)}" font-size="${size.toFixed(1)}" font-weight="${weight}" fill="${mau}" stroke="#fff" stroke-width="2" paint-order="stroke" text-anchor="middle" dominant-baseline="middle">${noiDung}</text></g>`;
+        }
+        batTrach.slice().reverse().forEach(function(dai) {
+            let rTr = rCur, rNg = rCur + DAY_DAI_BAT_TRACH, rChu = (rNg + rTr) / 2;
+            function duongCung(c) {
+                let rs = (c.goc - 22.5 - 90) * Math.PI / 180, re = (c.goc + 22.5 - 90) * Math.PI / 180;
+                let xsO = cx + rNg*Math.cos(rs), ysO = cy + rNg*Math.sin(rs);
+                let xeO = cx + rNg*Math.cos(re), yeO = cy + rNg*Math.sin(re);
+                let xsI = cx + rTr*Math.cos(re), ysI = cy + rTr*Math.sin(re);
+                let xeI = cx + rTr*Math.cos(rs), yeI = cy + rTr*Math.sin(rs);
+                return `M${xsO.toFixed(1)},${ysO.toFixed(1)} A${rNg},${rNg} 0 0,1 ${xeO.toFixed(1)},${yeO.toFixed(1)} L${xsI.toFixed(1)},${ysI.toFixed(1)} A${rTr},${rTr} 0 0,0 ${xeI.toFixed(1)},${yeI.toFixed(1)} Z`;
+            }
+            dai.cells.forEach(function(c) {
+                let click = c.ten ? ` style="cursor:pointer" data-dn="${c.ten}|${dai.nhan}|${c.phuong}" onclick="window.moPopupDuNien && window.moPopupDuNien('${c.ten}','${dai.nhan}','${c.phuong}')"` : "";
+                html += `<path d="${duongCung(c)}" fill="${c.mau}" fill-opacity="${Math.max(doMo, 0.5)}" stroke="#3a2a1a" stroke-width="1"${click}/>`;
+                if (c.ten) {
+                    html += veChuDai(c.phu ? rChu + fontSize*0.55 : rChu, c.goc, c.ten, fontSize*1.25, 800, dai.mauChu);
+                    if (c.phu) html += veChuDai(rChu - fontSize*0.55, c.goc, c.phu, fontSize*0.9, 700, "#333");
+                }
+            });
+            // Viền vàng cho cung có sao ứng vào NĂM XEM — vẽ lượt sau để không bị cung kề đè lên
+            dai.cells.forEach(function(c) {
+                if (c.ungNam) html += `<path d="${duongCung(c)}" fill="none" stroke="#ffb300" stroke-width="5" pointer-events="none"/>`;
+            });
+            html += `<text x="${cx}" y="${(cy - rChu + fontSize*1.6).toFixed(1)}" font-size="${(fontSize*0.6).toFixed(1)}" font-weight="700" fill="${dai.mauChu}" stroke="#fff" stroke-width="1.5" paint-order="stroke" text-anchor="middle" dominant-baseline="middle" pointer-events="none">(${dai.nhan})</text>`;
+            rCur = rNg;
+        });
+    }
     // Tia ranh 8 hướng
     DS8_HUONG.forEach((h) => {
         let aBien = (h.goc - 22.5 - 90) * Math.PI / 180;
@@ -275,11 +277,13 @@ function veCompassChung(svgId, cx, cy, houseFacing, options) {
         let x2a = xTip-tl*Math.cos(rad+ta), y2a = yTip-tl*Math.sin(rad+ta);
         return `<polygon points="${xTip.toFixed(1)},${yTip.toFixed(1)} ${x1a.toFixed(1)},${y1a.toFixed(1)} ${x2a.toFixed(1)},${y2a.toFixed(1)}" fill="${mau}" opacity="0.9"/>`;
     }
-    let radTy = (0-90)*Math.PI/180;
-    let xTyF = cx+rKim*Math.cos(radTy), yTyF = cy+rKim*Math.sin(radTy);
-    let xTyB = cx-rKim*Math.cos(radTy), yTyB = cy-rKim*Math.sin(radTy);
-    html += `<line x1="${xTyB.toFixed(1)}" y1="${yTyB.toFixed(1)}" x2="${xTyF.toFixed(1)}" y2="${yTyF.toFixed(1)}" stroke="#FFD700" stroke-width="1.8" opacity="0.9"/>`;
-    html += arrow(radTy, xTyF, yTyF, "#FFD700");
+    if (showKimBac) {
+        let radTy = (0-90)*Math.PI/180;
+        let xTyF = cx+rKim*Math.cos(radTy), yTyF = cy+rKim*Math.sin(radTy);
+        let xTyB = cx-rKim*Math.cos(radTy), yTyB = cy-rKim*Math.sin(radTy);
+        html += `<line x1="${xTyB.toFixed(1)}" y1="${yTyB.toFixed(1)}" x2="${xTyF.toFixed(1)}" y2="${yTyF.toFixed(1)}" stroke="#FFD700" stroke-width="1.8" opacity="0.9"/>`;
+        html += arrow(radTy, xTyF, yTyF, "#FFD700");
+    }
     let xHF = cx+rKim*Math.cos(radMui), yHF = cy+rKim*Math.sin(radMui);
     let xHB = cx-rKim*Math.cos(radMui), yHB = cy-rKim*Math.sin(radMui);
     html += `<line x1="${xHB.toFixed(1)}" y1="${yHB.toFixed(1)}" x2="${xHF.toFixed(1)}" y2="${yHF.toFixed(1)}" stroke="#00c8c8" stroke-width="1.8"/>`;
@@ -288,6 +292,10 @@ function veCompassChung(svgId, cx, cy, houseFacing, options) {
         let xLH = cx+(rDoSo+40)*Math.cos(radMui), yLH = cy+(rDoSo+40)*Math.sin(radMui);
         html += `<text x="${xLH.toFixed(1)}" y="${yLH.toFixed(1)}" font-size="${fontSize+3}" font-weight="800" fill="#ff0000" stroke="#fff" stroke-width="1.5" paint-order="stroke" text-anchor="middle" transform="rotate(${houseFacing} ${xLH.toFixed(1)} ${yLH.toFixed(1)})">▲ HƯỚNG NHÀ</text>`;
     }
+        if (tuBach && tuBach.trung != null) {
+            html += `<text x="${cx}" y="${(cy-fontSize*1.5).toFixed(1)}" font-size="${(fontSize*3.2).toFixed(1)}" font-weight="900" fill="${MAU_SO_TU_BACH[tuBach.trung]}" stroke="#fff" stroke-width="4" paint-order="stroke" text-anchor="middle" dominant-baseline="middle">${tuBach.trung}</text>`;
+            html += `<text x="${cx}" y="${(cy+fontSize*2).toFixed(1)}" font-size="${(fontSize*0.8).toFixed(1)}" font-weight="700" fill="#5c4a3a" stroke="#fff" stroke-width="2.5" paint-order="stroke" text-anchor="middle" dominant-baseline="middle">${tuBach.nhan || ""}</text>`;
+        }
     // Chấm đỏ tâm (nền trắng mờ)
     html += `<circle cx="${cx}" cy="${cy}" r="7" fill="#ff1a1a" stroke="#ffffff" stroke-width="2.5"/></g>`;
     svg.innerHTML = html;

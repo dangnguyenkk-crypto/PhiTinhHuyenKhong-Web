@@ -11,7 +11,7 @@
             vertices: [], closed: false, lockedEdges: [], mode: 'add',
             zoomLevel: 1, panX: 0, panY: 0, pxPerMeter: 10,
             centroidWorld: null, bgImage: null, bgImgWorld: null, bgImgRotation: 0,
-            isResetView: false, huongResetCu: 0, fontSizeCompass: 10,
+            isResetView: true, huongResetCu: 0, fontSizeCompass: 10,
             dragging: false, lastTouch: null,
             doors: [], showCompass: true, kieuLaBan: 'tron24son'
         };
@@ -166,12 +166,15 @@
                 const tempSvg = document.createElementNS('http://www.w3.org/2000/svg','svg');
                 tempSvg.setAttribute('id','tempSvg'); document.body.appendChild(tempSvg);
                 veCompassChung('tempSvg', p.x, p.y, az, {
-                    rDoSo:rDoSo,rDoTick:rDoTick,rDoText:rDoText,r8Outer:r8Out,r8Inner:r8In,r8Text:r8Text,
+                    rDoSo:rDoSo,rDoTick:rDoTick,rDoText:rDoText,r8Outer:r8Out,r8Inner:(window.layTuBachChoLaBan ? minDim*0.10 : r8In),r8Text:r8Text,
                     r24Outer:r24Out,r24Inner:r24In,r24Text:r24Text,
                     rTdlOuter:rTdlOut,rTdlInner:rTdlIn,rTdlTick:rTdlTk,
-                    rTia:rDoSo*2.8,rTiaStart:rTiaSt,rKim:rKim,
+                    rTia:rDoSo*2.8,rTiaStart:rTiaSt,rKim:rDoTick,showKimBac:false,
                     doMo:0,mauTia:mauTiaHienTai,isReset:tamNhaData.isResetView,resetOffset:tamNhaData.isResetView?-az:0,
-                    sonDen:null,sonDi:null,showLabel:false,fontSize:tamNhaData.fontSizeCompass,mauRanh8:mauRanh8HienTai
+                     sonDen:null,sonDi:null,showLabel:false,fontSize:tamNhaData.fontSizeCompass,mauRanh8:mauRanh8HienTai,
+                     tuBach: window.layTuBachChoLaBan ? window.layTuBachChoLaBan() : null,
+                    batTrach: window.layDaiBatTrachMenhChoLaBan ? window.layDaiBatTrachMenhChoLaBan(az) : [],
+                    dayBatTrach: minDim*0.075
                 });
                 html += tempSvg.innerHTML; document.body.removeChild(tempSvg);
             }
@@ -205,6 +208,27 @@
             }
         }
         function onTamNhaPointerUp() { tamNhaData.dragging = false; if (tamNhaData.mode !== 'room') svgMain.style.cursor = 'crosshair'; }
+                // Bấm vào ô Du Niên dù có phòng vẽ đè lên: bắt ở pha capture, dò các phần tử nằm dưới điểm chạm
+                function moPopupDuNienTaiDiem(e) {
+                    if (tamNhaData.mode === 'room') return; // đang vẽ phòng thì không chặn
+                    if (typeof window.moPopupDuNien !== 'function' || typeof document.elementsFromPoint !== 'function') return;
+                    var t = e.touches ? e.touches[0] : e;
+                    if (!t) return;
+                    var ds = document.elementsFromPoint(t.clientX, t.clientY);
+                    for (var i = 0; i < ds.length; i++) {
+                        var el = ds[i];
+                        if (el.hasAttribute && el.hasAttribute('data-dn') && svgMain.contains(el)) {
+                            e.preventDefault(); e.stopPropagation();
+                            var p3 = el.getAttribute('data-dn').split('|');
+                            window.moPopupDuNien(p3[0], p3[1], p3[2]);
+                            return;
+                        }
+                    }
+                }
+                if (svgMain) {
+                    svgMain.addEventListener('mousedown', moPopupDuNienTaiDiem, true);
+                    svgMain.addEventListener('touchstart', moPopupDuNienTaiDiem, {capture: true, passive: false});
+                }
         if (svgMain) {
             svgMain.addEventListener('mousedown', onTamNhaPointerDown);
             svgMain.addEventListener('mousemove', onTamNhaPointerMove);
@@ -295,10 +319,36 @@
         function zoomTamNha(f) { tamNhaData.zoomLevel=Math.max(0.01,Math.min(100,tamNhaData.zoomLevel*f)); redrawTamNha(); }
         window.zoomTamNha = zoomTamNha;
         function zoomToFitTamNha() {
-            if (!tamNhaData.bgImage||!tamNhaData.bgImgWorld){tamNhaData.zoomLevel=1;tamNhaData.panX=0;tamNhaData.panY=0;redrawTamNha();return;}
-            const rect=wrap.getBoundingClientRect(),cw=rect.width,ch=rect.height,margin=0.92;
-            const fit=Math.min((cw*margin)/tamNhaData.bgImgWorld.ww,(ch*margin)/tamNhaData.bgImgWorld.wh);
-            tamNhaData.zoomLevel=fit;tamNhaData.panX=0;tamNhaData.panY=0;redrawTamNha();
+            const rect = wrap.getBoundingClientRect(), cw = rect.width, ch = rect.height, margin = 0.85;
+            // Gom mọi điểm của bản vẽ: đỉnh nhà + đỉnh các phòng
+            let pts = (tamNhaData.vertices || []).slice();
+            if (window.VePhongModuleTamNha) {
+                window.VePhongModuleTamNha.getRooms().forEach(function (r) { pts = pts.concat(r.points || []); });
+            }
+            let minX, maxX, minY, maxY;
+            if (pts.length > 0) {
+                minX = Math.min.apply(null, pts.map(function (p) { return p.x; }));
+                maxX = Math.max.apply(null, pts.map(function (p) { return p.x; }));
+                minY = Math.min.apply(null, pts.map(function (p) { return p.y; }));
+                maxY = Math.max.apply(null, pts.map(function (p) { return p.y; }));
+            } else if (tamNhaData.bgImage && tamNhaData.bgImgWorld) {
+                // Chưa vẽ gì: căn theo ảnh nền
+                const b = tamNhaData.bgImgWorld;
+                minX = b.wx; maxX = b.wx + b.ww; maxY = b.wy; minY = b.wy - b.wh;
+            } else {
+                tamNhaData.zoomLevel = 1; tamNhaData.panX = 0; tamNhaData.panY = 0; redrawTamNha(); return;
+            }
+            const bw = Math.max(maxX - minX, 1e-6), bh = Math.max(maxY - minY, 1e-6);
+            const ppm = tamNhaData.pxPerMeter || 10;
+            // s = pxPerMeter * zoom  ->  zoom = (kích thước khung * margin) / (kích thước bản vẽ * pxPerMeter)
+            let zoom = Math.min((cw * margin) / (bw * ppm), (ch * margin) / (bh * ppm));
+            zoom = Math.max(0.01, Math.min(100, zoom));
+            const s = ppm * zoom;
+            const midX = (minX + maxX) / 2, midY = (minY + maxY) / 2;
+            tamNhaData.zoomLevel = zoom;
+            tamNhaData.panX = -midX * s;   // đưa tâm bản vẽ về giữa khung
+            tamNhaData.panY = midY * s;    // trục Y của world hướng lên nên đảo dấu
+            redrawTamNha();
         }
         window.zoomToFitTamNha = zoomToFitTamNha;
         // Calibrate dialog (prompt-free, works in sandboxed iframe)
@@ -356,9 +406,18 @@
         window.calibrateTamNhaScale = calibrateTamNhaScale;
         function resetTamNhaView() {
             var inputHuong=document.getElementById('tnHuongLaBan'), huongHienTai=parseFloat(inputHuong.value)||0;
-            if (!tamNhaData.isResetView) { tamNhaData.huongResetCu=huongHienTai; tamNhaData.isResetView=true; redrawTamNha(); var btn=document.getElementById('btnResetView'); if (btn) btn.textContent='↩️ Trở lại'; if (typeof capNhatHuongTuTamNha==='function') capNhatHuongTuTamNha(); }
-            else { tamNhaData.isResetView=false; redrawTamNha(); var btn=document.getElementById('btnResetView'); if (btn) btn.textContent='🔄 Reset'; if (typeof capNhatHuongTuTamNha==='function') capNhatHuongTuTamNha(); }
+            if (!tamNhaData.isResetView) { tamNhaData.huongResetCu=huongHienTai; tamNhaData.isResetView=true; }
+            else { tamNhaData.isResetView=false; }
+            redrawTamNha();
+            capNhatNhanNutResetLaBan();
+            if (typeof capNhatHuongTuTamNha==='function') capNhatHuongTuTamNha();
         }
+        // isResetView = true: hướng nhà ở 12h -> nút mời chuyển sang "0 độ tại 12h"; ngược lại mời chuyển "Theo độ nhà"
+        function capNhatNhanNutResetLaBan() {
+            var btn=document.getElementById('btnResetView');
+            if (btn) btn.textContent = tamNhaData.isResetView ? '🧭 Bắc ở 12h' : '🏠 hướng 12h';
+        }
+        window.capNhatNhanNutResetLaBan = capNhatNhanNutResetLaBan;
         window.resetTamNhaView = resetTamNhaView;
         function panTamNha(dx, dy) { tamNhaData.panX+=dx*30; tamNhaData.panY+=dy*30; redrawTamNha(); }
         window.panTamNha = panTamNha;
@@ -444,6 +503,7 @@
         document.getElementById("tnColorRanh8Huong").addEventListener("input", function() { capNhatMauRanh8TamNha(); });
         document.getElementById("tnColorRanh8Huong").addEventListener("change", function() { capNhatMauRanh8TamNha(); });
         setTimeout(resizeTamNhaSvg, 100);
+        capNhatNhanNutResetLaBan();
 
         // ==== LƯU / MỞ TOÀN BỘ TRẠNG THÁI (dùng bởi Hồ Sơ Nhà — ho-so.js) ====
         function layStateTamNha() {
@@ -529,7 +589,8 @@
             }
         }
         window.apDungStateTamNha = apDungStateTamNha;
-
+        var _elNamXemTN = document.getElementById('namXem');
+        if (_elNamXemTN) _elNamXemTN.addEventListener('change', function() { redrawTamNha(); });
         // =====================================================================
         // ===== CHUYỂN TAB & KHỞI TẠO =====
         // =====================================================================

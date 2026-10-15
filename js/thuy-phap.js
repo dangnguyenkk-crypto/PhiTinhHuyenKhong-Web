@@ -126,27 +126,27 @@
             // la bàn Trường Sinh (kiểu la bàn thứ 3) — độc lập với la bàn Bát Trạch 8 cung
             // riêng (kiểu la bàn thứ 4, vẫn giữ nguyên không đổi). Mặc định BẬT cả 2 để giữ
             // hành vi hữu ích ngay từ đầu; người dùng có thể tắt riêng từng dải nếu thấy rối.
-            let hienThiBatTrachTrachTrongTruongSinh = true;
-            let hienThiBatTrachMenhTrongTruongSinh = true;
-            function capNhatNutToggleBatTrachTrongTS() {
+            let hienThiBatTrachTrach24Son = true;
+            let hienThiBatTrachMenh24Son = true;
+            function capNhatNutToggleBatTrach24Son() {
                 function apDungNut(id, dangBat) {
                     let btn = document.getElementById(id); if (!btn) return;
                     btn.style.background = dangBat ? "#4CAF50" : "#fff";
                     btn.style.color = dangBat ? "#fff" : "#555";
                     btn.style.borderColor = dangBat ? "#4CAF50" : "#999";
                 }
-                apDungNut("btnToggleBatTrachTrachTrongTS", hienThiBatTrachTrachTrongTruongSinh);
-                apDungNut("btnToggleBatTrachMenhTrongTS", hienThiBatTrachMenhTrongTruongSinh);
+                apDungNut("btnToggleBatTrachTrach24Son", hienThiBatTrachTrach24Son);
+                apDungNut("btnToggleBatTrachMenh24Son", hienThiBatTrachMenh24Son);
             }
-            window.toggleBatTrachTrachTrongTruongSinh = function() {
-                hienThiBatTrachTrachTrongTruongSinh = !hienThiBatTrachTrachTrongTruongSinh;
-                capNhatNutToggleBatTrachTrongTS();
-                if (typeof veLaBanTruongSinh === "function") veLaBanTruongSinh();
+            window.toggleBatTrachTrach24Son = function() {
+                hienThiBatTrachTrach24Son = !hienThiBatTrachTrach24Son;
+                capNhatNutToggleBatTrach24Son();
+                veCompassOverlay(parseFloat(document.getElementById("houseFacing")?.value) || 0);
             };
-            window.toggleBatTrachMenhTrongTruongSinh = function() {
-                hienThiBatTrachMenhTrongTruongSinh = !hienThiBatTrachMenhTrongTruongSinh;
-                capNhatNutToggleBatTrachTrongTS();
-                if (typeof veLaBanTruongSinh === "function") veLaBanTruongSinh();
+            window.toggleBatTrachMenh24Son = function() {
+                hienThiBatTrachMenh24Son = !hienThiBatTrachMenh24Son;
+                capNhatNutToggleBatTrach24Son();
+                veCompassOverlay(parseFloat(document.getElementById("houseFacing")?.value) || 0);
             };
             let imgOffset = {x:0, y:0}; // độ lệch ảnh nền (px) so với vị trí gốc — la bàn luôn đứng yên ở giữa khung
             let imgScale = 1; // tỉ lệ phóng to/thu nhỏ ảnh nền
@@ -247,6 +247,8 @@
                 // dụng và chỉ cần hiện khi đang ở la bàn Trường Sinh.
                 let rowDiaChi = document.getElementById("tpDiaChiRow");
                 if (rowDiaChi) rowDiaChi.style.display = (kieuMoi === "truongSinh") ? "flex" : "none";
+                                let rowBT24 = document.getElementById("tpBatTrach24SonRow");
+                                if (rowBT24) rowBT24.style.display = (kieuMoi === "tron24son") ? "block" : "none";
 
                 veCompassOverlay(parseFloat(document.getElementById('houseFacing').value) || 0);
 
@@ -547,7 +549,7 @@
                 //     "Tọa: …" (chế độ Tọa nhà). Chưa chọn Nước Đi thì hiện lời nhắc chọn.
                 // (2) DẢI BÁT TRẠCH — tối đa 2 dải, mỗi dải dày CỐ ĐỊNH 40 (DAY_DAI_BAT_TRACH_TS), xếp từ
                 //     rInner=200 đi vào tâm: Trạch (ngoài) rồi Mệnh (trong). Dải nào tắt
-                //     (hienThiBatTrachTrachTrongTruongSinh / hienThiBatTrachMenhTrongTruongSinh) thì bỏ qua,
+                //     (hienThiBatTrachTrach24Son / hienThiBatTrachMenh24Son) thì bỏ qua,
                 //     dải còn lại dịch sát rInner (KHÔNG giãn dày ra). 8 phương vị × 45°, tô theo Du Niên.
                 // (3) NHÂN BÀN    r 200→270 (rInner→rNhanNgoai): 24 sơn, góc = Địa bàn − 7.5°.
                 // (4) VÒNG LONG PHÁP – LUẬN LONG   r 270→340 (rNhanNgoai→rLongPhapNgoai): CHỖ GIỮ CHỖ,
@@ -588,12 +590,10 @@
                 const rTextNhan = 235, rTextThien = 375;
                 const DO_LECH_NHAN_THIEN = 7.5; // Nhân bàn = Địa − 7.5°, Thiên bàn = Địa + 7.5°
                 const rDoTick = rLongOuter, rDoText = rLongOuter + 40, rDoSo = rLongOuter + 20;
-                // ---- 2 dải Bát Trạch TÍCH HỢP (Trạch đất / Mệnh gia chủ) — chèn NGAY BÊN TRONG vòng
                 // Long Pháp (bắt đầu từ rInner=200 đi vào tâm), mỗi dải dày cố định 40, bật/tắt độc lập từng
-                // dải (hienThiBatTrachTrachTrongTruongSinh / hienThiBatTrachMenhTrongTruongSinh). Dải nào tắt
+                // dải (hienThiBatTrachTrach24Son / hienThiBatTrachMenh24Son). Dải nào tắt
                 // thì bỏ qua và dải còn lại dịch ra sát rInner — không giãn dày ra, nên khi cả 2 dải tắt hoặc
                 // chỉ bật 1 dải, phần giữa la bàn để trống.
-                const DAY_DAI_BAT_TRACH_TS = 40;
 
                 let houseFacing = parseFloat(document.getElementById("houseFacing")?.value) || 0;
                 // Nước Đến/Đi cho la bàn Trường Sinh giờ dùng CHUNG dropdown 24 sơn
@@ -781,75 +781,6 @@
                 // ---- VÒNG LONG PHÁP – LUẬN LONG (chỗ giữ chỗ, xem veVongLongPhapLuanLong) ----
                 html += veVongLongPhapLuanLong(cx, cy, rNhanNgoai, rLongPhapNgoai, tpFontSize, DO_LECH_NHAN_THIEN, vongLongPhap);
 
-                // ---- 2 DẢI BÁT TRẠCH TÍCH HỢP (Trạch đất / Mệnh gia chủ) — ngay bên trong
-                // vòng 12 Địa Chi (từ rInner=200 trở vào), mỗi dải tra Du Niên theo PHƯƠNG VỊ
-                // tuyệt đối (8 hướng), dùng lại đúng bảng duNienBatTrach + hàm timQuaiTrachTheoGoc/
-                // mauTheoDuNien đã có ở la bàn Bát Trạch 8 cung (kiểu la bàn thứ 4) — KHÔNG
-                // tính lại bằng công thức riêng, tránh trùng lặp/lệch kết quả giữa 2 nơi.
-                // Có thể bật/tắt ĐỘC LẬP từng dải qua hienThiBatTrachTrachTrongTruongSinh/
-                // hienThiBatTrachMenhTrongTruongSinh; dải nào tắt thì bỏ qua hoàn toàn, dải
-                // còn lại (nếu bật) sẽ chiếm luôn phần bán kính vừa nhường ra (tính động qua
-                // biến raNgoaiVaoTrong trong vòng lặp cacDai bên dưới) để không có khoảng trống rỗng.
-                if (hienThiBatTrachTrachTrongTruongSinh || hienThiBatTrachMenhTrongTruongSinh) {
-                    let quaiTrachNhaTS = timQuaiTrachTheoGoc(houseFacing);
-                    let bangDuNienTrachTS = duNienBatTrach[quaiTrachNhaTS.ten];
-                    let menhGiaChuTS = null, bangDuNienMenhTS = null;
-                    if (hienThiBatTrachMenhTrongTruongSinh) {
-                        let namSinhTS = parseInt(document.getElementById("namSinhGiaChu")?.value) || 1990;
-                        let gioiTinhRawTS = document.getElementById("gioiTinhGiaChu")?.value;
-                        let gioiTinhChuTS = (gioiTinhRawTS === "Nữ" || gioiTinhRawTS === "nu") ? "nu" : "nam";
-                        menhGiaChuTS = window.tinhMenhQuai ? window.tinhMenhQuai(namSinhTS, gioiTinhChuTS) : null;
-                        bangDuNienMenhTS = menhGiaChuTS ? duNienBatTrach[menhGiaChuTS.cung] : null;
-                    }
-                    function duNienTaiPhuongTheoBangTS(bang, tenPhuong) {
-                        if (!bang) return null;
-                        for (let ten in bang.huong) { if (bang.huong[ten] === tenPhuong) return ten; }
-                        return null;
-                    }
-                    // Xếp thứ tự các dải TỪ NGOÀI VÀO TRONG: Trạch trước (nếu bật), rồi Mệnh
-                    // (nếu bật) — giữ nhất quán với thứ tự "Trạch → Mệnh" đã dùng ở la bàn Bát
-                    // Trạch 8 cung (vòng ngoài = Trạch, vòng trong = Mệnh khi So Mệnh).
-                    let raNgoaiVaoTrong = rInner;
-                    let cacDai = [];
-                    if (hienThiBatTrachTrachTrongTruongSinh) cacDai.push({ bang: bangDuNienTrachTS, nhan: "Trạch", mauChu: "#7a1010" });
-                    if (hienThiBatTrachMenhTrongTruongSinh) cacDai.push({ bang: bangDuNienMenhTS, nhan: "Mệnh", mauChu: "#4a148c" });
-                    cacDai.forEach(function(dai) {
-                        let rNgoaiDai = raNgoaiVaoTrong, rTrongDai = raNgoaiVaoTrong - DAY_DAI_BAT_TRACH_TS;
-                        let rTextDai = (rNgoaiDai + rTrongDai) / 2;
-                        PHUONG_VI_8.forEach(function(pv) {
-                            let gocTamPv = pv.goc;
-                            let tenDuNienPv = duNienTaiPhuongTheoBangTS(dai.bang, pv.ten);
-                            let gocStartPv = gocTamPv - 22.5, gocEndPv = gocTamPv + 22.5;
-                            let rsPv = (gocStartPv - 90) * Math.PI / 180, rePv = (gocEndPv - 90) * Math.PI / 180;
-                            let xsOPv = cx + rNgoaiDai * Math.cos(rsPv), ysOPv = cy + rNgoaiDai * Math.sin(rsPv);
-                            let xeOPv = cx + rNgoaiDai * Math.cos(rePv), yeOPv = cy + rNgoaiDai * Math.sin(rePv);
-                            let xsIPv = cx + rTrongDai * Math.cos(rePv), ysIPv = cy + rTrongDai * Math.sin(rePv);
-                            let xeIPv = cx + rTrongDai * Math.cos(rsPv), yeIPv = cy + rTrongDai * Math.sin(rsPv);
-                            let mauNenPv = tenDuNienPv ? mauTheoDuNien(tenDuNienPv) : "#cfcfcf";
-                            html += `<path d="M${xsOPv.toFixed(1)},${ysOPv.toFixed(1)} A${rNgoaiDai},${rNgoaiDai} 0 0,1 ${xeOPv.toFixed(1)},${yeOPv.toFixed(1)} L${xsIPv.toFixed(1)},${ysIPv.toFixed(1)} A${rTrongDai},${rTrongDai} 0 0,0 ${xeIPv.toFixed(1)},${yeIPv.toFixed(1)} Z" fill="${mauNenPv}" fill-opacity="${doMoNenLaBan}" stroke="#3a2a1a" stroke-width="1"/>`;
-                            let x1bPv = cx + rTrongDai * Math.cos(rsPv), y1bPv = cy + rTrongDai * Math.sin(rsPv);
-                            let x2bPv = cx + rNgoaiDai * Math.cos(rsPv), y2bPv = cy + rNgoaiDai * Math.sin(rsPv);
-                            html += `<line x1="${x1bPv.toFixed(1)}" y1="${y1bPv.toFixed(1)}" x2="${x2bPv.toFixed(1)}" y2="${y2bPv.toFixed(1)}" stroke="#3a2a1a" stroke-width="0.8"/>`;
-                            if (tenDuNienPv) {
-                                let radTPv = (gocTamPv - 90) * Math.PI / 180;
-                                let xDNPv = cx + rTextDai * Math.cos(radTPv), yDNPv = cy + rTextDai * Math.sin(radTPv);
-                                html += `<g transform="rotate(${gocTamPv} ${xDNPv.toFixed(1)} ${yDNPv.toFixed(1)})"><text x="${xDNPv.toFixed(1)}" y="${yDNPv.toFixed(1)}" font-size="${(tpFontSize*0.85).toFixed(1)}" font-weight="800" fill="${dai.mauChu}" stroke="#fff" stroke-width="2.5" paint-order="stroke" text-anchor="middle" dominant-baseline="middle">${tenDuNienPv}</text></g>`;
-                            }
-                        });
-                        raNgoaiVaoTrong = rTrongDai;
-                    });
-                    // Nhãn ngắn "Trạch"/"Mệnh" đặt tại đúng hướng Bắc (0°, phía trên la bàn) của
-                    // mỗi dải, để phân biệt dải nào là dải nào khi cả 2 cùng hiển thị.
-                    let rRaNgoai2 = rInner;
-                    cacDai.forEach(function(dai) {
-                        let rTrongDai2 = rRaNgoai2 - DAY_DAI_BAT_TRACH_TS;
-                        let rTextNhan = (rRaNgoai2 + rTrongDai2) / 2;
-                        let xNhan = cx, yNhan = cy - rTextNhan;
-                        html += `<text x="${xNhan.toFixed(1)}" y="${yNhan.toFixed(1)}" font-size="${(tpFontSize*0.6).toFixed(1)}" font-weight="700" fill="${dai.mauChu}" opacity="0.6" text-anchor="middle" dominant-baseline="middle">(${dai.nhan})</text>`;
-                        rRaNgoai2 = rTrongDai2;
-                    });
-                }
-
                 // Kim chỉ hướng nhà — đặt ra ngoài vòng chia độ (rDoSo) để không đè lên số độ
                 let radMui = (houseFacing - 90) * Math.PI / 180;
                 let rKimHuong = rDoSo + 25;
@@ -926,13 +857,77 @@
             // Lục Sát > Ngũ Quỷ > Họa Hại (thang -60/-70/-80/-90).
             const THU_TU_CAT_BAT_TRACH = ["Sinh Khí","Thiên Y","Diên Niên","Phục Vị"];
             const THU_TU_HUNG_BAT_TRACH = ["Tuyệt Mệnh","Lục Sát","Ngũ Quỷ","Họa Hại"];
+            // ===== DỮ LIỆU DU NIÊN THEO SÁCH =====
+            // nam = các năm (Địa Chi) mà sao đó xuất hiện/ứng vào.
+            const DU_NIEN_SACH = {
+                "Sinh Khí":   { sao:"Tham Lang",  hanh:"Mộc",  muc:"Thượng cát", diem:90,  nam:["Hợi","Mão","Mùi"] },
+                "Diên Niên":  { sao:"Vũ Khúc",    hanh:"Kim",  muc:"Thượng cát", diem:90,  nam:["Tý","Dậu","Sửu"] },
+                "Thiên Y":    { sao:"Cự Môn",     hanh:"Thổ",  muc:"Trung cát",  diem:70,  nam:["Thìn","Tuất","Sửu","Mùi"] },
+                "Phục Vị":    { sao:"Tả Phụ",     hanh:"Mộc",  muc:"Tiểu cát",   diem:50,  nam:["Hợi","Mão","Mùi"], ghiChu:"Phục Vị còn có Hữu Bật — sao này không có ngũ hành cố định nên cát hung bất định." },
+                "Họa Hại":    { sao:"Lộc Tồn",    hanh:"Thổ",  muc:"Thứ hung",   diem:-60, nam:["Thìn","Tuất","Sửu","Mùi"] },
+                "Lục Sát":    { sao:"Văn Khúc",   hanh:"Thủy", muc:"Thứ hung",   diem:-60, nam:["Thân","Tý","Thìn"] },
+                "Tuyệt Mệnh": { sao:"Phá Quân",   hanh:"Kim",  muc:"Đại hung",   diem:-90, nam:["Tý","Dậu","Sửu"] },
+                "Ngũ Quỷ":    { sao:"Liêm Trinh", hanh:"Hỏa",  muc:"Đại hung",   diem:-90, nam:["Dần","Ngọ","Tuất"] }
+            };
+            const MAU_MUC_DU_NIEN = { "Thượng cát":"#0d47a1", "Trung cát":"#1976d2", "Tiểu cát":"#64b5f6", "Thứ hung":"#e53935", "Đại hung":"#7f0000" };
+            const MAU_HANH_SAO = { "Mộc":"#2e7d32", "Kim":"#b8860b", "Thủy":"#1565c0", "Hỏa":"#c62828", "Thổ":"#8d6e34" };
+            const CHI_12_NAM_XEM = ["Tý","Sửu","Dần","Mão","Thìn","Tị","Ngọ","Mùi","Thân","Dậu","Tuất","Hợi"];
+
             function mauTheoDuNien(tenDuNien) {
-                let iCat = THU_TU_CAT_BAT_TRACH.indexOf(tenDuNien);
-                if (iCat >= 0) { let bang = ["#0d47a1","#1565c0","#1976d2","#42a5f5"]; return bang[iCat]; }
-                let iHung = THU_TU_HUNG_BAT_TRACH.indexOf(tenDuNien);
-                if (iHung >= 0) { let bang = ["#7f0000","#b71c1c","#c62828","#e53935"]; return bang[iHung]; }
-                return "#cfcfcf";
+                let d = DU_NIEN_SACH[tenDuNien];
+                return d ? MAU_MUC_DU_NIEN[d.muc] : "#cfcfcf";
             }
+            // Năm xem lấy từ ô #namXem của tab Nội Khí
+            function layChiNamXem() {
+                let nam = parseInt(document.getElementById("namXem")?.value) || new Date().getFullYear();
+                return { nam: nam, chi: CHI_12_NAM_XEM[((nam + 8) % 12 + 12) % 12] };
+            }
+            function cacDuNienUngNam(chi) {
+                return Object.keys(DU_NIEN_SACH).filter(function(t) { return DU_NIEN_SACH[t].nam.indexOf(chi) >= 0; });
+            }
+            // Đối chiếu hành của sao với Nước (Thủy) — nhận xét tham khảo
+            function quanHeHanhVoiThuy(hanh) {
+                if (hanh === "Kim") return "Kim sinh Thủy: sao nuôi nước (thuận)";
+                if (hanh === "Thủy") return "Thủy – Thủy tỉ hòa";
+                if (hanh === "Mộc") return "Thủy sinh Mộc: sao hút bớt khí của nước";
+                if (hanh === "Hỏa") return "Thủy khắc Hỏa: nước chế được sao";
+                if (hanh === "Thổ") return "Thổ khắc Thủy: sao khắc nước";
+                return "";
+            }
+            function thongTinSaoHtml(ten) {
+                let d = DU_NIEN_SACH[ten]; if (!d) return "";
+                let ny = layChiNamXem(), ung = d.nam.indexOf(ny.chi) >= 0;
+                return `<br><span style="font-size:11px;color:#666;">&nbsp;&nbsp;↳ Sao <b>${d.sao}</b> (${d.hanh}), ${d.muc.toLowerCase()} · ứng các năm ${d.nam.join("/")} · ${quanHeHanhVoiThuy(d.hanh)}${ung ? ` · <b style="color:#e65100;">⏰ năm ${ny.nam} (${ny.chi}) đang ứng</b>` : ""}</span>`;
+            }
+            function dongNamXemHtml(bang) {
+                let ny = layChiNamXem(), ds = cacDuNienUngNam(ny.chi);
+                if (!ds.length) return `⏰ Năm xem ${ny.nam} (${ny.chi}): không có sao Du Niên nào ứng.<br>`;
+                return `⏰ <b>Năm xem ${ny.nam} (${ny.chi})</b> — sao đang ứng: ` + ds.map(function(t) {
+                    let d = DU_NIEN_SACH[t], ph = bang && bang.huong[t];
+                    return `${t} (${d.sao}, ${d.muc.toLowerCase()})${ph ? " tại " + ph : ""}`;
+                }).join("; ") + `<br>`;
+            }
+            // Popup chi tiết khi bấm vào ô Du Niên trên dải Bát Trạch
+            window.moPopupDuNien = function(ten, nhan, phuong) {
+                let d = DU_NIEN_SACH[ten]; if (!d) return;
+                let ny = layChiNamXem(), ung = d.nam.indexOf(ny.chi) >= 0;
+                let html = `<div style="line-height:1.7;">
+                    <div>Dải: <b>${nhan}</b> · Phương vị: <b>${phuong}</b></div>
+                    <div>Sao: <b>${d.sao}</b> · Hành: <b style="color:${MAU_HANH_SAO[d.hanh]}">${d.hanh}</b></div>
+                    <div>Mức: <b style="color:${MAU_MUC_DU_NIEN[d.muc]}">${d.muc}</b> (${d.diem > 0 ? "+" : ""}${d.diem})</div>
+                    <div>Sao xuất hiện vào các năm: <b>${d.nam.join(", ")}</b></div>
+                    <div style="margin-top:6px;padding:6px 8px;border-radius:6px;background:${ung ? "#fff3e0" : "#f5f5f5"};">
+                        ${ung ? `⏰ <b style="color:#e65100;">Năm xem ${ny.nam} (${ny.chi}) — sao này ĐANG ỨNG</b>` : `Năm xem ${ny.nam} (${ny.chi}) — sao này không ứng`}
+                    </div>
+                    <div style="margin-top:6px;">💧 Với Nước: ${quanHeHanhVoiThuy(d.hanh)} <i style="color:#888;">(tham khảo)</i></div>
+                    ${d.ghiChu ? `<div style="margin-top:6px;color:#666;font-size:12px;">📖 ${d.ghiChu}</div>` : ""}
+                </div>`;
+                let t = document.getElementById("infoModalTitle"), c = document.getElementById("infoModalContent"), m = document.getElementById("infoModal");
+                if (!t || !c || !m) return;
+                t.textContent = ten + " — sao " + d.sao;
+                c.innerHTML = html;
+                m.classList.add("active");
+            };
 
             // 8 phương vị CỐ ĐỊNH, góc TÂM đúng theo la bàn địa lý thật (không đổi theo hướng nhà).
             const PHUONG_VI_8 = [
@@ -1595,12 +1590,69 @@
                 return panel;
             }
             damBaoPanelDaGiacTonTai();
+                        // Dữ liệu 2 dải Bát Trạch (Trạch / Mệnh) cho la bàn 24 sơn — dải Trạch ở ngoài, Mệnh ở trong.
+            // Dữ liệu 2 dải Bát Trạch (Trạch / Mệnh) cho la bàn 24 sơn — dải Trạch ở ngoài, Mệnh ở trong.
+            // Tử Bạch phi cung theo NĂM XEM (ô #namXem của tab Nội Khí): sao năm xem nhập Trung, phi thuận 9 cung.
+            function layTuBachGiaChu() {
+                let nam = parseInt(document.getElementById("namXem")?.value) || new Date().getFullYear();
+                let tong = String(Math.abs(nam)).split("").reduce(function(a, c) { return a + parseInt(c, 10); }, 0);
+                let trung = ((((11 - tong) - 1) % 9) + 9) % 9 + 1;
+                const LAC_THU = { "Bắc":1, "Đông Bắc":8, "Đông":3, "Đông Nam":4, "Nam":9, "Tây Nam":2, "Tây":7, "Tây Bắc":6 };
+                let theoPhuong = {};
+                for (let ph in LAC_THU) theoPhuong[ph] = ((((trung + LAC_THU[ph] - 6) % 9) + 9) % 9) + 1;
+                return { trung: trung, theoPhuong: theoPhuong, nhan: "Năm xem " + nam };
+            }
+            window.layTuBachChoLaBan = layTuBachGiaChu; // cho tab Tâm Nhà
+            function layDaiBatTrachCho24Son(houseFacing) {
+                let cacDai = [];
+                if (!hienThiBatTrachTrach24Son && !hienThiBatTrachMenh24Son) return cacDai;
+                let chiNam = layChiNamXem().chi;
+                function duNienTaiPhuong(bang, tenPhuong) {
+                    if (!bang) return null;
+                    for (let ten in bang.huong) { if (bang.huong[ten] === tenPhuong) return ten; }
+                    return null;
+                }
+                function taoCells(bang) {
+                    return PHUONG_VI_8.map(function(pv) {
+                        let ten = duNienTaiPhuong(bang, pv.ten);
+                        let d = ten ? DU_NIEN_SACH[ten] : null;
+                        return {
+                            goc: pv.goc, phuong: pv.ten, ten: ten,
+                            phu: d ? (d.sao + " · " + d.hanh) : "",
+                            mau: ten ? mauTheoDuNien(ten) : "#cfcfcf",
+                            ungNam: !!(d && d.nam.indexOf(chiNam) >= 0)
+                        };
+                    });
+                }
+                if (hienThiBatTrachTrach24Son) {
+                    let quaiTrach = timQuaiTrachTheoGoc(houseFacing);
+                    cacDai.push({ nhan: "Trạch", mauChu: "#7a1010", cells: taoCells(duNienBatTrach[quaiTrach.ten]) });
+                }
+                if (hienThiBatTrachMenh24Son) {
+                    let namSinh = parseInt(document.getElementById("namSinhGiaChu")?.value) || 1990;
+                    let gtRaw = document.getElementById("gioiTinhGiaChu")?.value;
+                    let gt = (gtRaw === "Nữ" || gtRaw === "nu") ? "nu" : "nam";
+                    let menh = window.tinhMenhQuai ? window.tinhMenhQuai(namSinh, gt) : null;
+                    if (menh) cacDai.push({ nhan: "Mệnh", mauChu: "#4a148c", cells: taoCells(duNienBatTrach[menh.cung]) });
+                }
+                return cacDai;
+            }
 
+            // Cho tab Tâm Nhà: chỉ lấy dải Mệnh (không phụ thuộc nút bật/tắt của Thủy Pháp)
+            window.layDaiBatTrachMenhChoLaBan = function(houseFacing) {
+                let truocTrach = hienThiBatTrachTrach24Son, truocMenh = hienThiBatTrachMenh24Son;
+                hienThiBatTrachTrach24Son = false; hienThiBatTrachMenh24Son = true;
+                try { return layDaiBatTrachCho24Son(houseFacing); }
+                finally { hienThiBatTrachTrach24Son = truocTrach; hienThiBatTrachMenh24Son = truocMenh; }
+            };
             function veCompassOverlay(houseFacing) {
                 // Kieu-aware: gọi đúng hàm vẽ của kiểu la bàn ĐANG hiển thị, để mọi nơi trong file
                 // này gọi veCompassOverlay() (khi đổi hướng nhà, đổi sơn Đến/Đi, đổi cỡ chữ, v.v.)
                 // đều tự cập nhật đúng kiểu la bàn hiện tại thay vì luôn ép về "tron24son".
                 let kieu = window.layKieuLaBanHienTai ? window.layKieuLaBanHienTai("compassOverlay") : "tron24son";
+                // Khung "Thông tin thủy pháp" đang hiện thì tự cập nhật theo hướng/Nước Đến/Đi/năm sinh mới
+                let khungKQ = document.getElementById("ketQuaThuyKhau");
+                if (khungKQ && khungKQ.style.display === "block" && typeof window.xacNhanThuyKhau === "function") window.xacNhanThuyKhau();
                 // Chú giải tên các vòng (index.html #tpChuThichCacVong) chỉ có nghĩa với la bàn Trường
                 // Sinh. Đặt ở đây (chứ không riêng trong chonKieuLaBanThuyPhap) vì mọi thay đổi — đổi
                 // kiểu, khôi phục bản lưu, đổi hướng nhà — đều đi qua veCompassOverlay().
@@ -1619,7 +1671,9 @@
                     // Bán kính KHÔNG truyền cứng nữa — để veCompassChung() tự dùng default mới (8 hướng
                     // trong cùng -> 24 sơn -> vạch chia độ -> số độ), tránh đè lên thay đổi trong shared.js.
                     doMo:doMoNenLaBan,mauTia:mauTiaHienTai,isReset:isResetMode,
-                    resetOffset:isResetMode?-houseFacing:0,sonDen:sonDen,sonDi:sonDi,showLabel:true,fontSize:tpFontSize,mauRanh8:mauRanh8HienTai
+                    resetOffset:isResetMode?-houseFacing:0,sonDen:sonDen,sonDi:sonDi,showLabel:true,fontSize:tpFontSize,mauRanh8:mauRanh8HienTai,
+                    batTrach: layDaiBatTrachCho24Son(houseFacing),
+                    tuBach: layTuBachGiaChu()
                 });
                 // (Đã bỏ kiểu "vuông 9 ô" — chỉ còn Tròn 24 sơn ↔ Trường Sinh ↔ Bát Trạch ↔ Đa giác nhà.)
             }
@@ -2074,8 +2128,9 @@
             };
             function traBatTrach(quaiTrachNha, tenPhuong) {
                 let bang = duNienBatTrach[quaiTrachNha]; if (!bang) return null;
-                for (let ten of ["Sinh Khí","Thiên Y","Diên Niên","Phục Vị"]) { if (bang.huong[ten]===tenPhuong) return {ten,diem:90-(["Sinh Khí","Thiên Y","Diên Niên","Phục Vị"].indexOf(ten)*10)}; }
-                for (let ten of ["Tuyệt Mệnh","Lục Sát","Ngũ Quỷ","Họa Hại"]) { if (bang.huong[ten]===tenPhuong) return {ten,diem:-60-10*["Tuyệt Mệnh","Lục Sát","Ngũ Quỷ","Họa Hại"].indexOf(ten)}; }
+                for (let ten in DU_NIEN_SACH) {
+                    if (bang.huong[ten] === tenPhuong) return { ten: ten, diem: DU_NIEN_SACH[ten].diem };
+                }
                 return null;
             }
             // Trạch mệnh (Quái Mệnh Bát Trạch) — dùng chung window.tinhMenhQuai (shared.js)
@@ -2135,7 +2190,7 @@
                     let ghiChu = laNuocDi
                         ? (kq.diem<0 ? " (đi ở cung hung — đúng phép, xả trừ hung khí)" : " (đi ở cung cát — không tốt, làm trôi mất sinh khí)")
                         : "";
-                    return `${label} (${phuong}): <b>${kq.ten}</b> (${kq.diem>0?"+":""}${kq.diem}) → <b style="color:${mauChu}">${bieuTuong}</b>${ghiChu}`;
+                    return `${label} (${phuong}): <b>${kq.ten}</b> (${kq.diem>0?"+":""}${kq.diem}) → <b style="color:${mauChu}">${bieuTuong}</b>${ghiChu}${thongTinSaoHtml(kq.ten)}`;
                 }
                 let namSinh = parseInt(document.getElementById("namSinhGiaChu").value)||1990, gioiTinhRaw = document.getElementById("gioiTinhGiaChu").value;
                 let gioiTinhChu = (gioiTinhRaw === "Nữ" || gioiTinhRaw === "nu") ? "nu" : "nam";
@@ -2167,6 +2222,7 @@
                      ${menh ? `<b>📙 Bát Trạch Thủy Pháp (theo Nhân mệnh):</b> Gia chủ → Quái Mệnh <b>${menh.cung}</b> (${nhomMenh})<br>
                      ${dinhDangBatTrach("Nước Đến",ketQuaBTDenMenh,phuongDen,false)}<br>${dinhDangBatTrach("Nước Đi",ketQuaBTDiMenh,phuongDi,true)}<br><br>`
                      : `<b>📙 Bát Trạch Thủy Pháp (theo Nhân mệnh):</b> <i>Không xác định được (kiểm tra lại năm sinh)</i><br><br>`}
+                     ${dongNamXemHtml(duNienBatTrach[quaiTrachNha.ten])}<br>
                      <i>So sánh 4 sub-module (HKPT / Tam Hợp / Bát Trạch-Trạch / Bát Trạch-Nhân) để có góc nhìn đầy đủ.</i>`;
             };
             // ==== LƯU / MỞ TOÀN BỘ TRẠNG THÁI (dùng bởi Hồ Sơ Nhà — ho-so.js) ====
@@ -2195,8 +2251,8 @@
                     isResetMode: isResetMode,
                     laBanDaKhoa: laBanDaKhoa,
                     compassVisible: compassVisible,
-                    hienThiBatTrachTrachTrongTruongSinh: hienThiBatTrachTrachTrongTruongSinh,
-                    hienThiBatTrachMenhTrongTruongSinh: hienThiBatTrachMenhTrongTruongSinh,
+                    hienThiBatTrachTrach24Son: hienThiBatTrachTrach24Son,
+                    hienThiBatTrachMenh24Son: hienThiBatTrachMenh24Son,
                     mapImageSrc: coAnh ? mapImg.src : null
                 };
             };
@@ -2241,9 +2297,12 @@
                 compassVisible = obj.compassVisible !== false;
                 // Mặc định TRUE nếu state cũ (trước bản có tính năng này) không có field —
                 // giữ đúng hành vi mặc định BẬT cả 2 dải như lần đầu cài đặt tính năng.
-                hienThiBatTrachTrachTrongTruongSinh = obj.hienThiBatTrachTrachTrongTruongSinh !== false;
-                hienThiBatTrachMenhTrongTruongSinh = obj.hienThiBatTrachMenhTrongTruongSinh !== false;
-                if (typeof capNhatNutToggleBatTrachTrongTS === "function") capNhatNutToggleBatTrachTrongTS();
+                // Bản lưu cũ dùng khóa hienThiBatTrach...TrongTruongSinh — vẫn đọc được
+                let vTrach = (obj.hienThiBatTrachTrach24Son !== undefined) ? obj.hienThiBatTrachTrach24Son : obj.hienThiBatTrachTrachTrongTruongSinh;
+                let vMenh = (obj.hienThiBatTrachMenh24Son !== undefined) ? obj.hienThiBatTrachMenh24Son : obj.hienThiBatTrachMenhTrongTruongSinh;
+                hienThiBatTrachTrach24Son = vTrach !== false;
+                hienThiBatTrachMenh24Son = vMenh !== false;
+                if (typeof capNhatNutToggleBatTrach24Son === "function") capNhatNutToggleBatTrach24Son();
 
                 let btnReset = document.getElementById("btnResetGoc");
                 if (btnReset) { btnReset.textContent = isResetMode ? "↩️" : "🔄"; btnReset.style.background = isResetMode ? "rgba(255,152,0,0.85)" : "rgba(46,125,50,0.85)"; }
@@ -2340,5 +2399,10 @@
             // Đọc giá trị ban đầu ngay từ nguồn chung (thay vì mặc định cứng 1990/Nam) khi tab này khởi tạo.
             window.thuyPhapDongBoTuNguon();
 
-            setTimeout(function() { veCompassOverlay(parseFloat(document.getElementById("houseFacing").value)||180); }, 100);
+            let _elNamXem = document.getElementById("namXem");
+            if (_elNamXem) _elNamXem.addEventListener("change", function() { veCompassOverlay(parseFloat(document.getElementById("houseFacing")?.value) || 0); });
+            setTimeout(function() {
+                veCompassOverlay(parseFloat(document.getElementById("houseFacing").value)||180);
+                if (typeof window.xacNhanThuyKhau === "function") window.xacNhanThuyKhau(); // hiện sẵn thông tin thủy pháp khi mở app
+            }, 100);
         })();
