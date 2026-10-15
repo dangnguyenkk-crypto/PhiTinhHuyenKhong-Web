@@ -184,6 +184,8 @@
         capNhat('ttInNamSinhChu', 'namSinhChu');
         capNhat('ttInGioiTinhChu', 'gioiTinhChu');
         capNhat('ttInCanChiNamSinhChu', 'canChiNamSinhChu', true);
+        let tqBox = document.getElementById('ttInTrachQuai');
+        if (tqBox && elGoc('doSoTay')) tqBox.innerHTML = renderTrachQuaiHtml(elGoc('doSoTay').value);
         // Cung Mệnh không có input gốc tương ứng bên Nội Khí — tự tính lại từ giá trị Năm sinh/Giới
         // tính MỚI NHẤT (đọc trực tiếp từ input gốc, không phải từ ô đang focus) rồi vẽ lại khối này.
         let cmBox = document.getElementById('ttInCungMenh');
@@ -194,6 +196,21 @@
         }
     }
 
+    // ==== QUÁI TRẠCH theo TỌA (đối 180° với hướng nhà) + cảnh báo sát ranh 2° ====
+    function renderTrachQuaiHtml(doHuong) {
+        if (typeof window.tinhTrachQuai !== 'function') return '';
+        let t = window.tinhTrachQuai(doHuong);
+        if (!t) return '';
+        let mau = t.nhom.indexOf('Đông') === 0 ? '#2e7d32' : '#8b0000';
+        let nen = t.nhom.indexOf('Đông') === 0 ? '#e8f5e9' : '#fdecea';
+        let canhBao = t.satRanh
+            ? `<div style="font-size:11px;color:#e65100;margin-top:4px;">⚠️ Tọa sát ranh giữa ${t.cung} và ${t.cungKe} (cách ${t.khoangCachRanh.toFixed(1)}°) — nên đo lại độ hướng thật kỹ.</div>`
+            : '';
+        return `<div style="padding:6px 8px;background:${nen};border-radius:6px;">
+            <div style="font-size:12px;font-weight:700;color:${mau};">⛰️ Tọa ${t.toaSon} (${Math.round(t.toaGoc)}°) — hướng ${t.huongSon} → 🏠 ${t.cung} trạch · hành ${t.hanh} · ${t.nhom}</div>
+            ${canhBao}
+        </div>`;
+    }
     function renderTrachNhaGiaChuHtml() {
         let namNhapTrach = elGoc('namNhapTrach') ? elGoc('namNhapTrach').value : '';
         let vanNhapTrach = elGoc('vanNhapTrach') ? elGoc('vanNhapTrach').value : '8';
@@ -231,6 +248,7 @@
                 <input type="number" id="ttInDoSoTay" value="${escapeHtmlTT(doSoTay)}" min="0" max="360" title="Độ hướng" oninput="thongTinDoiDoSoTay(this.value)" style="width:45px;flex:none;padding:6px 2px;border:1px solid #ccc;border-radius:6px;font-size:12px;text-align:center;">
             </div>
             <div style="font-size:10px;color:#999;margin-top:3px;">Năm/Vận nhập trạch — Hướng nhà/Độ hướng · 🔄 đồng bộ với tab Nội Khí</div>
+            <div id="ttInTrachQuai" style="margin-top:6px;">${renderTrachQuaiHtml(doSoTay)}</div>
         </div>
 
         <div style="border-top:1px dashed #e3d5c0;padding-top:8px;margin-top:8px;">

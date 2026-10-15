@@ -738,6 +738,34 @@ function tinhMenhQuai(namSinhDuongLich, gioiTinh) {
 window.tinhMenhQuai = tinhMenhQuai;
 
 // ====================================================================
+// QUÁI TRẠCH — tính theo TỌA (đối 180° với hướng nhà), không theo hướng.
+// Trả về sơn tọa, cung trạch, hành, nhóm Đông/Tây Tứ Trạch và cảnh báo sát ranh giữa 2 cung.
+// ====================================================================
+const NGUONG_CANH_BAO_RANH_CUNG = 2; // độ
+function tinhTrachQuai(houseFacing) {
+    let h = parseFloat(houseFacing);
+    if (isNaN(h)) return null;
+    let toa = (((h + 180) % 360) + 360) % 360;
+    let sonToa = timSonTheoGoc(toa), sonHuong = timSonTheoGoc(h);
+    let cung = sonToa.cung;
+    // Ranh giữa 2 cung nằm ở 22.5° + 45°*k
+    let r = (((toa - 22.5) % 45) + 45) % 45;
+    let khoangCach = Math.min(r, 45 - r);
+    let gocKe = (r < 22.5) ? (toa - r - 0.5) : (toa + (45 - r) + 0.5);
+    let cungKe = timSonTheoGoc(((gocKe % 360) + 360) % 360).cung;
+    return {
+        huongGoc: h, huongSon: sonHuong.ten,
+        toaGoc: toa, toaSon: sonToa.ten,
+        cung: cung,
+        hanh: HANH_CUA_CUNG_MENH[cung],
+        nhom: (NHOM_DONG_TAY_TU_MENH[cung] || "").replace("Mệnh", "Trạch"),
+        satRanh: khoangCach < NGUONG_CANH_BAO_RANH_CUNG,
+        khoangCachRanh: khoangCach,
+        cungKe: cungKe
+    };
+}
+window.tinhTrachQuai = tinhTrachQuai;
+// ====================================================================
 // NẠP ÂM NGŨ HÀNH — tính theo Can Chi năm sinh DƯƠNG LỊCH (nam/nữ như nhau).
 // Công thức: số Can + số Chi (nếu >5 thì trừ 5) -> tra Ngũ hành.
 // Dùng chung toàn app qua window.tinhNapAmNguHanh.
