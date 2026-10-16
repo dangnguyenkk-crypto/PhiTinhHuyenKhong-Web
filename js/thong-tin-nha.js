@@ -274,13 +274,13 @@
         </div>`;
     }
 
-    // ==== TRẠCH MỆNH (Quái Mệnh Bát Trạch) + NẠP ÂM NGŨ HÀNH — tính từ năm sinh dương lịch + giới tính
+    // ==== NHÂN MỆNH (Quái Mệnh Bát Trạch) + NẠP ÂM NGŨ HÀNH — tính từ năm sinh dương lịch + giới tính
     // (window.tinhMenhQuai và window.tinhNapAmNguHanh, xem shared.js) ====
     function renderCungMenhHtml(namSinhChu, gioiTinhChu) {
         if (typeof window.tinhMenhQuai !== 'function') return '';
         let mq = window.tinhMenhQuai(namSinhChu, gioiTinhChu);
         if (!mq) {
-            return `<div style="font-size:11px;color:#999;">Nhập năm sinh để tính Trạch mệnh.</div>`;
+            return `<div style="font-size:11px;color:#999;">Nhập năm sinh để tính Nhân mệnh.</div>`;
         }
         let mauNhom = mq.nhom === 'Đông Tứ Mệnh' ? '#2e7d32' : '#8b0000';
         let nenNhom = mq.nhom === 'Đông Tứ Mệnh' ? '#e8f5e9' : '#fdecea';
@@ -300,16 +300,16 @@
         let ghiLapXuan = mq.truocLapXuan
             ? `<div style="font-size:11px;color:#e65100;margin-top:4px;">⚠️ Sinh trước Lập Xuân → tính theo năm ${mq.namSinh} (không phải ${mq.namSinhGoc})</div>`
             : '';
-        let chuGiai = 'Mệnh theo Nạp Âm Ngũ Hành (dùng trong Tử vi, Tứ trụ, màu sắc,...); Mệnh Trạch dùng để xem: hướng nhà, hướng bếp, hướng bàn làm việc...';
+        let chuGiai = 'Mệnh theo Nạp Âm Ngũ Hành (dùng trong Tử vi, Tứ trụ, màu sắc,...); Nhân mệnh (Quái mệnh) dùng để xem: hướng nhà, hướng bếp, hướng bàn làm việc...';
         return `<div style="display:flex;align-items:center;gap:6px;padding:6px 8px;background:${nenNhom};border-radius:6px;">
-            <span style="font-size:12px;font-weight:700;color:${mauNhom};">🏡 Trạch mệnh: ${mq.cung} (Quái ${mq.quaiSo}, hành ${mq.hanh})</span>
+            <span style="font-size:12px;font-weight:700;color:${mauNhom};">🧑 Nhân mệnh ${mq.cung} (Quái ${mq.quaiSo}, hành ${mq.hanh})</span>
             <span style="font-size:11px;color:${mauNhom};margin-left:auto;">${mq.nhom}</span>
         </div>
         ${napAmHtml}
         ${ghiAm}
         ${ghiLapXuan}
         <div style="font-size:10px;color:#999;margin-top:3px;line-height:1.4;">
-            <span class="nut-info" onclick='moInfoModal("🏡 Trạch mệnh &amp; Nạp Âm", ${JSON.stringify(escapeHtmlTT(chuGiai))})'>i</span>
+            <span class="nut-info" onclick='moInfoModal("🧑 Nhân mệnh &amp; Nạp Âm", ${JSON.stringify(escapeHtmlTT(chuGiai))})'>i</span>
             ${escapeHtmlTT(chuGiai)}
         </div>`;
     }

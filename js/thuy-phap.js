@@ -860,14 +860,14 @@
             // ===== DỮ LIỆU DU NIÊN THEO SÁCH =====
             // nam = các năm (Địa Chi) mà sao đó xuất hiện/ứng vào.
             const DU_NIEN_SACH = {
-                "Sinh Khí":   { sao:"Tham Lang",  hanh:"Mộc",  muc:"Thượng cát", diem:90,  nam:["Hợi","Mão","Mùi"] },
-                "Diên Niên":  { sao:"Vũ Khúc",    hanh:"Kim",  muc:"Thượng cát", diem:90,  nam:["Tý","Dậu","Sửu"] },
-                "Thiên Y":    { sao:"Cự Môn",     hanh:"Thổ",  muc:"Trung cát",  diem:70,  nam:["Thìn","Tuất","Sửu","Mùi"] },
-                "Phục Vị":    { sao:"Tả Phụ",     hanh:"Mộc",  muc:"Tiểu cát",   diem:50,  nam:["Hợi","Mão","Mùi"], ghiChu:"Phục Vị còn có Hữu Bật — sao này không có ngũ hành cố định nên cát hung bất định." },
-                "Họa Hại":    { sao:"Lộc Tồn",    hanh:"Thổ",  muc:"Thứ hung",   diem:-60, nam:["Thìn","Tuất","Sửu","Mùi"] },
-                "Lục Sát":    { sao:"Văn Khúc",   hanh:"Thủy", muc:"Thứ hung",   diem:-60, nam:["Thân","Tý","Thìn"] },
-                "Tuyệt Mệnh": { sao:"Phá Quân",   hanh:"Kim",  muc:"Đại hung",   diem:-90, nam:["Tý","Dậu","Sửu"] },
-                "Ngũ Quỷ":    { sao:"Liêm Trinh", hanh:"Hỏa",  muc:"Đại hung",   diem:-90, nam:["Dần","Ngọ","Tuất"] }
+                "Sinh Khí":   { sao:"Tham Lang",  hanh:"Mộc",  muc:"Thượng cát", diem:90,  nam:["Hợi","Mão","Mùi"],     y:"Chủ vượng về người, tài lộc thịnh đạt." },
+                "Diên Niên":  { sao:"Vũ Khúc",    hanh:"Kim",  muc:"Thượng cát", diem:90,  nam:["Tý","Dậu","Sửu"],      y:"Chủ sống thọ, khỏe mạnh, hòa khí, tài vận." },
+                "Thiên Y":    { sao:"Cự Môn",     hanh:"Thổ",  muc:"Trung cát",  diem:70,  nam:["Thìn","Tuất","Sửu","Mùi"], y:"Chủ về sức khỏe, không bệnh tật." },
+                "Phục Vị":    { sao:"Tả Phụ",     hanh:"Mộc",  muc:"Tiểu cát",   diem:50,  nam:["Hợi","Mão","Mùi"],     y:"Chủ về tài vận, sức khỏe khá.", ghiChu:"Phục Vị còn có Hữu Bật — sao này không có ngũ hành cố định nên cát hung bất định." },
+                "Họa Hại":    { sao:"Lộc Tồn",    hanh:"Thổ",  muc:"Thứ hung",   diem:-60, nam:["Thìn","Tuất","Sửu","Mùi"], y:"Chủ về tán tài, kiện tụng thị phi." },
+                "Lục Sát":    { sao:"Văn Khúc",   hanh:"Thủy", muc:"Thứ hung",   diem:-60, nam:["Thân","Tý","Thìn"],    y:"Chủ về tài vận kém, kiện tụng thị phi, nhiều bệnh tật tai họa." },
+                "Tuyệt Mệnh": { sao:"Phá Quân",   hanh:"Kim",  muc:"Đại hung",   diem:-90, nam:["Tý","Dậu","Sửu"],      y:"Chủ về tài vận cực kém, đa bệnh yểu thọ, nhiều tai họa bất ngờ, tuyệt tự." },
+                "Ngũ Quỷ":    { sao:"Liêm Trinh", hanh:"Hỏa",  muc:"Đại hung",   diem:-90, nam:["Dần","Ngọ","Tuất"],    y:"Chủ về phá tài bại nghiệp, sức khỏe kém, gặp nhiều tai họa." }
             };
             const MAU_MUC_DU_NIEN = { "Thượng cát":"#0d47a1", "Trung cát":"#1976d2", "Tiểu cát":"#64b5f6", "Thứ hung":"#e53935", "Đại hung":"#7f0000" };
             const MAU_HANH_SAO = { "Mộc":"#2e7d32", "Kim":"#b8860b", "Thủy":"#1565c0", "Hỏa":"#c62828", "Thổ":"#8d6e34" };
@@ -915,6 +915,7 @@
                     <div>Dải: <b>${nhan}</b> · Phương vị: <b>${phuong}</b></div>
                     <div>Sao: <b>${d.sao}</b> · Hành: <b style="color:${MAU_HANH_SAO[d.hanh]}">${d.hanh}</b></div>
                     <div>Mức: <b style="color:${MAU_MUC_DU_NIEN[d.muc]}">${d.muc}</b> (${d.diem > 0 ? "+" : ""}${d.diem})</div>
+                    <div style="margin:4px 0;padding:6px 8px;border-left:3px solid ${MAU_MUC_DU_NIEN[d.muc]};background:#faf7f2;border-radius:4px;">📜 <b>Ý nghĩa:</b> ${d.y}</div>
                     <div>Sao xuất hiện vào các năm: <b>${d.nam.join(", ")}</b></div>
                     <div style="margin-top:6px;padding:6px 8px;border-radius:6px;background:${ung ? "#fff3e0" : "#f5f5f5"};">
                         ${ung ? `⏰ <b style="color:#e65100;">Năm xem ${ny.nam} (${ny.chi}) — sao này ĐANG ỨNG</b>` : `Năm xem ${ny.nam} (${ny.chi}) — sao này không ứng`}
@@ -949,7 +950,7 @@
                 let houseFacing = parseFloat(document.getElementById("houseFacing")?.value) || 0;
                 let sonDen = document.getElementById("selSonDen")?.value, sonDi = document.getElementById("selSonDi")?.value;
 
-                let quaiTrachNha = timQuaiTrachTheoGoc(houseFacing);
+                let quaiTrachNha = timQuaiTrachNha(houseFacing);
                 let nhomTrach = nhomTuTrach[quaiTrachNha.ten];
                 let bangDuNien = duNienBatTrach[quaiTrachNha.ten]; // {huong: {"Sinh Khí":"Đông Nam", ...}}
 
@@ -1625,7 +1626,7 @@
                     });
                 }
                 if (hienThiBatTrachTrach24Son) {
-                    let quaiTrach = timQuaiTrachTheoGoc(houseFacing);
+                    let quaiTrach = timQuaiTrachNha(houseFacing);
                     cacDai.push({ nhan: "Trạch", mauChu: "#7a1010", cells: taoCells(duNienBatTrach[quaiTrach.ten]) });
                 }
                 if (hienThiBatTrachMenh24Son) {
@@ -2115,6 +2116,13 @@
             // GOC_DIA_CHI_12 ở đầu file. Không còn dropdown 12 Địa Chi riêng nữa.
             const huongToQuaiTrach = [{goc:0,ten:"Khảm",phuong:"Bắc"},{goc:45,ten:"Cấn",phuong:"Đông Bắc"},{goc:90,ten:"Chấn",phuong:"Đông"},{goc:135,ten:"Tốn",phuong:"Đông Nam"},{goc:180,ten:"Ly",phuong:"Nam"},{goc:225,ten:"Khôn",phuong:"Tây Nam"},{goc:270,ten:"Đoài",phuong:"Tây"},{goc:315,ten:"Càn",phuong:"Tây Bắc"}];
             function timQuaiTrachTheoGoc(goc) { let g = ((goc%360)+360)%360, best = huongToQuaiTrach[0], bestDiff = 999; huongToQuaiTrach.forEach(h=>{let diff=Math.min(Math.abs(g-h.goc),360-Math.abs(g-h.goc)); if(diff<bestDiff){bestDiff=diff;best=h;}}); return best; }
+                        // Quái Trạch theo TỌA (dùng window.tinhTrachQuai trong shared.js). Trả về cùng dạng {goc, ten, phuong} như timQuaiTrachTheoGoc
+                        // để các chỗ đang dùng .ten/.phuong không phải đổi. Có thêm toaSon, toaGoc, satRanh.
+                        function timQuaiTrachNha(houseFacing) {
+                            let t = window.tinhTrachQuai(houseFacing);
+                            let q = huongToQuaiTrach.find(function(x) { return x.ten === t.cung; }) || huongToQuaiTrach[0];
+                            return { goc: q.goc, ten: t.cung, phuong: q.phuong, toaSon: t.toaSon, toaGoc: t.toaGoc, satRanh: t.satRanh, khoangCachRanh: t.khoangCachRanh, cungKe: t.cungKe };
+                        }
             const nhomTuTrach = {"Khảm":"Đông Tứ Trạch","Ly":"Đông Tứ Trạch","Chấn":"Đông Tứ Trạch","Tốn":"Đông Tứ Trạch","Càn":"Tây Tứ Trạch","Khôn":"Tây Tứ Trạch","Cấn":"Tây Tứ Trạch","Đoài":"Tây Tứ Trạch"};
             const duNienBatTrach = {
                 "Khảm":{huong:{"Sinh Khí":"Đông Nam","Thiên Y":"Đông","Diên Niên":"Nam","Phục Vị":"Bắc","Tuyệt Mệnh":"Tây Nam","Lục Sát":"Tây Bắc","Ngũ Quỷ":"Đông Bắc","Họa Hại":"Tây"}},
@@ -2123,8 +2131,8 @@
                 "Tốn":{huong:{"Sinh Khí":"Bắc","Thiên Y":"Nam","Diên Niên":"Đông","Phục Vị":"Đông Nam","Tuyệt Mệnh":"Đông Bắc","Lục Sát":"Tây","Ngũ Quỷ":"Tây Nam","Họa Hại":"Tây Bắc"}},
                 "Càn":{huong:{"Sinh Khí":"Tây","Thiên Y":"Đông Bắc","Diên Niên":"Tây Nam","Phục Vị":"Tây Bắc","Tuyệt Mệnh":"Nam","Lục Sát":"Bắc","Ngũ Quỷ":"Đông","Họa Hại":"Đông Nam"}},
                 "Đoài":{huong:{"Sinh Khí":"Tây Bắc","Thiên Y":"Tây Nam","Diên Niên":"Đông Bắc","Phục Vị":"Tây","Tuyệt Mệnh":"Đông","Lục Sát":"Đông Nam","Ngũ Quỷ":"Nam","Họa Hại":"Bắc"}},
-                "Cấn":{huong:{"Sinh Khí":"Tây Nam","Thiên Y":"Tây Bắc","Diên Niên":"Tây","Phục Vị":"Đông Bắc","Tuyệt Mệnh":"Đông Nam","Lục Sát":"Nam","Ngũ Quỷ":"Bắc","Họa Hại":"Đông"}},
-                "Ly":{huong:{"Sinh Khí":"Đông","Thiên Y":"Đông Nam","Diên Niên":"Bắc","Phục Vị":"Nam","Tuyệt Mệnh":"Tây Bắc","Lục Sát":"Tây","Ngũ Quỷ":"Tây Nam","Họa Hại":"Đông Bắc"}}
+                "Cấn":{huong:{"Sinh Khí":"Tây Nam","Thiên Y":"Tây Bắc","Diên Niên":"Tây","Phục Vị":"Đông Bắc","Tuyệt Mệnh":"Đông Nam","Lục Sát":"Đông","Ngũ Quỷ":"Bắc","Họa Hại":"Nam"}},
+                "Ly":{huong:{"Sinh Khí":"Đông","Thiên Y":"Đông Nam","Diên Niên":"Bắc","Phục Vị":"Nam","Tuyệt Mệnh":"Tây Bắc","Lục Sát":"Tây Nam","Ngũ Quỷ":"Tây","Họa Hại":"Đông Bắc"}}
             };
             function traBatTrach(quaiTrachNha, tenPhuong) {
                 let bang = duNienBatTrach[quaiTrachNha]; if (!bang) return null;
@@ -2168,7 +2176,7 @@
                     let bieuTuong = muc>0?"★".repeat(soKy):muc<0?"☠".repeat(soKy):"", mauChu = muc>0?"#1565c0":muc<0?"#c62828":"#666";
                     return `${label}: <b>${kq.gd}</b> (${kq.diaChi}) → <b style="color:${mauChu}">${bieuTuong}</b>`;
                 }
-                let quaiTrachNha = timQuaiTrachTheoGoc(houseFacing), nhomTrach = nhomTuTrach[quaiTrachNha.ten];
+                let quaiTrachNha = timQuaiTrachNha(houseFacing), nhomTrach = nhomTuTrach[quaiTrachNha.ten];
                 function sonVePhuong(tenSon) { let s = DS24_SON.find(x=>x.ten===tenSon); if (!s) return null; return timQuaiTrachTheoGoc(s.goc).phuong; }
                 let phuongDen = sonVePhuong(sonDen), phuongDi = sonVePhuong(sonDi);
                 let ketQuaBTDen = traBatTrach(quaiTrachNha.ten, phuongDen), ketQuaBTDi = traBatTrach(quaiTrachNha.ten, phuongDi);
@@ -2212,14 +2220,14 @@
                 document.getElementById("ketQuaThuyKhau").style.display = "block";
                 document.getElementById("ketQuaThuyKhau").innerHTML =
                     `<b>Thông tin thủy pháp:</b><br>house_facing = ${houseFacing}° (hướng nhà ≈ sơn <b>${sonHuongNhaTamHop.ten}</b>)<br>water_in_direction (Nước đến, 24 sơn Bát trạch) = ${sonDen}<br>water_out_direction (Nước đi, 24 sơn Bát trạch) = ${sonDi}<br>Nước Đến/Đi (Tam Hợp vòng trường sinh) = ${diaChiDen||"—"} / ${diaChiDi||"—"}<br>⛰️ Lai Long = ${laiLongRaw||"—"}${laiLongRaw && NGU_HANH_LONG[laiLongRaw] ? (" (" + NGU_HANH_LONG[laiLongRaw] + " Long)") : ""}<br>🐉 Long nhập thủ = ${longNhapThuRaw||"—"}${longNhapThuRaw && NGU_HANH_LONG[longNhapThuRaw] ? (" (" + NGU_HANH_LONG[longNhapThuRaw] + " Long)") : ""}<br><br>
-                     ${menh ? `<b>🏡 Trạch mệnh gia chủ:</b> Năm sinh ${namSinh} (${gioiTinhRaw}) → Quái <b>${menh.cung}</b> (Quái ${menh.quaiSo}, hành ${menh.hanh}, ${nhomMenh})<br>
+                     ${menh ? `<b>🧑 Nhân mệnh gia chủ:</b> Năm sinh ${namSinh} (${gioiTinhRaw}) → Quái <b>${menh.cung}</b> (Quái ${menh.quaiSo}, hành ${menh.hanh}, ${nhomMenh})<br>
                      <b style="color:${hopMenh?'#1565c0':'#c62828'}">${hopMenh?'✅ Mệnh gia chủ HỢP với Trạch nhà (cùng nhóm '+nhomMenh+')':'⚠️ Mệnh gia chủ KHÔNG hợp Trạch nhà —" (Mệnh: '+nhomMenh+', Trạch: '+nhomTrach+')- Cần đổi hướng cổng và chuyển hướng bếp cho phù hợp'}</b><br><br>`
-                     : `<b>🏡 Trạch mệnh gia chủ:</b> <i>Không xác định được (kiểm tra lại năm sinh)</i><br><br>`}
+                     : `<b>🧑 Nhân mệnh gia chủ:</b> <i>Không xác định được (kiểm tra lại năm sinh)</i><br><br>`}
                      <b>📘 Tam Hợp Trường Sinh</b> (khởi theo ${khoiTruongSinhCheDo==="toa"?`<b>Tọa nhà</b> — Tọa ≈ sơn <b>${sonToaChoTongKet?sonToaChoTongKet.ten:"—"}</b>, Trường Sinh ${chieuTruongSinh==="nghich"?"nghịch":"thuận"}`:`<b>Thủy Khẩu</b>, chiều nước ${chieuTruongSinh==="nghich"?"nghịch":"thuận"}`}): ${cuc ? `→ thuộc <b>${cuc}${khoiTruongSinhCheDo==="toa"?" (theo Tọa)":" Cục"}</b>` : `<i>${khoiTruongSinhCheDo==="toa"?"Không xác định được Ngũ Hành Tọa":"Chưa chọn Địa Chi Nước Đi nên chưa xác định được Cục"}</i>`}<br>
                      ${dinhDangKetQua("Nước Đến",ketQuaDen,"den")}<br>${dinhDangKetQua("Nước Đi",ketQuaDi,"di")}<br><br>
-                     <b>📗 Bát Trạch Thủy Pháp (theo Trạch mệnh):</b> Hướng nhà ≈ ${quaiTrachNha.phuong} → Quái Trạch <b>${quaiTrachNha.ten}</b> (${nhomTrach})<br>
+                     <b>🏡 Bát Trạch Thủy Pháp (theo Trạch mệnh):</b> Tọa ${quaiTrachNha.toaSon} (${Math.round(quaiTrachNha.toaGoc)}°) → Quái Trạch <b>${quaiTrachNha.ten}</b> (${nhomTrach})${quaiTrachNha.satRanh ? ` <b style="color:#e65100;">⚠️ tọa sát ranh với ${quaiTrachNha.cungKe} (${quaiTrachNha.khoangCachRanh.toFixed(1)}°)</b>` : ""}<br>
                      ${dinhDangBatTrach("Nước Đến",ketQuaBTDen,phuongDen,false)}<br>${dinhDangBatTrach("Nước Đi",ketQuaBTDi,phuongDi,true)}<br><br>
-                     ${menh ? `<b>📙 Bát Trạch Thủy Pháp (theo Nhân mệnh):</b> Gia chủ → Quái Mệnh <b>${menh.cung}</b> (${nhomMenh})<br>
+                     ${menh ? `<b>🧑 Bát Trạch Thủy Pháp (theo Nhân mệnh):</b> Gia chủ → Quái Mệnh <b>${menh.cung}</b> (${nhomMenh})<br>
                      ${dinhDangBatTrach("Nước Đến",ketQuaBTDenMenh,phuongDen,false)}<br>${dinhDangBatTrach("Nước Đi",ketQuaBTDiMenh,phuongDi,true)}<br><br>`
                      : `<b>📙 Bát Trạch Thủy Pháp (theo Nhân mệnh):</b> <i>Không xác định được (kiểm tra lại năm sinh)</i><br><br>`}
                      ${dongNamXemHtml(duNienBatTrach[quaiTrachNha.ten])}<br>
