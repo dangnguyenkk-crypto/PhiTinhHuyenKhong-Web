@@ -912,7 +912,7 @@
                 let d = DU_NIEN_SACH[ten]; if (!d) return;
                 let ny = layChiNamXem(), ung = d.nam.indexOf(ny.chi) >= 0;
                 let html = `<div style="line-height:1.7;">
-                    <div>Dải: <b>${nhan}</b> · Phương vị: <b>${phuong}</b></div>
+                    <div>Dải: <b>${nhan === "🏡" ? "🏡 Trạch" : (nhan === "🧑" ? "🧑 Nhân" : nhan)}</b> · Phương vị: <b>${phuong}</b></div>
                     <div>Sao: <b>${d.sao}</b> · Hành: <b style="color:${MAU_HANH_SAO[d.hanh]}">${d.hanh}</b></div>
                     <div>Mức: <b style="color:${MAU_MUC_DU_NIEN[d.muc]}">${d.muc}</b> (${d.diem > 0 ? "+" : ""}${d.diem})</div>
                     <div style="margin:4px 0;padding:6px 8px;border-left:3px solid ${MAU_MUC_DU_NIEN[d.muc]};background:#faf7f2;border-radius:4px;">📜 <b>Ý nghĩa:</b> ${d.y}</div>
@@ -1627,14 +1627,14 @@
                 }
                 if (hienThiBatTrachTrach24Son) {
                     let quaiTrach = timQuaiTrachNha(houseFacing);
-                    cacDai.push({ nhan: "Trạch", mauChu: "#7a1010", cells: taoCells(duNienBatTrach[quaiTrach.ten]) });
+                    cacDai.push({ nhan: "🏡", mauChu: "#7a1010", cells: taoCells(duNienBatTrach[quaiTrach.ten]) });
                 }
                 if (hienThiBatTrachMenh24Son) {
                     let namSinh = parseInt(document.getElementById("namSinhGiaChu")?.value) || 1990;
                     let gtRaw = document.getElementById("gioiTinhGiaChu")?.value;
                     let gt = (gtRaw === "Nữ" || gtRaw === "nu") ? "nu" : "nam";
                     let menh = window.tinhMenhQuai ? window.tinhMenhQuai(namSinh, gt) : null;
-                    if (menh) cacDai.push({ nhan: "Nhân", mauChu: "#4a148c", cells: taoCells(duNienBatTrach[menh.cung]) });
+                    if (menh) cacDai.push({ nhan: "🧑", mauChu: "#4a148c", cells: taoCells(duNienBatTrach[menh.cung]) });
                 }
                 return cacDai;
             }
@@ -1666,11 +1666,12 @@
 
                 const svg = document.getElementById("compassSvg"); if (!svg) return;
                 // La bàn luôn cố định ở giữa khung (500,500 trong viewBox 1000x1000) — không di chuyển theo tamPercent nữa.
-                const cx = 500, cy = 500;
+                const cx = 500, cy = 510;
                 const sonDen = document.getElementById("selSonDen")?.value, sonDi = document.getElementById("selSonDi")?.value;
                 veCompassChung("compassSvg", cx, cy, houseFacing, {
                     // Bán kính KHÔNG truyền cứng nữa — để veCompassChung() tự dùng default mới (8 hướng
                     // trong cùng -> 24 sơn -> vạch chia độ -> số độ), tránh đè lên thay đổi trong shared.js.
+                    r24Outer:395, r24Text:375, rDoTick:395, rDoText:435, rDoSo:415,
                     doMo:doMoNenLaBan,mauTia:mauTiaHienTai,isReset:isResetMode,
                     resetOffset:isResetMode?-houseFacing:0,sonDen:sonDen,sonDi:sonDi,showLabel:true,fontSize:tpFontSize,mauRanh8:mauRanh8HienTai,
                     batTrach: layDaiBatTrachCho24Son(houseFacing),
