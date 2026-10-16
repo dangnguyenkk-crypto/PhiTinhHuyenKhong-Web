@@ -300,9 +300,9 @@
         let ghiLapXuan = mq.truocLapXuan
             ? `<div style="font-size:11px;color:#e65100;margin-top:4px;">⚠️ Sinh trước Lập Xuân → tính theo năm ${mq.namSinh} (không phải ${mq.namSinhGoc})</div>`
             : '';
-        let chuGiai = 'Mệnh theo Nạp Âm Ngũ Hành (dùng trong Tử vi, Tứ trụ, màu sắc,...); Nhân mệnh (Quái mệnh) dùng để xem: hướng nhà, hướng bếp, hướng bàn làm việc...';
+        let chuGiai = 'Mệnh theo Nạp Âm Ngũ Hành (dùng trong Tử vi, Tứ trụ, màu sắc,...); Nhân mệnh (Niên mệnh, Quái mệnh) dùng để xem: hướng nhà, hướng bếp, hướng bàn làm việc...';
         return `<div style="display:flex;align-items:center;gap:6px;padding:6px 8px;background:${nenNhom};border-radius:6px;">
-            <span style="font-size:12px;font-weight:700;color:${mauNhom};">🧑 Nhân mệnh ${mq.cung} (Quái ${mq.quaiSo}, hành ${mq.hanh})</span>
+            <span style="font-size:12px;font-weight:700;color:${mauNhom};">🧑 Nhân mệnh: ${mq.cung} (Quái ${mq.quaiSo}, hành ${mq.hanh})</span>
             <span style="font-size:11px;color:${mauNhom};margin-left:auto;">${mq.nhom}</span>
         </div>
         ${napAmHtml}
