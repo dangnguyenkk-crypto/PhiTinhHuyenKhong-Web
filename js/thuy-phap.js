@@ -1634,7 +1634,7 @@
                     let gtRaw = document.getElementById("gioiTinhGiaChu")?.value;
                     let gt = (gtRaw === "Nữ" || gtRaw === "nu") ? "nu" : "nam";
                     let menh = window.tinhMenhQuai ? window.tinhMenhQuai(namSinh, gt) : null;
-                    if (menh) cacDai.push({ nhan: "Mệnh", mauChu: "#4a148c", cells: taoCells(duNienBatTrach[menh.cung]) });
+                    if (menh) cacDai.push({ nhan: "Nhân", mauChu: "#4a148c", cells: taoCells(duNienBatTrach[menh.cung]) });
                 }
                 return cacDai;
             }
