@@ -860,13 +860,13 @@
             // ===== DỮ LIỆU DU NIÊN THEO SÁCH =====
             // nam = các năm (Địa Chi) mà sao đó xuất hiện/ứng vào.
             const DU_NIEN_SACH = {
-                "Sinh Khí":   { sao:"Tham Lang",  hanh:"Mộc",  muc:"Thượng cát", diem:90,  nam:["Hợi","Mão","Mùi"],     y:"Chủ vượng về người, tài lộc thịnh đạt." },
-                "Diên Niên":  { sao:"Vũ Khúc",    hanh:"Kim",  muc:"Thượng cát", diem:90,  nam:["Tý","Dậu","Sửu"],      y:"Chủ sống thọ, khỏe mạnh, hòa khí, tài vận." },
-                "Thiên Y":    { sao:"Cự Môn",     hanh:"Thổ",  muc:"Trung cát",  diem:70,  nam:["Thìn","Tuất","Sửu","Mùi"], y:"Chủ về sức khỏe, không bệnh tật." },
-                "Phục Vị":    { sao:"Tả Phụ",     hanh:"Mộc",  muc:"Tiểu cát",   diem:50,  nam:["Hợi","Mão","Mùi"],     y:"Chủ về tài vận, sức khỏe khá.", ghiChu:"Phục Vị còn có Hữu Bật — sao này không có ngũ hành cố định nên cát hung bất định." },
+                "Sinh Khí":   { sao:"Tham Lang",  hanh:"Mộc",  muc:"Thượng cát", diem:90,  nam:["Hợi","Mão","Mùi"],     y:"Chủ vượng về người, tài lộc thịnh đạt. Nên: Trổ cổng, Đặt giường. Hướng cửa bếp nên quay về đây thì giàu to vào các năm (tháng) Hợi, Mão, Mùi" },
+                "Diên Niên":  { sao:"Vũ Khúc",    hanh:"Kim",  muc:"Thượng cát", diem:90,  nam:["Tị","Dậu","Sửu"],      y:"Chủ sống thọ, khỏe mạnh, hòa khí, tài vận. Nên: Trổ cổng, Đặt giường, hướng cửa bếp nên quay về đây" },
+                "Thiên Y":    { sao:"Cự Môn",     hanh:"Thổ",  muc:"Trung cát",  diem:70,  nam:["Thìn","Tuất","Sửu","Mùi"], y:"Chủ về sức khỏe, không bệnh tật. Nên: Trổ cổng, Đặt giường, hướng cửa bếp nên quay về đây" },
+                "Phục Vị":    { sao:"Tả Phụ",     hanh:"Mộc",  muc:"Tiểu cát",   diem:50,  nam:["Hợi","Mão","Mùi"],     y:"Chủ về tài vận, sức khỏe khá.", ghiChu:"Phục Vị (Hữu Bật) — sao này không có ngũ hành cố định nên cát hung bất định. Chỉ nên đặt phòng ở, giường ngủ, nhưng lưu ý Chỉ sinh được con Gái." },
                 "Họa Hại":    { sao:"Lộc Tồn",    hanh:"Thổ",  muc:"Thứ hung",   diem:-60, nam:["Thìn","Tuất","Sửu","Mùi"], y:"Chủ về tán tài, kiện tụng thị phi." },
                 "Lục Sát":    { sao:"Văn Khúc",   hanh:"Thủy", muc:"Thứ hung",   diem:-60, nam:["Thân","Tý","Thìn"],    y:"Chủ về tài vận kém, kiện tụng thị phi, nhiều bệnh tật tai họa." },
-                "Tuyệt Mệnh": { sao:"Phá Quân",   hanh:"Kim",  muc:"Đại hung",   diem:-90, nam:["Tý","Dậu","Sửu"],      y:"Chủ về tài vận cực kém, đa bệnh yểu thọ, nhiều tai họa bất ngờ, tuyệt tự." },
+                "Tuyệt Mệnh": { sao:"Phá Quân",   hanh:"Kim",  muc:"Đại hung",   diem:-90, nam:["Tị","Dậu","Sửu"],      y:"Chủ về tài vận cực kém, đa bệnh yểu thọ, nhiều tai họa bất ngờ, tuyệt tự." },
                 "Ngũ Quỷ":    { sao:"Liêm Trinh", hanh:"Hỏa",  muc:"Đại hung",   diem:-90, nam:["Dần","Ngọ","Tuất"],    y:"Chủ về phá tài bại nghiệp, sức khỏe kém, gặp nhiều tai họa." }
             };
             const MAU_MUC_DU_NIEN = { "Thượng cát":"#0d47a1", "Trung cát":"#1976d2", "Tiểu cát":"#64b5f6", "Thứ hung":"#e53935", "Đại hung":"#7f0000" };
