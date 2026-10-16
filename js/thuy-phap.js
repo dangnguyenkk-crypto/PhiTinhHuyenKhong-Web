@@ -781,9 +781,9 @@
                 // ---- VÒNG LONG PHÁP – LUẬN LONG (chỗ giữ chỗ, xem veVongLongPhapLuanLong) ----
                 html += veVongLongPhapLuanLong(cx, cy, rNhanNgoai, rLongPhapNgoai, tpFontSize, DO_LECH_NHAN_THIEN, vongLongPhap);
 
-                // Kim chỉ hướng nhà — đặt ra ngoài vòng chia độ (rDoSo) để không đè lên số độ
+                // Kim chỉ hướng nhà — mũi tên chạm mép ngoài vòng vạch chia độ
                 let radMui = (houseFacing - 90) * Math.PI / 180;
-                let rKimHuong = rDoSo + 25;
+                let rKimHuong = rDoSo;
                 let xHF = cx + rKimHuong * Math.cos(radMui), yHF = cy + rKimHuong * Math.sin(radMui);
                 let xHB = cx - rKimHuong * Math.cos(radMui), yHB = cy - rKimHuong * Math.sin(radMui);
                 html += `<line x1="${xHB.toFixed(1)}" y1="${yHB.toFixed(1)}" x2="${xHF.toFixed(1)}" y2="${yHF.toFixed(1)}" stroke="#00c8c8" stroke-width="2.5"/>`;
@@ -791,7 +791,7 @@
                 let x1a = xHF-tl*Math.cos(radMui-ta), y1a = yHF-tl*Math.sin(radMui-ta);
                 let x2a = xHF-tl*Math.cos(radMui+ta), y2a = yHF-tl*Math.sin(radMui+ta);
                 html += `<polygon points="${xHF.toFixed(1)},${yHF.toFixed(1)} ${x1a.toFixed(1)},${y1a.toFixed(1)} ${x2a.toFixed(1)},${y2a.toFixed(1)}" fill="#00c8c8"/>`;
-                let xLH = cx+(rKimHuong+35)*Math.cos(radMui), yLH = cy+(rKimHuong+35)*Math.sin(radMui);
+                let xLH = cx+(rDoSo+60)*Math.cos(radMui), yLH = cy+(rDoSo+60)*Math.sin(radMui);
                 html += `<text x="${xLH.toFixed(1)}" y="${yLH.toFixed(1)}" font-size="${tpFontSize+3}" font-weight="800" fill="#ff0000" stroke="#fff" stroke-width="1.5" paint-order="stroke" text-anchor="middle" transform="rotate(${houseFacing} ${xLH.toFixed(1)} ${yLH.toFixed(1)})">▲ HƯỚNG NHÀ</text>`;
 
                 // Tâm: tên Cục/Hành + chú thích, nội dung khác nhau theo chế độ khởi.
@@ -1504,9 +1504,9 @@
                     html += `<g transform="rotate(${bq.goc} ${xB.toFixed(1)} ${yB.toFixed(1)})"><text x="${xB.toFixed(1)}" y="${yB.toFixed(1)}" font-size="${(tpFontSize*1.3).toFixed(1)}" font-weight="900" fill="#fff" stroke="#2a2a2a" stroke-width="3" paint-order="stroke" text-anchor="middle" dominant-baseline="middle">${bq.ten}</text></g>`;
                 });
 
-                // Kim chỉ hướng nhà — đặt ra ngoài vòng chia độ, giống các la bàn khác
+                // Kim chỉ hướng nhà — đặt ra ngoài vòng chia độ, mũi tên chạm mép ngoài vòng vạch chia độ
                 let radMui = (houseFacing - 90) * Math.PI / 180;
-                let rKimHuong = rDoSo + 25;
+                let rKimHuong = rDoSo;
                 let xHF = cx + rKimHuong * Math.cos(radMui), yHF = cy + rKimHuong * Math.sin(radMui);
                 let xHB = cx - rKimHuong * Math.cos(radMui), yHB = cy - rKimHuong * Math.sin(radMui);
                 html += `<line x1="${xHB.toFixed(1)}" y1="${yHB.toFixed(1)}" x2="${xHF.toFixed(1)}" y2="${yHF.toFixed(1)}" stroke="#00c8c8" stroke-width="2.5"/>`;
@@ -1514,7 +1514,7 @@
                 let x1a = xHF-tl*Math.cos(radMui-ta), y1a = yHF-tl*Math.sin(radMui-ta);
                 let x2a = xHF-tl*Math.cos(radMui+ta), y2a = yHF-tl*Math.sin(radMui+ta);
                 html += `<polygon points="${xHF.toFixed(1)},${yHF.toFixed(1)} ${x1a.toFixed(1)},${y1a.toFixed(1)} ${x2a.toFixed(1)},${y2a.toFixed(1)}" fill="#00c8c8"/>`;
-                let xLH = cx+(rKimHuong+35)*Math.cos(radMui), yLH = cy+(rKimHuong+35)*Math.sin(radMui);
+                let xLH = cx+(rDoSo+45)*Math.cos(radMui), yLH = cy+(rDoSo+45)*Math.sin(radMui);
                 html += `<text x="${xLH.toFixed(1)}" y="${yLH.toFixed(1)}" font-size="${tpFontSize+3}" font-weight="800" fill="#ff0000" stroke="#fff" stroke-width="1.5" paint-order="stroke" text-anchor="middle" transform="rotate(${houseFacing} ${xLH.toFixed(1)} ${yLH.toFixed(1)})">▲ HƯỚNG NHÀ</text>`;
 
                 // Tâm: nhãn "Kham Dư" + góc hướng nhà hiện tại + Long tại Hướng
@@ -1666,12 +1666,12 @@
 
                 const svg = document.getElementById("compassSvg"); if (!svg) return;
                 // La bàn luôn cố định ở giữa khung (500,500 trong viewBox 1000x1000) — không di chuyển theo tamPercent nữa.
-                const cx = 500, cy = 510;
+                const cx = 500, cy = 500;
                 const sonDen = document.getElementById("selSonDen")?.value, sonDi = document.getElementById("selSonDi")?.value;
                 veCompassChung("compassSvg", cx, cy, houseFacing, {
                     // Bán kính KHÔNG truyền cứng nữa — để veCompassChung() tự dùng default mới (8 hướng
                     // trong cùng -> 24 sơn -> vạch chia độ -> số độ), tránh đè lên thay đổi trong shared.js.
-                    r24Outer:395, r24Text:375, rDoTick:395, rDoText:435, rDoSo:415,
+                    r24Outer:395, r24Text:375, rDoTick:395, rDoText:435, rDoSo:415, rKim:415,
                     doMo:doMoNenLaBan,mauTia:mauTiaHienTai,isReset:isResetMode,
                     resetOffset:isResetMode?-houseFacing:0,sonDen:sonDen,sonDi:sonDi,showLabel:true,fontSize:tpFontSize,mauRanh8:mauRanh8HienTai,
                     batTrach: layDaiBatTrachCho24Son(houseFacing),
@@ -1680,7 +1680,11 @@
                 // (Đã bỏ kiểu "vuông 9 ô" — chỉ còn Tròn 24 sơn ↔ Trường Sinh ↔ Bát Trạch ↔ Đa giác nhà.)
             }
             window.veCompassOverlay = veCompassOverlay;
-
+            (function() {
+                let st = document.createElement("style");
+                st.textContent = "#compassOverlay > svg { transform: translateY(2%); }";
+                document.head.appendChild(st);
+            })();
             window.resetCompassAngle = function() {
                 isResetMode = !isResetMode;
                 veCompassOverlay(parseFloat(document.getElementById('houseFacing').value) || 0);
