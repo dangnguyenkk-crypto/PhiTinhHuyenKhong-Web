@@ -293,8 +293,8 @@ function veCompassChung(svgId, cx, cy, houseFacing, options) {
         html += `<text x="${xLH.toFixed(1)}" y="${yLH.toFixed(1)}" font-size="${fontSize+3}" font-weight="800" fill="#ff0000" stroke="#fff" stroke-width="1.5" paint-order="stroke" text-anchor="middle" transform="rotate(${houseFacing} ${xLH.toFixed(1)} ${yLH.toFixed(1)})">▲ HƯỚNG NHÀ</text>`;
     }
         if (tuBach && tuBach.trung != null) {
-            html += `<text x="${cx}" y="${(cy-fontSize*1.5).toFixed(1)}" font-size="${(fontSize*3.2).toFixed(1)}" font-weight="900" fill="${MAU_SO_TU_BACH[tuBach.trung]}" stroke="#fff" stroke-width="4" paint-order="stroke" text-anchor="middle" dominant-baseline="middle">${tuBach.trung}</text>`;
-            html += `<text x="${cx}" y="${(cy+fontSize*2).toFixed(1)}" font-size="${(fontSize*0.8).toFixed(1)}" font-weight="700" fill="#5c4a3a" stroke="#fff" stroke-width="2.5" paint-order="stroke" text-anchor="middle" dominant-baseline="middle">${tuBach.nhan || ""}</text>`;
+            html += `<text x="${cx}" y="${(cy-fontSize*1.5).toFixed(1)}" font-size="${(fontSize*3.2).toFixed(1)}" font-weight="900" fill="${MAU_SO_TU_BACH[tuBach.trung]}" stroke="#fff" stroke-width="4" paint-order="stroke" text-anchor="middle" dominant-baseline="middle" transform="rotate(${-totalRotation} ${cx} ${cy})">${tuBach.trung}</text>`;
+            html += `<text x="${cx}" y="${(cy+fontSize*2).toFixed(1)}" font-size="${(fontSize*0.8).toFixed(1)}" font-weight="700" fill="#5c4a3a" stroke="#fff" stroke-width="2.5" paint-order="stroke" text-anchor="middle" dominant-baseline="middle" transform="rotate(${-totalRotation} ${cx} ${cy})">${tuBach.nhan || ""}</text>`;
         }
     // Chấm đỏ tâm (nền trắng mờ)
     html += `<circle cx="${cx}" cy="${cy}" r="7" fill="#ff1a1a" stroke="#ffffff" stroke-width="2.5"/></g>`;
