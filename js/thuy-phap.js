@@ -1675,6 +1675,7 @@
                     doMo:doMoNenLaBan,mauTia:mauTiaHienTai,isReset:isResetMode,
                     resetOffset:isResetMode?-houseFacing:0,sonDen:sonDen,sonDi:sonDi,showLabel:true,fontSize:tpFontSize,mauRanh8:mauRanh8HienTai,
                     batTrach: layDaiBatTrachCho24Son(houseFacing),
+                    showKimBac: false,
                     tuBach: layTuBachGiaChu()
                 });
                 // (Đã bỏ kiểu "vuông 9 ô" — chỉ còn Tròn 24 sơn ↔ Trường Sinh ↔ Bát Trạch ↔ Đa giác nhà.)
