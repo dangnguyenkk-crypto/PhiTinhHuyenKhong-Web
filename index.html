@@ -454,6 +454,13 @@
                     <input type="color" id="tnColorRanh8Huong" value="#1565c0" style="height:24px; padding:2px; cursor:pointer; width:100%; max-width:70px;" oninput="capNhatMauRanh8TamNha()" onchange="capNhatMauRanh8TamNha()">
                 </div>
             </div>
+            <div id="tnBatTrachRow" style="display:block; margin-top:6px;">
+                <label style="font-size:10px; display:block; margin-bottom:1px; font-weight:600; color:#444;">🀄 Dải Bát Trạch (trên la bàn 24 sơn)</label>
+                <div style="display:flex; gap:4px;">
+                    <button id="tnBtnBatTrachTrach" type="button" onclick="toggleBatTrachTrachTamNha()" style="flex:1; padding:5px 4px; font-size:11px; border-radius:6px; cursor:pointer; border:1.5px solid #4CAF50; background:#4CAF50; color:#fff; font-weight:600;">🏠 Trạch đất</button>
+                    <button id="tnBtnBatTrachMenh" type="button" onclick="toggleBatTrachMenhTamNha()" style="flex:1; padding:5px 4px; font-size:11px; border-radius:6px; cursor:pointer; border:1.5px solid #4CAF50; background:#4CAF50; color:#fff; font-weight:600;">🧑 Mệnh gia chủ</button>
+                </div>
+            </div>
             <div class="scale-row" style="margin-top:6px; display:flex; align-items:center; gap:6px; flex-wrap:nowrap; border-top:1px dashed #ddd; padding-top:6px;">
                 <label style="font-size:11px; font-weight:600; color:#444; white-space:nowrap;">🔄 Xoay ảnh:</label>
                 <input type="number" id="tnBgRotation" value="0" step="1" style="width:46px; flex:0 0 auto; padding:2px 4px; border:1px solid #ccc; border-radius:4px; font-size:13px; height:24px;" oninput="capNhatXoayAnhTamNha(this.value)" onchange="capNhatXoayAnhTamNha(this.value)">

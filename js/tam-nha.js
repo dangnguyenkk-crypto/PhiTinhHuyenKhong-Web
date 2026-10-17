@@ -13,7 +13,8 @@
             centroidWorld: null, bgImage: null, bgImgWorld: null, bgImgRotation: 0,
             isResetView: true, huongResetCu: 0, fontSizeCompass: 10,
             dragging: false, lastTouch: null,
-            doors: [], showCompass: true, kieuLaBan: 'tron24son'
+            doors: [], showCompass: true, kieuLaBan: 'tron24son',
+            hienBatTrachTrach: true, hienBatTrachMenh: true
         };
 
         var svgMain = document.getElementById('tnSvgMain');
@@ -155,13 +156,16 @@
             } else if (tamNhaData.centroidWorld && tamNhaData.showCompass) {
                 const p = worldToScreenTamNha(tamNhaData.centroidWorld.x, tamNhaData.centroidWorld.y);
                 const az = parseFloat(document.getElementById('tnHuongLaBan').value) || 0;
-                const minDim = Math.min(rect.width, rect.height) * 0.95;
+                // Dải Bát Trạch Du Niên (🏡 Trạch theo hướng la bàn, 🧑 Nhân theo năm sinh/giới tính ở tab Thủy Pháp)
+                const dsDai = window.layDaiBatTrachChoLaBan ? window.layDaiBatTrachChoLaBan(az, tamNhaData.hienBatTrachTrach, tamNhaData.hienBatTrachMenh) : [];
+                const dayDaiF = 0.075, extraF = Math.max(dsDai.length - 1, 0) * dayDaiF; // 2 dải: nới vòng ngoài rồi thu cả la bàn để vẫn nằm gọn trong khung
+                const minDim = Math.min(rect.width, rect.height) * 0.95 * (0.47 / (0.47 + extraF));
                 // THỨ TỰ TỪ TÂM RA NGOÀI (đúng như veCompassChung mặc định):
                 // 8 hướng -> 24 sơn -> 60 Thấu Địa Long -> vạch chia độ -> số độ.
                 const r8Out = minDim*0.20, r8In = minDim*0.15, r8Text = minDim*0.17;
-                const r24Out = minDim*0.37, r24In = minDim*0.2, r24Text = minDim*0.34, rKim = minDim*0.37;
-                const rTdlOut = minDim*0.44, rTdlIn = r24Out, rTdlTk = (rTdlOut-rTdlIn)*0.9;//thấu địa long
-                const rDoSo = minDim*0.45, rDoTick = rTdlOut, rDoText = minDim*0.47;
+                const r24Out = minDim*(0.37+extraF), r24In = minDim*0.2, r24Text = minDim*(0.34+extraF), rKim = minDim*(0.37+extraF);
+                const rTdlOut = minDim*(0.44+extraF), rTdlIn = r24Out, rTdlTk = (rTdlOut-rTdlIn)*0.9;//thấu địa long
+                const rDoSo = minDim*(0.45+extraF), rDoTick = rTdlOut, rDoText = minDim*(0.47+extraF);
                 const rTiaSt = r8In -15;//nơi các tia bắt đầu
                 const tempSvg = document.createElementNS('http://www.w3.org/2000/svg','svg');
                 tempSvg.setAttribute('id','tempSvg'); document.body.appendChild(tempSvg);
@@ -173,8 +177,8 @@
                     doMo:0,mauTia:mauTiaHienTai,isReset:tamNhaData.isResetView,resetOffset:tamNhaData.isResetView?-az:0,
                      sonDen:null,sonDi:null,showLabel:false,fontSize:tamNhaData.fontSizeCompass,mauRanh8:mauRanh8HienTai,
                      tuBach: window.layTuBachChoLaBan ? window.layTuBachChoLaBan() : null,
-                    batTrach: window.layDaiBatTrachMenhChoLaBan ? window.layDaiBatTrachMenhChoLaBan(az) : [],
-                    dayBatTrach: minDim*0.075
+                    batTrach: dsDai,
+                    dayBatTrach: minDim*dayDaiF
                 });
                 html += tempSvg.innerHTML; document.body.removeChild(tempSvg);
             }
@@ -302,9 +306,26 @@
             tamNhaData.kieuLaBan = (kieu === 'truongSinh') ? 'truongSinh' : 'tron24son';
             var sel = document.getElementById('tnKieuLaBan');
             if (sel && sel.value !== tamNhaData.kieuLaBan) sel.value = tamNhaData.kieuLaBan;
+            capNhatNutBatTrachTamNha();
             redrawTamNha();
         }
         window.chonKieuLaBanTamNha = chonKieuLaBanTamNha;
+        // Bật/tắt 2 dải Bát Trạch (🏠 Trạch đất / 🧑 Mệnh gia chủ) trên la bàn 24 sơn ở Tâm Nhà
+        function capNhatNutBatTrachTamNha() {
+            function ap(id, bat) {
+                var b = document.getElementById(id); if (!b) return;
+                b.style.background = bat ? '#4CAF50' : '#fff';
+                b.style.color = bat ? '#fff' : '#555';
+                b.style.borderColor = bat ? '#4CAF50' : '#999';
+            }
+            ap('tnBtnBatTrachTrach', tamNhaData.hienBatTrachTrach);
+            ap('tnBtnBatTrachMenh', tamNhaData.hienBatTrachMenh);
+            var row = document.getElementById('tnBatTrachRow');
+            if (row) row.style.display = (tamNhaData.kieuLaBan === 'tron24son') ? 'block' : 'none'; // chỉ áp dụng cho la bàn 24 sơn
+        }
+        window.capNhatNutBatTrachTamNha = capNhatNutBatTrachTamNha;
+        window.toggleBatTrachTrachTamNha = function() { tamNhaData.hienBatTrachTrach = !tamNhaData.hienBatTrachTrach; capNhatNutBatTrachTamNha(); redrawTamNha(); };
+        window.toggleBatTrachMenhTamNha = function() { tamNhaData.hienBatTrachMenh = !tamNhaData.hienBatTrachMenh; capNhatNutBatTrachTamNha(); redrawTamNha(); };
         function undoTamNha() { if (tamNhaData.closed){tamNhaData.closed=false;}else if(tamNhaData.vertices.length>0){tamNhaData.vertices.pop();tamNhaData.lockedEdges.pop();} tamNhaData.centroidWorld=null; document.getElementById('tnKetQuaTam').style.display='none'; renderTamNhaEdgeList(); redrawTamNha(); }
         window.undoTamNha = undoTamNha;
         function resetTamNha() {
@@ -504,6 +525,7 @@
         document.getElementById("tnColorRanh8Huong").addEventListener("change", function() { capNhatMauRanh8TamNha(); });
         setTimeout(resizeTamNhaSvg, 100);
         capNhatNhanNutResetLaBan();
+        capNhatNutBatTrachTamNha();
 
         // ==== LƯU / MỞ TOÀN BỘ TRẠNG THÁI (dùng bởi Hồ Sơ Nhà — ho-so.js) ====
         function layStateTamNha() {
@@ -527,6 +549,8 @@
                 pxPerMeter: tamNhaData.pxPerMeter,
                  showCompass: tamNhaData.showCompass,
                  kieuLaBan: tamNhaData.kieuLaBan || 'tron24son',
+                hienBatTrachTrach: tamNhaData.hienBatTrachTrach !== false,
+                hienBatTrachMenh: tamNhaData.hienBatTrachMenh !== false,
                 bgImageSrc: tamNhaData.bgImage ? tamNhaData.bgImage.src : null,
                 bgImgWorld: tamNhaData.bgImgWorld,
                 bgImgRotation: tamNhaData.bgImgRotation || 0,
@@ -567,6 +591,9 @@
             tamNhaData.showCompass = obj.showCompass !== false;
             tamNhaData.kieuLaBan = (obj.kieuLaBan === 'truongSinh') ? 'truongSinh' : 'tron24son';
             setVal("tnKieuLaBan", tamNhaData.kieuLaBan);
+            tamNhaData.hienBatTrachTrach = obj.hienBatTrachTrach !== false;
+            tamNhaData.hienBatTrachMenh = obj.hienBatTrachMenh !== false;
+            capNhatNutBatTrachTamNha();
             tamNhaData.zoomLevel = 1; tamNhaData.panX = 0; tamNhaData.panY = 0;
 
             function hoanTatKhoiPhuc() {

@@ -1646,6 +1646,13 @@
                 try { return layDaiBatTrachCho24Son(houseFacing); }
                 finally { hienThiBatTrachTrach24Son = truocTrach; hienThiBatTrachMenh24Son = truocMenh; }
             };
+            // Cho tab Tâm Nhà: lấy dải Trạch và/hoặc Nhân theo cờ riêng của tab Tâm Nhà (không phụ thuộc nút của Thủy Pháp)
+            window.layDaiBatTrachChoLaBan = function(houseFacing, coTrach, coMenh) {
+                let truocTrach = hienThiBatTrachTrach24Son, truocMenh = hienThiBatTrachMenh24Son;
+                hienThiBatTrachTrach24Son = !!coTrach; hienThiBatTrachMenh24Son = !!coMenh;
+                try { return layDaiBatTrachCho24Son(houseFacing); }
+                finally { hienThiBatTrachTrach24Son = truocTrach; hienThiBatTrachMenh24Son = truocMenh; }
+            };
             function veCompassOverlay(houseFacing) {
                 // Kieu-aware: gọi đúng hàm vẽ của kiểu la bàn ĐANG hiển thị, để mọi nơi trong file
                 // này gọi veCompassOverlay() (khi đổi hướng nhà, đổi sơn Đến/Đi, đổi cỡ chữ, v.v.)
@@ -2229,7 +2236,7 @@
                      <b>📘 Tam Hợp Trường Sinh</b> (khởi theo ${khoiTruongSinhCheDo==="toa"?`<b>Tọa nhà</b> — Tọa ≈ sơn <b>${sonToaChoTongKet?sonToaChoTongKet.ten:"—"}</b>, Trường Sinh ${chieuTruongSinh==="nghich"?"nghịch":"thuận"}`:`<b>Thủy Khẩu</b>, chiều nước ${chieuTruongSinh==="nghich"?"nghịch":"thuận"}`}): ${cuc ? `→ thuộc <b>${cuc}${khoiTruongSinhCheDo==="toa"?" (theo Tọa)":" Cục"}</b>` : `<i>${khoiTruongSinhCheDo==="toa"?"Không xác định được Ngũ Hành Tọa":"Chưa chọn Địa Chi Nước Đi nên chưa xác định được Cục"}</i>`}<br>
                      ${dinhDangKetQua("Nước Đến",ketQuaDen,"den")}<br>${dinhDangKetQua("Nước Đi",ketQuaDi,"di")}<br><br>
                      ${menh ? `<b>🧑 Nhân mệnh gia chủ:</b> Năm sinh ${namSinh} (${gioiTinhRaw}) → Quái <b>${menh.cung}</b> (Quái ${menh.quaiSo}, hành ${menh.hanh}, ${nhomMenh})<br>
-                     <b style="color:${hopMenh?'#1565c0':'#c62828'}">${hopMenh?'✅ HỢP với Trạch nhà (cùng nhóm '+nhomMenh+')':'⚠️ KHÔNG hợp với Trạch nhà (' + nhomTrach + ') — cần đổi hướng cổng và chuyển hướng bếp cho phù hợp'}</b><br><br>`
+                     <b style="color:${hopMenh?'#1565c0':'#c62828'}">${hopMenh?'✅ HỢP với Trạch nhà (cùng nhóm '+nhomMenh+')':'⚠️ KHÔNG hợp với Trạch nhà (' + nhomTrach + ') — cần đổi hướng cổng và chuyển hướng bếp cho phù hợp, cửa phòng ngủ [lưu ý cần có giếng trời lấy khí (tr105)] hoặc lối đi có hướng tốt thì vẫn được cát lợi'}</b><br><br>`
                      : `<b>🧑 Nhân mệnh gia chủ:</b> <i>Không xác định được (kiểm tra lại năm sinh)</i><br><br>`}
                      <b>🏡 Bát Trạch Thủy Pháp (theo Trạch mệnh):</b> Tọa ${quaiTrachNha.toaSon} (${Math.round(quaiTrachNha.toaGoc)}°) → Quái Trạch <b>${quaiTrachNha.ten}</b> (${nhomTrach})${quaiTrachNha.satRanh ? ` <b style="color:#e65100;">⚠️ tọa sát ranh với ${quaiTrachNha.cungKe} (${quaiTrachNha.khoangCachRanh.toFixed(1)}°)</b>` : ""}<br>
                      ${dinhDangBatTrach("Nước Đến",ketQuaBTDen,phuongDen,false)}<br>${dinhDangBatTrach("Nước Đi",ketQuaBTDi,phuongDi,true)}<br><br>
