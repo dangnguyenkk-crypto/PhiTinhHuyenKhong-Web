@@ -1682,6 +1682,7 @@
                     doMo:doMoNenLaBan,mauTia:mauTiaHienTai,isReset:isResetMode,
                     resetOffset:isResetMode?-houseFacing:0,sonDen:sonDen,sonDi:sonDi,showLabel:true,fontSize:tpFontSize,mauRanh8:mauRanh8HienTai,
                     batTrach: layDaiBatTrachCho24Son(houseFacing),
+                    dayBatTrach: 90,
                     showKimBac: false,
                     tuBach: layTuBachGiaChu()
                 });

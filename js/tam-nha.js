@@ -158,14 +158,15 @@
                 const az = parseFloat(document.getElementById('tnHuongLaBan').value) || 0;
                 // Dải Bát Trạch Du Niên (🏡 Trạch theo hướng la bàn, 🧑 Nhân theo năm sinh/giới tính ở tab Thủy Pháp)
                 const dsDai = window.layDaiBatTrachChoLaBan ? window.layDaiBatTrachChoLaBan(az, tamNhaData.hienBatTrachTrach, tamNhaData.hienBatTrachMenh) : [];
-                const dayDaiF = 0.075, extraF = Math.max(dsDai.length - 1, 0) * dayDaiF; // 2 dải: nới vòng ngoài rồi thu cả la bàn để vẫn nằm gọn trong khung
-                const minDim = Math.min(rect.width, rect.height) * 0.95 * (0.47 / (0.47 + extraF));
+                const dayDaiF = 0.09; // bề dày mỗi dải (dày hơn vòng 24 sơn); có dải thì dải ngoài cùng chạm sát vạch chia độ
+                const minDim = Math.min(rect.width, rect.height) * 0.95;
+                const coDai = dsDai.length > 0;
                 // THỨ TỰ TỪ TÂM RA NGOÀI (đúng như veCompassChung mặc định):
                 // 8 hướng -> 24 sơn -> 60 Thấu Địa Long -> vạch chia độ -> số độ.
                 const r8Out = minDim*0.20, r8In = minDim*0.15, r8Text = minDim*0.17;
-                const r24Out = minDim*(0.37+extraF), r24In = minDim*0.2, r24Text = minDim*(0.34+extraF), rKim = minDim*(0.37+extraF);
-                const rTdlOut = minDim*(0.44+extraF), rTdlIn = r24Out, rTdlTk = (rTdlOut-rTdlIn)*0.9;//thấu địa long
-                const rDoSo = minDim*(0.45+extraF), rDoTick = rTdlOut, rDoText = minDim*(0.47+extraF);
+                const r24Out = minDim*(coDai ? 0.44 : 0.37), r24In = minDim*0.2, r24Text = minDim*(coDai ? 0.41 : 0.34), rKim = minDim*0.37;
+                const rTdlOut = minDim*0.44, rTdlIn = r24Out, rTdlTk = (rTdlOut-rTdlIn)*0.9;//thấu địa long
+                const rDoSo = minDim*0.45, rDoTick = rTdlOut, rDoText = minDim*0.47;
                 const rTiaSt = r8In -15;//nơi các tia bắt đầu
                 const tempSvg = document.createElementNS('http://www.w3.org/2000/svg','svg');
                 tempSvg.setAttribute('id','tempSvg'); document.body.appendChild(tempSvg);
