@@ -158,7 +158,7 @@
                 const az = parseFloat(document.getElementById('tnHuongLaBan').value) || 0;
                 // Dải Bát Trạch Du Niên (🏡 Trạch theo hướng la bàn, 🧑 Nhân theo năm sinh/giới tính ở tab Thủy Pháp)
                 const dsDai = window.layDaiBatTrachChoLaBan ? window.layDaiBatTrachChoLaBan(az, tamNhaData.hienBatTrachTrach, tamNhaData.hienBatTrachMenh) : [];
-                const dayDaiF = 0.09; // bề dày mỗi dải (dày hơn vòng 24 sơn); có dải thì dải ngoài cùng chạm sát vạch chia độ
+                const dayDaiF = 0.095; // bề dày mỗi dải (dày hơn vòng 24 sơn); có dải thì dải ngoài cùng chạm sát vạch chia độ
                 const minDim = Math.min(rect.width, rect.height) * 0.95;
                 const coDai = dsDai.length > 0;
                 // THỨ TỰ TỪ TÂM RA NGOÀI (đúng như veCompassChung mặc định):
