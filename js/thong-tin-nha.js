@@ -336,6 +336,55 @@
         alert('✅ Đã áp dụng Mặt bằng sang tab Cửu Cung Lưới.');
     };
 
+    // Áp dụng Mặt bằng sang tab Tâm Nhà (giống nút sang Cửu Cung Lưới, luôn hỏi xác nhận trước khi ghi đè).
+    window.thongTinApDungMatBangTamNha = function () {
+        let mb = thongTinData.matBang;
+        let dai = parseFloat(mb.daiM), rong = parseFloat(mb.rongM);
+        let tenShape = { rect: 'Chữ Nhật', L: 'Hình L', sevenSides: '7 cạnh' }[mb.shape] || mb.shape;
+        if (mb.shape === 'rect' && !(dai > 0 && rong > 0)) { alert('⚠️ Nhập chiều dài và chiều rộng hợp lệ (> 0).'); return; }
+        if (typeof tamNhaData === 'undefined' || typeof redrawTamNha !== 'function' || typeof tamNhaDoorCtx === 'undefined') {
+            alert('⚠️ Chưa sẵn sàng: hãy mở qua tab Tâm Nhà ít nhất 1 lần rồi thử lại.');
+            return;
+        }
+        let CM = window.CompassModule;
+        let shapePts = (mb.shape === 'rect') ? null : (CM && CM.SHAPES && CM.SHAPES[mb.shape]);
+        if (mb.shape !== 'rect' && !shapePts) { alert('⚠️ Không tìm thấy hình mẫu "' + tenShape + '".'); return; }
+        let dienGiai = 'Áp dụng Mặt bằng "' + tenShape + '"'
+            + (mb.shape === 'rect' ? ' (' + dai + 'm × ' + rong + 'm)' : '')
+            + (mb.sonCua ? ', Cửa chính sơn ' + mb.sonCua : '') + ' sang tab 📐 Tâm Nhà?';
+        let canhBao = '\n\n⚠️ Thao tác này sẽ VẼ LẠI hình dạng nhà ở Tâm Nhà — khung nhà, phòng và cửa đã có ở đó sẽ bị THAY THẾ.';
+        if (!confirm(dienGiai + canhBao)) return;
+
+        // Điểm nguồn theo hệ Cửu Cung Lưới (Y hướng xuống, px theo thang scaleInput) rồi đổi sang hệ Tâm Nhà bằng hàm dùng chung của shared.js
+        let scaleEl = document.getElementById('scaleInput');
+        let pxCC = scaleEl ? (parseFloat(scaleEl.value) || 20) : 20;
+        let pxTN = tamNhaData.pxPerMeter || 10;
+        let nguon = (mb.shape === 'rect')
+            ? [{ x: 0, y: 0 }, { x: dai * pxCC, y: 0 }, { x: dai * pxCC, y: rong * pxCC }, { x: 0, y: rong * pxCC }]
+            : shapePts.map(function (p) { return { x: p.x, y: p.y }; });
+        let dinh = _dongBoDoiChieuHinh(nguon, pxCC, { x: 0, y: 0 }, pxTN);
+
+        tamNhaData.vertices = dinh;
+        tamNhaData.closed = true;
+        tamNhaData.lockedEdges = dinh.map(function () { return false; });
+        tamNhaData.doors = [];
+        if (window.VePhongModuleTamNha && typeof window.VePhongModuleTamNha.setRooms === 'function') window.VePhongModuleTamNha.setRooms([]);
+        if (typeof computeAndSetTamNhaCentroid === 'function') computeAndSetTamNhaCentroid(true);
+
+        let datCua = true;
+        if (mb.sonCua && typeof CuaModule !== 'undefined' && typeof CuaModule.timViTriTheoSon === 'function') {
+            let viTri = CuaModule.timViTriTheoSon(mb.sonCua, tamNhaDoorCtx, 1.0);
+            if (viTri) {
+                tamNhaData.doors.push({ id: Date.now(), type: 'chinh', typeName: 'Cửa chính', edgeIndex: viTri.edgeIndex, offset: viTri.offset, width: 1.0, leaves: 2, swingIn: false });
+            } else datCua = false;
+        }
+        if (typeof renderTamNhaEdgeList === 'function') renderTamNhaEdgeList();
+        if (typeof window.renderDoorList === 'function') window.renderDoorList();
+        redrawTamNha();
+        if (typeof zoomToFitTamNha === 'function') zoomToFitTamNha();
+        alert('✅ Đã áp dụng Mặt bằng sang tab Tâm Nhà.' + (datCua ? '' : '\n⚠️ Không tìm được vị trí cho cửa chính sơn ' + mb.sonCua + ' — hãy đặt cửa thủ công.'));
+    };
+
     // Cửu Cung Lưới đổi shape/kích thước/cửa trực tiếp -> tab Thông Tin tự đọc lại để hiển thị đúng.
     // Không hỏi xác nhận theo chiều này (Thông Tin chỉ hiển thị theo, không phải nơi khởi phát đổi).
     window.thongTinDongBoTuCuuCung = function () {
@@ -369,7 +418,9 @@
             <div style="font-size:10px;color:#999;margin-top:3px;">Hình dạng — Dài × Rộng — Cửa chính (sơn)</div>
         </div>
         <button onclick="thongTinApDungMatBang()" style="width:100%;background:#8b0000;color:#fff;border:none;border-radius:6px;padding:8px;font-size:12px;font-weight:700;cursor:pointer;">📐 Áp dụng sang Cửu Cung Lưới</button>
-        <div style="font-size:10px;color:#999;margin-top:4px;">⚠️ Sẽ hỏi xác nhận trước khi ghi đè hình vẽ ở Cửu Cung Lưới.</div>`;
+        <div style="font-size:10px;color:#999;margin-top:4px;">⚠️ Sẽ hỏi xác nhận trước khi ghi đè hình vẽ ở Cửu Cung Lưới.</div>
+        <button onclick="thongTinApDungMatBangTamNha()" style="width:100%;background:#1a5c3a;color:#fff;border:none;border-radius:6px;padding:8px;font-size:12px;font-weight:700;cursor:pointer;margin-top:8px;">🎯 Áp dụng sang Tâm Nhà</button>
+        <div style="font-size:10px;color:#999;margin-top:4px;">⚠️ Sẽ hỏi xác nhận trước khi ghi đè khung nhà, phòng và cửa ở Tâm Nhà.</div>`;
     }
 
     // ==== RENDER TỪNG PHẦN (ghi chú tự do — giữ nguyên như cũ) ====

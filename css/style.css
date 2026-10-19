@@ -87,11 +87,11 @@
         .compass-overlay.khoa { cursor: not-allowed; }
         .compass-overlay.khoa:active { cursor: not-allowed; }
         .btn-khoa, .btn-reset, .btn-toggle-compass, .btn-capture-maps, .btn-gps { position: absolute; z-index: 30; padding: 4px 10px; font-size: 11px; font-weight: 700; border: 1px solid rgba(255,255,255,0.4); border-radius: 20px; cursor: pointer; width: auto; margin: 0; display: none; }
-        .btn-khoa { top: 8px; left: 50%; transform: translateX(calc(-100% - 4px)); background: rgba(0,0,0,0.65); color: #fff; }
+        .btn-khoa { top: 8px; left: 98px; transform: none; width: 36px; padding: 4px 0; text-align: center; background: rgba(0,0,0,0.65); color: #fff; }
         .btn-khoa.khoa-on { background: rgba(46,125,50,0.85); }
-        .btn-reset { top: 8px; left: 58px; background: rgba(46,125,50,0.85); color: #fff; }
+        .btn-reset { top: 8px; left: 58px; width: 36px; padding: 4px 0; text-align: center; background: rgba(46,125,50,0.85); color: #fff; }
         .btn-reset:hover { background: rgba(76,175,80,0.9); }
-        .btn-toggle-compass { top: 8px; left: 50%; transform: translateX(4px); background: rgba(255,152,0,0.85); color: #fff; }
+        .btn-toggle-compass { top: 8px; left: 50%; transform: translateX(38px); width: 36px; padding: 4px 0; text-align: center; background: rgba(255,152,0,0.85); color: #fff; }
         .btn-toggle-compass:hover { background: rgba(255,152,0,1); }
         .btn-capture-maps { bottom: 12px; left: 50%; transform: translateX(-50%); background: #FF5722; color: #fff; border: none; border-radius: 16px; font-size: 11px; box-shadow: 0 2px 8px rgba(0,0,0,0.3); white-space: nowrap; }
         .btn-capture-maps:hover { background: #E64A19; }
