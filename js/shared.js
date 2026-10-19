@@ -113,6 +113,14 @@ const DS24_SON = [
         };
         const DIA_CHI_SET = { "Tý":1,"Sửu":1,"Dần":1,"Mão":1,"Thìn":1,"Tị":1,"Ngọ":1,"Mùi":1,"Thân":1,"Dậu":1,"Tuất":1,"Hợi":1 };
 
+// Nhãn "HƯỚNG NHÀ": chữ trắng trên nền đỏ (thân chữ nhật + mũi tam giác chỉ về tâm la bàn), xoay theo hướng nhà
+function veNhanHuongNha(x, y, houseFacing, fs) {
+    // Mũi tam giác nằm ở phía NGOÀI (xa tâm la bàn, cùng chiều kim hướng nhà); dy dời cả nhãn vào trong một chút để mũi không bị cắt ở mép la bàn
+    const w = fs * 7, h = fs * 1.5, t = fs * 0.9, dy = t * 0.6;
+    const pts = [[-w/2,-h/2],[-t*0.9,-h/2],[0,-h/2-t],[t*0.9,-h/2],[w/2,-h/2],[w/2,h/2],[-w/2,h/2]]
+        .map(p => (x + p[0]).toFixed(1) + "," + (y + p[1] + dy).toFixed(1)).join(" ");
+    return `<g transform="rotate(${houseFacing} ${x.toFixed(1)} ${y.toFixed(1)})" pointer-events="none"><polygon points="${pts}" fill="#d50000" stroke="#fff" stroke-width="2" stroke-linejoin="round"/><text x="${x.toFixed(1)}" y="${(y + dy).toFixed(1)}" font-size="${fs}" font-weight="800" fill="#fff" text-anchor="middle" dominant-baseline="middle">HƯỚNG NHÀ</text></g>`;
+}
 function veCompassChung(svgId, cx, cy, houseFacing, options) {
     const svg = document.getElementById(svgId); if (!svg) return;
     // THỨ TỰ TỪ TÂM RA NGOÀI:
@@ -289,8 +297,8 @@ function veCompassChung(svgId, cx, cy, houseFacing, options) {
     html += `<line x1="${xHB.toFixed(1)}" y1="${yHB.toFixed(1)}" x2="${xHF.toFixed(1)}" y2="${yHF.toFixed(1)}" stroke="#00c8c8" stroke-width="1.8"/>`;
     html += arrow(radMui, xHF, yHF, "#00c8c8");
     if (showLabel) {
-        let xLH = cx+(rDoSo+40)*Math.cos(radMui), yLH = cy+(rDoSo+40)*Math.sin(radMui);
-        html += `<text x="${xLH.toFixed(1)}" y="${yLH.toFixed(1)}" font-size="${fontSize+3}" font-weight="800" fill="#ff0000" stroke="#fff" stroke-width="1.5" paint-order="stroke" text-anchor="middle" transform="rotate(${houseFacing} ${xLH.toFixed(1)} ${yLH.toFixed(1)})">▲ HƯỚNG NHÀ</text>`;
+        let xLH = cx+(rDoSo+55)*Math.cos(radMui), yLH = cy+(rDoSo+55)*Math.sin(radMui);
+        html += veNhanHuongNha(xLH, yLH, houseFacing, fontSize+1.5);
     }
         if (tuBach && tuBach.trung != null) {
             html += `<text x="${cx}" y="${(cy-fontSize*1.5).toFixed(1)}" font-size="${(fontSize*3.2).toFixed(1)}" font-weight="900" fill="${MAU_SO_TU_BACH[tuBach.trung]}" stroke="#fff" stroke-width="4" paint-order="stroke" text-anchor="middle" dominant-baseline="middle" transform="rotate(${-totalRotation} ${cx} ${cy})">${tuBach.trung}</text>`;
