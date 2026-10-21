@@ -309,7 +309,7 @@ function veCompassChung(svgId, cx, cy, houseFacing, options) {
             dai.cells.forEach(function(c) {
                 if (c.ungNam) html += `<path d="${duongCung(c)}" fill="none" stroke="#ffb300" stroke-width="5" pointer-events="none"/>`;
             });
-            html += `<text x="${cx}" y="${(cy - rChu + fontSize*1.6).toFixed(1)}" font-size="${(fontSize*1.1).toFixed(1)}" font-weight="700" fill="${dai.mauChu}" stroke="#fff" stroke-width="1.5" paint-order="stroke" text-anchor="middle" dominant-baseline="middle" pointer-events="none">(${dai.nhan})</text>`;
+            html += `<text x="${cx}" y="${(cy - rNg + fontSize*0.85).toFixed(1)}" font-size="${(fontSize*1.05).toFixed(1)}" font-weight="700" fill="${dai.mauChu}" stroke="#fff" stroke-width="1.5" paint-order="stroke" text-anchor="middle" dominant-baseline="middle" opacity="0.55" pointer-events="none">${dai.nhan}</text>`;
             rCur = rNg;
         });
     }
