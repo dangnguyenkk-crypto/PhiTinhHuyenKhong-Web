@@ -143,12 +143,17 @@ function veCompassChung(svgId, cx, cy, houseFacing, options) {
             rKim=360, doMo=0.7,
             mauTia=mauTiaHienTai, isReset=false, resetOffset=0, sonDen=null, sonDi=null,
             showLabel=true, fontSize=15, mauRanh8=mauRanh8HienTai,
-            batTrach=[], tuBach=null, dayBatTrach=80, showKimBac=true } = options || {};
+            batTrach=[], tuBach=null, dayBatTrach=80, showKimBac=true,
+                       ngocLiem=null, dayNgocLiem=52,
+                                   ngocLiemTS=null, dayNgocLiemTS=46 } = options || {};
     // Mỗi dải Bát Trạch dày 80, nằm NGOÀI vòng 24 sơn -> vòng 24 sơn thu hẹp lại để các dải vừa khít trong bán kính gốc
     const DAY_DAI_BAT_TRACH = dayBatTrach;
     const nBatTrach = (batTrach && batTrach.length) ? batTrach.length : 0;
-    const r24Outer = r24OuterGoc - nBatTrach * DAY_DAI_BAT_TRACH;
-    const r24Text = r24TextGoc - nBatTrach * DAY_DAI_BAT_TRACH;
+    // Vòng Ngọc Liễm (nếu có) nằm ngay ngoài vòng 24 sơn nên cũng làm vòng 24 sơn thu hẹp thêm dayNgocLiem
+    const dayNL = (ngocLiem && ngocLiem.cells) ? dayNgocLiem : 0;
+    const dayNLTS = (ngocLiemTS && ngocLiemTS.cells) ? dayNgocLiemTS : 0;
+        const r24Outer = r24OuterGoc - nBatTrach * DAY_DAI_BAT_TRACH - dayNL - dayNLTS;
+        const r24Text = r24TextGoc - nBatTrach * DAY_DAI_BAT_TRACH - dayNL - dayNLTS;
         // Có Tử Bạch: tên hướng dời ra sát mép ngoài vòng 8 hướng, số Tử Bạch nằm bên trong
         const rTenHuong = tuBach ? (r8Outer - (r8Outer - r8Inner) * 0.26) : r8Text;
         const rSoTuBach = r8Inner + (r8Outer - r8Inner) * 0.32;
@@ -164,7 +169,7 @@ function veCompassChung(svgId, cx, cy, houseFacing, options) {
         let rad = (deg - 90) * Math.PI / 180;
         let isMajor = deg % 30 === 0;
         let showDeg = deg % 10 === 0;
-        let rIn = isMajor ? rDoTick - 5 : rDoTick;
+        let rIn = isMajor ? rDoTick - 3 : rDoTick;
         let x1 = cx + rIn * Math.cos(rad), y1 = cy + rIn * Math.sin(rad);
         let x2 = cx + rDoSo * Math.cos(rad), y2 = cy + rDoSo * Math.sin(rad);
         html += `<line x1="${x1.toFixed(1)}" y1="${y1.toFixed(1)}" x2="${x2.toFixed(1)}" y2="${y2.toFixed(1)}" stroke="#fff" stroke-width="${isMajor?3:2.4}" opacity="0.9"/>`;
@@ -230,10 +235,53 @@ function veCompassChung(svgId, cx, cy, houseFacing, options) {
             }
     });
 
+    // ---- VÒNG NGỌC LIỄM — 24 ô thẳng hàng với 24 sơn, nằm NGAY NGOÀI vòng 24 sơn (trong các dải Bát Trạch) ----
+    // ngocLiem = {cells:[{goc, ten, y, so, mau, mauChu}]}; tên luôn gồm 2 từ nên viết 2 dòng, cỡ chữ tự co theo bề rộng ô.
+    if (dayNL > 0) {
+        let rTrNL = r24Outer, rNgNL = r24Outer + dayNL, rChuNL = (rTrNL + rNgNL) / 2;
+        ngocLiem.cells.forEach(function(c) {
+            let rs = (c.goc - 7.5 - 90) * Math.PI / 180, re = (c.goc + 7.5 - 90) * Math.PI / 180;
+            let xsO = cx + rNgNL*Math.cos(rs), ysO = cy + rNgNL*Math.sin(rs), xeO = cx + rNgNL*Math.cos(re), yeO = cy + rNgNL*Math.sin(re);
+            let xsI = cx + rTrNL*Math.cos(re), ysI = cy + rTrNL*Math.sin(re), xeI = cx + rTrNL*Math.cos(rs), yeI = cy + rTrNL*Math.sin(rs);
+            html += `<path d="M${xsO.toFixed(1)},${ysO.toFixed(1)} A${rNgNL},${rNgNL} 0 0,1 ${xeO.toFixed(1)},${yeO.toFixed(1)} L${xsI.toFixed(1)},${ysI.toFixed(1)} A${rTrNL},${rTrNL} 0 0,0 ${xeI.toFixed(1)},${yeI.toFixed(1)} Z" fill="${c.mau}" fill-opacity="${Math.max(doMo, 0.5)}" stroke="#3a2a1a" stroke-width="1"><title>${c.so}. ${c.ten}${c.y ? " — " + c.y : ""}</title></path>`;
+            let tu = String(c.ten).split(" ");
+            let beRongO = rTrNL * 15 * Math.PI / 180 * 0.9;
+            let tuDaiNhat = Math.max.apply(null, tu.map(function(t) { return t.length; }));
+            let fsNL = Math.min(fontSize * 1.15, beRongO / (tuDaiNhat * 0.6), dayNL / (tu.length * 1.25));
+            let radT = (c.goc - 90) * Math.PI / 180;
+            tu.forEach(function(t, j) {
+                let r = rChuNL + ((tu.length - 1) / 2 - j) * fsNL * 1.1;
+                let x = cx + r * Math.cos(radT), y = cy + r * Math.sin(radT);
+                html += `<g transform="rotate(${c.goc} ${x.toFixed(1)} ${y.toFixed(1)})" pointer-events="none"><text x="${x.toFixed(1)}" y="${y.toFixed(1)}" font-size="${fsNL.toFixed(1)}" font-weight="800" fill="${c.mauChu}" stroke="#fff" stroke-width="2" paint-order="stroke" text-anchor="middle" dominant-baseline="middle">${t}</text></g>`;
+            });
+        });
+    }
+
+    // ---- VÒNG NGỌC LIỄM TRƯỜNG SINH ----
+    if (dayNLTS > 0) {
+        let rTrTS = r24Outer + dayNL, rNgTS = rTrTS + dayNLTS, rChuTS = (rTrTS + rNgTS) / 2;
+        ngocLiemTS.cells.forEach(function(c) {
+            let rs = (c.goc - 7.5 - 90) * Math.PI / 180, re = (c.goc + 7.5 - 90) * Math.PI / 180;
+            let xsO = cx + rNgTS*Math.cos(rs), ysO = cy + rNgTS*Math.sin(rs), xeO = cx + rNgTS*Math.cos(re), yeO = cy + rNgTS*Math.sin(re);
+            let xsI = cx + rTrTS*Math.cos(re), ysI = cy + rTrTS*Math.sin(re), xeI = cx + rTrTS*Math.cos(rs), yeI = cy + rTrTS*Math.sin(rs);
+            html += `<path d="M${xsO.toFixed(1)},${ysO.toFixed(1)} A${rNgTS},${rNgTS} 0 0,1 ${xeO.toFixed(1)},${yeO.toFixed(1)} L${xsI.toFixed(1)},${ysI.toFixed(1)} A${rTrTS},${rTrTS} 0 0,0 ${xeI.toFixed(1)},${yeI.toFixed(1)} Z" fill="${c.mau}" fill-opacity="${Math.max(doMo, 0.5)}" stroke="#3a2a1a" stroke-width="1"><title>${c.so}. ${c.ten}${c.y ? " — " + c.y : ""}</title></path>`;
+            let tu = String(c.ten).split(" ");
+            let beRongO = rTrTS * 15 * Math.PI / 180 * 0.9;
+            let tuDaiNhat = Math.max.apply(null, tu.map(function(t) { return t.length; }));
+            let fsTS = Math.min(fontSize * 1.15, beRongO / (tuDaiNhat * 0.6), dayNLTS / (tu.length * 1.25));
+            let radT = (c.goc - 90) * Math.PI / 180;
+            tu.forEach(function(t, j) {
+                let r = rChuTS + ((tu.length - 1) / 2 - j) * fsTS * 1.1;
+                let x = cx + r * Math.cos(radT), y = cy + r * Math.sin(radT);
+                html += `<g transform="rotate(${c.goc} ${x.toFixed(1)} ${y.toFixed(1)})" pointer-events="none"><text x="${x.toFixed(1)}" y="${y.toFixed(1)}" font-size="${fsTS.toFixed(1)}" font-weight="800" fill="${c.mauChu}" stroke="#fff" stroke-width="2" paint-order="stroke" text-anchor="middle" dominant-baseline="middle">${t}</text></g>`;
+            });
+        });
+    }
+
     // ---- DẢI BÁT TRẠCH (Trạch / Mệnh) — NGOÀI vòng 24 sơn ----
     // batTrach = [{nhan, mauChu, cells:[{goc, phuong, ten, phu, mau, ungNam}]}], phần tử đầu = dải NGOÀI cùng.
     if (batTrach && batTrach.length) {
-        let rCur = r24Outer;
+        let rCur = r24Outer + dayNL + dayNLTS;
         function veChuDai(r, goc, noiDung, size, weight, mau) {
             let radT = (goc - 90) * Math.PI / 180;
             let x = cx + r * Math.cos(radT), y = cy + r * Math.sin(radT);

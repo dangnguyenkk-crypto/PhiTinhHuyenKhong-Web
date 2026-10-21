@@ -128,6 +128,8 @@
             // hành vi hữu ích ngay từ đầu; người dùng có thể tắt riêng từng dải nếu thấy rối.
             let hienThiBatTrachTrach24Son = true;
             let hienThiBatTrachMenh24Son = true;
+                        let hienThiNgocLiemTS24Son = false;
+                                    let hienThiNgocLiem24Son = false; // vòng Ngọc Liễm (mặc định tắt cho đỡ rối)
             function capNhatNutToggleBatTrach24Son() {
                 function apDungNut(id, dangBat) {
                     let btn = document.getElementById(id); if (!btn) return;
@@ -137,13 +139,25 @@
                 }
                 apDungNut("btnToggleBatTrachTrach24Son", hienThiBatTrachTrach24Son);
                 apDungNut("btnToggleBatTrachMenh24Son", hienThiBatTrachMenh24Son);
+                                apDungNut("btnToggleNgocLiem24Son", hienThiNgocLiem24Son);
+                                                apDungNut("btnToggleNgocLiemTS24Son", hienThiNgocLiemTS24Son);
             }
             window.toggleBatTrachTrach24Son = function() {
                 hienThiBatTrachTrach24Son = !hienThiBatTrachTrach24Son;
                 capNhatNutToggleBatTrach24Son();
                 veCompassOverlay(parseFloat(document.getElementById("houseFacing")?.value) || 0);
             };
-            window.toggleBatTrachMenh24Son = function() {
+            window.toggleNgocLiemTS24Son = function() {
+                            hienThiNgocLiemTS24Son = !hienThiNgocLiemTS24Son;
+                            capNhatNutToggleBatTrach24Son();
+                            veCompassOverlay(parseFloat(document.getElementById("houseFacing")?.value) || 0);
+                        };
+                        window.toggleNgocLiem24Son = function() {
+                            hienThiNgocLiem24Son = !hienThiNgocLiem24Son;
+                            capNhatNutToggleBatTrach24Son();
+                            veCompassOverlay(parseFloat(document.getElementById("houseFacing")?.value) || 0);
+                        };
+                        window.toggleBatTrachMenh24Son = function() {
                 hienThiBatTrachMenh24Son = !hienThiBatTrachMenh24Son;
                 capNhatNutToggleBatTrach24Son();
                 veCompassOverlay(parseFloat(document.getElementById("houseFacing")?.value) || 0);
@@ -1604,7 +1618,91 @@
                 return { trung: trung, theoPhuong: theoPhuong, nhan: "Năm xem " + nam };
             }
             window.layTuBachChoLaBan = layTuBachGiaChu; // cho tab Tâm Nhà
-            function layDaiBatTrachCho24Son(houseFacing) {
+            // ==== NGỌC LIỄM KINH — 24 vị "khởi Phúc đức" theo TỌA SƠN (Tọa = đối 180° với hướng nhà) ====
+                        // Mỗi nhóm 3 sơn tọa có 1 sơn khởi Phúc đức; từ đó đếm 24 vị theo chiều tăng của 24 sơn (thuận chiều kim đồng hồ).
+                        // Chỉnh sơn khởi ở NGOC_LIEM_KHOI nếu sách của Ka ghi khác (nhóm Nhâm-Tý-Quý và Thìn-Tốn-Tị đang cùng khởi Thân theo đúng bản chép).
+                        const NGOC_LIEM = [
+                            { ten: "Phúc đức", y: "", cat: true }, { ten: "Ôn hoàng", y: "dịch bệnh", cat: false },
+                            { ten: "Tiến tài", y: "", cat: true }, { ten: "Trường bệnh", y: "bệnh tật triền miên", cat: false },
+                            { ten: "Tố tụng", y: "", cat: false }, { ten: "Quan tước", y: "", cat: true },
+                            { ten: "Quan quý", y: "", cat: true }, { ten: "Tự điếu", y: "tự treo cổ", cat: false },
+                            { ten: "Vượng trang", y: "vượng điền trang", cat: true }, { ten: "Hưng phúc", y: "", cat: true },
+                            { ten: "Pháp trường", y: "", cat: false }, { ten: "Điên cuồng", y: "", cat: false },
+                            { ten: "Khẩu thiệt", y: "điều tiếng thị phi", cat: false }, { ten: "Vượng tàm", y: "có lợi cho tằm dâu", cat: true },
+                            { ten: "Tiến điền", y: "thêm ruộng", cat: true }, { ten: "Khốc khấp", y: "tang tóc khóc than", cat: false },
+                            { ten: "Cô quả", y: "", cat: false }, { ten: "Vinh phúc", y: "vinh thân", cat: true },
+                            { ten: "Thiếu vong", y: "chết yểu", cat: false }, { ten: "Xương dâm", y: "dâm đãng", cat: false },
+                            { ten: "Thân nhân", y: "hôn nhân kết thân", cat: true }, { ten: "Hoan lạc", y: "vui vẻ", cat: true },
+                            { ten: "Bại tuyệt", y: "lụn bại phá sản", cat: false }, { ten: "Vượng tài", y: "phát về của", cat: true }
+                        ];
+                        const NGOC_LIEM_KHOI = [
+                            { toa: ["Tuất", "Càn", "Hợi"], khoi: "Tị" },
+                            { toa: ["Nhâm", "Tý", "Quý"], khoi: "Thân" },
+                            { toa: ["Canh", "Dậu", "Tân"], khoi: "Dậu" },
+                            { toa: ["Mùi", "Khôn", "Thân"], khoi: "Nhâm" },
+                            { toa: ["Bính", "Ngọ", "Đinh"], khoi: "Đinh" },
+                            { toa: ["Thìn", "Tốn", "Tị"], khoi: "Thân" },
+                            { toa: ["Sửu", "Cấn", "Dần"], khoi: "Hợi" },
+                            { toa: ["Ất", "Mão", "Giáp"], khoi: "Dần" }
+                        ];
+                        function layNgocLiemCho24Son(houseFacing) {
+                            if (!hienThiNgocLiem24Son) return null;
+                            let g = (((houseFacing + 180) % 360) + 360) % 360, toa = DS24_SON[0], diffTot = 999;
+                            DS24_SON.forEach(function(s) {
+                                let d = Math.min(Math.abs(g - s.goc), 360 - Math.abs(g - s.goc));
+                                if (d < diffTot) { diffTot = d; toa = s; }
+                            });
+                            let nhom = NGOC_LIEM_KHOI.find(function(n) { return n.toa.indexOf(toa.ten) >= 0; });
+                            if (!nhom) return null;
+                            let idxKhoi = DS24_SON.findIndex(function(s) { return s.ten === nhom.khoi; });
+                            if (idxKhoi < 0) return null;
+                            let cells = DS24_SON.map(function(s, i) {
+                                let k = ((i - idxKhoi) % 24 + 24) % 24, nl = NGOC_LIEM[k];
+                                return { goc: s.goc, ten: nl.ten, y: nl.y, so: k + 1,
+                                         mau: nl.cat ? "#dcedc8" : "#ffcdd2", mauChu: nl.cat ? "#1b5e20" : "#b71c1c" };
+                            });
+                            return { toa: toa.ten, khoi: nhom.khoi, cells: cells };
+                        }
+                       const NGOC_LIEM_TS_NGUON = "toa"; // "toa" = sơn Tọa; "huong" = sơn Hướng
+                                   const NGOC_LIEM_TS_HANH = {
+                                       "Giáp": "Thủy", "Dần": "Thủy", "Thìn": "Thủy", "Tốn": "Thủy", "Tuất": "Thủy", "Tý": "Thủy", "Thân": "Thủy", "Tân": "Thủy",
+                                       "Mão": "Mộc", "Cấn": "Mộc", "Tị": "Mộc",
+                                       "Ngọ": "Hỏa", "Nhâm": "Hỏa", "Bính": "Hỏa", "Ất": "Hỏa",
+                                       "Dậu": "Kim", "Đinh": "Kim", "Càn": "Kim", "Hợi": "Kim",
+                                       "Sửu": "Thổ", "Quý": "Thổ", "Khôn": "Thổ", "Canh": "Thổ", "Mùi": "Thổ"
+                                   };
+                                   const NGOC_LIEM_TS_KHOI = { "Kim": "Tị", "Mộc": "Hợi", "Thủy": "Thân", "Thổ": "Thân", "Hỏa": "Dần" };
+                                   const NGOC_LIEM_TS = [
+                                       { ten: "Trường Sinh", cat: true }, { ten: "Tham Lang", cat: true }, { ten: "Mộc Dục", cat: false },
+                                       { ten: "Văn Khúc", cat: false }, { ten: "Quan Đới", cat: false }, { ten: "Văn Khúc", cat: false },
+                                       { ten: "Lâm Quan", cat: true }, { ten: "Vũ Khúc", cat: true }, { ten: "Đế Vượng", cat: true },
+                                       { ten: "Vũ Khúc", cat: true }, { ten: "Suy", cat: false }, { ten: "Cự Môn", cat: false },
+                                       { ten: "Bệnh", cat: false }, { ten: "Tuyệt", cat: false },
+                                       { ten: "Tử", cat: false }, { ten: "Liêm Trinh", cat: false }, { ten: "Mộ", cat: false },
+                                       { ten: "Phá Quân", cat: false }, { ten: "Tuyệt", cat: false }, { ten: "Lộc Tồn", cat: false },
+                                       { ten: "Thai", cat: false }, { ten: "Lộc Tồn", cat: false }, { ten: "Dưỡng", cat: true },
+                                       { ten: "Tham Lang", cat: true }
+                                   ];
+                                   function layNgocLiemTruongSinhCho24Son(houseFacing) {
+                                       if (!hienThiNgocLiemTS24Son) return null;
+                                       let gocLay = (NGOC_LIEM_TS_NGUON === "huong") ? houseFacing : houseFacing + 180;
+                                       let g = ((gocLay % 360) + 360) % 360, sonLay = DS24_SON[0], diffTot = 999;
+                                       DS24_SON.forEach(function(s) {
+                                           let d = Math.min(Math.abs(g - s.goc), 360 - Math.abs(g - s.goc));
+                                           if (d < diffTot) { diffTot = d; sonLay = s; }
+                                       });
+                                       let hanh = NGOC_LIEM_TS_HANH[sonLay.ten];
+                                       let sonKhoi = hanh ? NGOC_LIEM_TS_KHOI[hanh] : null;
+                                       let idxKhoi = sonKhoi ? DS24_SON.findIndex(function(s) { return s.ten === sonKhoi; }) : -1;
+                                       if (idxKhoi < 0) return null;
+                                       let cells = DS24_SON.map(function(s, i) {
+                                           let k = ((i - idxKhoi) % 24 + 24) % 24, v = NGOC_LIEM_TS[k];
+                                           return { goc: s.goc, ten: v.ten, y: "", so: k + 1,
+                                                    mau: v.cat ? "#dcedc8" : "#ffcdd2", mauChu: v.cat ? "#1b5e20" : "#b71c1c" };
+                                       });
+                                       return { son: sonLay.ten, hanh: hanh, khoi: sonKhoi, cells: cells };
+                                   }
+                                   function layDaiBatTrachCho24Son(houseFacing) {
                 let cacDai = [];
                 if (!hienThiBatTrachTrach24Son && !hienThiBatTrachMenh24Son) return cacDai;
                 let chiNam = layChiNamXem().chi;
@@ -1675,14 +1773,19 @@
                 // La bàn luôn cố định ở giữa khung (500,500 trong viewBox 1000x1000) — không di chuyển theo tamPercent nữa.
                 const cx = 500, cy = 500;
                 const sonDen = document.getElementById("selSonDen")?.value, sonDi = document.getElementById("selSonDi")?.value;
-                veCompassChung("compassSvg", cx, cy, houseFacing, {
+
+                const dsDaiBT = layDaiBatTrachCho24Son(houseFacing), dsNL = layNgocLiemCho24Son(houseFacing), dsNLTS = layNgocLiemTruongSinhCho24Son(houseFacing);
+                                const nNLk = (dsNL ? 1 : 0) + (dsNLTS ? 1 : 0);
+                                const dayBTk = dsDaiBT.length ? Math.min(90, (245 - 42 - nNLk * 46) / dsDaiBT.length) : 90;
+                                veCompassChung("compassSvg", cx, cy, houseFacing, {
                     // Bán kính KHÔNG truyền cứng nữa — để veCompassChung() tự dùng default mới (8 hướng
                     // trong cùng -> 24 sơn -> vạch chia độ -> số độ), tránh đè lên thay đổi trong shared.js.
-                    r24Outer:395, r24Text:375, rDoTick:395, rDoText:435, rDoSo:415, rKim:415,
+                    r24Outer:405, r24Text:385, rDoTick:405, rDoText:430, rDoSo:412, rKim:412,
                     doMo:doMoNenLaBan,mauTia:mauTiaHienTai,isReset:isResetMode,
                     resetOffset:isResetMode?-houseFacing:0,sonDen:sonDen,sonDi:sonDi,showLabel:true,fontSize:tpFontSize,mauRanh8:mauRanh8HienTai,
-                    batTrach: layDaiBatTrachCho24Son(houseFacing),
-                    dayBatTrach: 90,
+                    batTrach: dsDaiBT,
+                                        ngocLiem: dsNL, ngocLiemTS: dsNLTS, dayNgocLiem: 46, dayNgocLiemTS: 46,
+                    dayBatTrach: dayBTk,
                     showKimBac: false,
                     tuBach: layTuBachGiaChu()
                 });
@@ -2275,6 +2378,8 @@
                     compassVisible: compassVisible,
                     hienThiBatTrachTrach24Son: hienThiBatTrachTrach24Son,
                     hienThiBatTrachMenh24Son: hienThiBatTrachMenh24Son,
+                                        hienThiNgocLiem24Son: hienThiNgocLiem24Son,
+                                                            hienThiNgocLiemTS24Son: hienThiNgocLiemTS24Son,
                     mapImageSrc: coAnh ? mapImg.src : null
                 };
             };
@@ -2324,6 +2429,8 @@
                 let vMenh = (obj.hienThiBatTrachMenh24Son !== undefined) ? obj.hienThiBatTrachMenh24Son : obj.hienThiBatTrachMenhTrongTruongSinh;
                 hienThiBatTrachTrach24Son = vTrach !== false;
                 hienThiBatTrachMenh24Son = vMenh !== false;
+                                hienThiNgocLiem24Son = obj.hienThiNgocLiem24Son === true;
+                                                hienThiNgocLiemTS24Son = obj.hienThiNgocLiemTS24Son === true;
                 if (typeof capNhatNutToggleBatTrach24Son === "function") capNhatNutToggleBatTrach24Son();
 
                 let btnReset = document.getElementById("btnResetGoc");
