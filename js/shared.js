@@ -301,7 +301,7 @@ function veCompassChung(svgId, cx, cy, houseFacing, options) {
                 let click = c.ten ? ` style="cursor:pointer" data-dn="${c.ten}|${dai.nhan}|${c.phuong}" onclick="window.moPopupDuNien && window.moPopupDuNien('${c.ten}','${dai.nhan}','${c.phuong}')"` : "";
                 html += `<path d="${duongCung(c)}" fill="${c.mau}" fill-opacity="${Math.max(doMo, 0.5)}" stroke="#3a2a1a" stroke-width="1"${click}/>`;
                 if (c.ten) {
-                    html += veChuDai(c.phu ? rChu + fontSize*0.55 : rChu, c.goc, c.ten, fontSize*1.25, 800, dai.mauChu);
+                    html += veChuDai(c.phu ? rChu + fontSize*0.55 : rChu, c.goc, dai.nhan + " " + c.ten, fontSize*1.25, 800, dai.mauChu);
                     if (c.phu) html += veChuDai(rChu - fontSize*0.55, c.goc, c.phu, fontSize*0.9, 700, "#333");
                 }
             });
@@ -309,7 +309,6 @@ function veCompassChung(svgId, cx, cy, houseFacing, options) {
             dai.cells.forEach(function(c) {
                 if (c.ungNam) html += `<path d="${duongCung(c)}" fill="none" stroke="#ffb300" stroke-width="5" pointer-events="none"/>`;
             });
-            html += `<text x="${cx}" y="${(cy - rNg + fontSize*0.85).toFixed(1)}" font-size="${(fontSize*1.05).toFixed(1)}" font-weight="700" fill="${dai.mauChu}" stroke="#fff" stroke-width="1.5" paint-order="stroke" text-anchor="middle" dominant-baseline="middle" opacity="0.55" pointer-events="none">${dai.nhan}</text>`;
             rCur = rNg;
         });
     }
